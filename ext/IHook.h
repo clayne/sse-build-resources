@@ -22,18 +22,15 @@ namespace Hook
     template <uint8_t op>
     bool GetDst5(uintptr_t addr, uintptr_t& out)
     {
+        static_assert(op == uint8_t(0xE8) || op == uint8_t(0xE9), "invalid opcode");
+
         auto ins = reinterpret_cast<CB5Code*>(addr);
 
         if (ins->op != op) {
             return false;
         }
 
-        if (op == uint8_t(0xE8) || op == uint8_t(0xE9)) {
-            out = addr + sizeof(CB5Code) + ins->displ;
-        }
-        else {
-            return false;
-        }
+        out = addr + sizeof(CB5Code) + ins->displ;
 
         return true;
     }
@@ -41,18 +38,15 @@ namespace Hook
     template <uint8_t modrm>
     bool GetDst6(uintptr_t addr, uintptr_t& out)
     {
+        static_assert(modrm == uint8_t(0x15) || modrm == uint8_t(0x25), "invalid modr/m byte");
+
         auto ins = reinterpret_cast<CB6Code*>(addr);
 
         if (ins->escape != 0xFF || ins->modrm != modrm) {
             return false;
         }
 
-        if (modrm == uint8_t(0x15) || modrm == uint8_t(0x25)) {
-            out = *reinterpret_cast<uintptr_t*>(addr + sizeof(CB6Code) + ins->displ);
-        }
-        else {
-            return false;
-        }
+        out = *reinterpret_cast<uintptr_t*>(addr + sizeof(CB6Code) + ins->displ);
 
         return true;
     }

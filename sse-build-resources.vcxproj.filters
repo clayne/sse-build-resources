@@ -365,6 +365,9 @@
     <ClCompile Include="skse64\skse64\skse64\InputMap.cpp">
       <Filter>skse64</Filter>
     </ClCompile>
+    <ClCompile Include="ext\IHook.cpp">
+      <Filter>ext</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="skse64\skse64\skse64\PapyrusNativeFunctionDef.inl">

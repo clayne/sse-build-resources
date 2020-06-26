@@ -186,6 +186,12 @@
     <ClInclude Include="ext\versiondb.h">
       <Filter>ext</Filter>
     </ClInclude>
+    <ClInclude Include="ext\ICommon.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\IHook.h">
+      <Filter>ext</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ext\AddressLibrary.cpp">

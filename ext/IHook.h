@@ -19,10 +19,13 @@ namespace Hook
     };
 #pragma pack(pop)
 
+    static_assert(sizeof(CB5Code) == 0x5);
+    static_assert(sizeof(CB6Code) == 0x6);
+
     template <uint8_t op>
     bool GetDst5(uintptr_t addr, uintptr_t& out)
     {
-        static_assert(op == uint8_t(0xE8) || op == uint8_t(0xE9), "invalid opcode");
+        static_assert(op == 0xE8 || op == 0xE9, "invalid opcode");
 
         auto ins = reinterpret_cast<CB5Code*>(addr);
 
@@ -38,7 +41,7 @@ namespace Hook
     template <uint8_t modrm>
     bool GetDst6(uintptr_t addr, uintptr_t& out)
     {
-        static_assert(modrm == uint8_t(0x15) || modrm == uint8_t(0x25), "invalid modr/m byte");
+        static_assert(modrm == 0x15 || modrm == 0x25, "invalid modr/m byte");
 
         auto ins = reinterpret_cast<CB6Code*>(addr);
 
@@ -109,5 +112,12 @@ namespace Hook
         g_branchTrampoline.Write6Branch(addr, dst);
 
         return true;
+    }
+
+    __forceinline size_t GetAllocGranularity()
+    {
+        SYSTEM_INFO info;
+        GetSystemInfo(&info);
+        return static_cast<size_t>(info.dwAllocationGranularity);
     }
 }

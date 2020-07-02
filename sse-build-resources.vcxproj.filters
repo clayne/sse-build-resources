@@ -195,6 +195,9 @@
     <ClInclude Include="ext\JITASM.h">
       <Filter>ext</Filter>
     </ClInclude>
+    <ClInclude Include="ext\Patching.h">
+      <Filter>ext</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ext\AddressLibrary.cpp">
@@ -372,6 +375,9 @@
       <Filter>ext</Filter>
     </ClCompile>
     <ClCompile Include="ext\JITASM.cpp">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\Patching.cpp">
       <Filter>ext</Filter>
     </ClCompile>
   </ItemGroup>

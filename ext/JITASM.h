@@ -2,15 +2,18 @@
 
 #include "xbyak/xbyak.h"
 
-class JITASM
-	: public Xbyak::CodeGenerator
+namespace JITASM
 {
-public:
-	JITASM(size_t maxSize = Xbyak::DEFAULT_MAX_CODE_SIZE);
+	class JITASM
+		: public Xbyak::CodeGenerator
+	{
+	public:
+		JITASM(size_t maxSize = Xbyak::DEFAULT_MAX_CODE_SIZE);
 
-	void done();
-	uintptr_t get();
+		void done();
+		uintptr_t get();
 
-private:
-	bool _endedAlloc;
-};
+	private:
+		bool _endedAlloc;
+	};
+}

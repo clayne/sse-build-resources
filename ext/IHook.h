@@ -114,10 +114,5 @@ namespace Hook
         return true;
     }
 
-    __forceinline size_t GetAllocGranularity()
-    {
-        SYSTEM_INFO info;
-        GetSystemInfo(&info);
-        return static_cast<size_t>(info.dwAllocationGranularity);
-    }
+    size_t GetAllocGranularity();
 }

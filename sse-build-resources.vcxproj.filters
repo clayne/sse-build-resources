@@ -192,6 +192,9 @@
     <ClInclude Include="ext\IHook.h">
       <Filter>ext</Filter>
     </ClInclude>
+    <ClInclude Include="ext\JITASM.h">
+      <Filter>ext</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ext\AddressLibrary.cpp">
@@ -366,6 +369,9 @@
       <Filter>skse64</Filter>
     </ClCompile>
     <ClCompile Include="ext\IHook.cpp">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\JITASM.cpp">
       <Filter>ext</Filter>
     </ClCompile>
   </ItemGroup>

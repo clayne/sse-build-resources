@@ -34,6 +34,7 @@
     <ClInclude Include="ext\AddressLibrary.h" />
     <ClInclude Include="ext\ICommon.h" />
     <ClInclude Include="ext\IHook.h" />
+    <ClInclude Include="ext\JITASM.h" />
     <ClInclude Include="ext\PerfCounter.h" />
     <ClInclude Include="ext\RTTI.h" />
     <ClInclude Include="ext\versiondb.h" />
@@ -96,6 +97,7 @@
   <ItemGroup>
     <ClCompile Include="ext\AddressLibrary.cpp" />
     <ClCompile Include="ext\IHook.cpp" />
+    <ClCompile Include="ext\JITASM.cpp" />
     <ClCompile Include="ext\PerfCounter.cpp" />
     <ClCompile Include="ext\RTTI.cpp" />
     <ClCompile Include="skse64\skse64\skse64\BSModelDB.cpp" />

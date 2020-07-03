@@ -115,4 +115,5 @@ namespace Hook
     }
 
     size_t GetAllocGranularity();
+    size_t GetAlignedTrampolineSize(size_t maxSize);
 }

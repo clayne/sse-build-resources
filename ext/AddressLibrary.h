@@ -16,6 +16,14 @@ public:
             m_Instance.tLoadStart, m_Instance.tLoadEnd);
     }
 
+    static long long GetLoadStart() {
+        return m_Instance.tLoadStart;
+    }
+
+    static long long GetLoadEnd() {
+        return m_Instance.tLoadEnd;
+    }
+
     static bool HasBadQuery() {
         return m_Instance.hasBadQuery;
     }

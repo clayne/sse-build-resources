@@ -91,3 +91,11 @@ class TaskDelegateFixed
 public:
     virtual void Run() = 0;
 };
+
+class TaskDelegateStatic
+    : public TaskDelegate
+{
+public:
+    virtual void Run() = 0;
+    virtual void Dispose() {};
+};

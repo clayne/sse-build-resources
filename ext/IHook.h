@@ -23,6 +23,20 @@ namespace Hook
     static_assert(sizeof(CB6Code) == 0x6);
 
     template <uint8_t op>
+    bool CheckDst5(uintptr_t addr)
+    {
+        static_assert(op == 0xE8 || op == 0xE9, "invalid opcode");
+
+        auto ins = reinterpret_cast<CB5Code*>(addr);
+
+        if (ins->op != op) {
+            return false;
+        }
+
+        return true;
+    }
+
+    template <uint8_t op>
     bool GetDst5(uintptr_t addr, uintptr_t& out)
     {
         static_assert(op == 0xE8 || op == 0xE9, "invalid opcode");

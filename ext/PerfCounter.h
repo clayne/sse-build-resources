@@ -51,3 +51,44 @@ public:
 private:
     long long m_tStart;
 };
+
+class PerfTimerInt
+{
+public:
+    PerfTimerInt(long long a_interval) :
+        m_interval(a_interval),
+        m_tAccum(0),
+        m_tIntervalBegin(PerfCounter::Query()),
+        m_tCounter(0)
+    {
+    }
+
+    void Begin()
+    {
+        m_tStart = PerfCounter::Query();
+    }
+
+    bool End(long long& a_out)
+    {
+        auto tEnd = PerfCounter::Query();
+        m_tAccum += PerfCounter::delta_us(m_tStart, tEnd);
+        m_tCounter++;
+
+        if (PerfCounter::delta_us(m_tIntervalBegin, tEnd) >= m_interval) {
+            a_out = m_tAccum / m_tCounter;
+            m_tAccum = 0;
+            m_tCounter = 0;
+            m_tIntervalBegin = tEnd;
+            return true;
+        }
+
+        return false;
+    }
+
+private:
+    long long m_interval;
+    long long m_tStart;
+    long long m_tIntervalBegin;
+    long long m_tCounter;
+    long long m_tAccum;
+};

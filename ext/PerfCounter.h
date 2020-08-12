@@ -63,12 +63,12 @@ public:
     {
     }
 
-    void Begin()
+    inline void Begin()
     {
         m_tStart = PerfCounter::Query();
     }
 
-    bool End(long long& a_out)
+    inline bool End(long long& a_out)
     {
         auto tEnd = PerfCounter::Query();
         m_tAccum += PerfCounter::delta_us(m_tStart, tEnd);
@@ -76,13 +76,25 @@ public:
 
         if (PerfCounter::delta_us(m_tIntervalBegin, tEnd) >= m_interval) {
             a_out = m_tAccum / m_tCounter;
-            m_tAccum = 0;
             m_tCounter = 0;
+            m_tAccum = 0;
             m_tIntervalBegin = tEnd;
             return true;
         }
 
         return false;
+    }
+
+    inline void SetInterval(long long a_interval)
+    {
+        m_interval = a_interval;
+    }
+
+    inline void Reset()
+    {
+        m_tIntervalBegin = PerfCounter::Query();
+        m_tAccum = 0;
+        m_tCounter = 0;
     }
 
 private:

@@ -45,7 +45,7 @@ namespace Hook
         auto iface = reinterpret_cast<SKSETrampolineInterface*>(skse->QueryInterface(kInterface_Trampoline));
         if (iface != nullptr)
         {
-            auto base = iface->AllocateFromBranchPool(skse->GetPluginHandle(), a_size);
+            auto base = iface->AllocateFromLocalPool(skse->GetPluginHandle(), a_size);
             if (base != nullptr)
             {
                 g_localTrampoline.SetBase(a_size, base);

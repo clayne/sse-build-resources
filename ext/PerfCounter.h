@@ -74,7 +74,8 @@ public:
         m_tAccum += PerfCounter::delta_us(m_tStart, tEnd);
         m_tCounter++;
 
-        if (PerfCounter::delta_us(m_tIntervalBegin, tEnd) >= m_interval) {
+        m_tInterval = PerfCounter::delta_us(m_tIntervalBegin, tEnd);
+        if (m_tInterval >= m_interval) {
             a_out = m_tAccum / m_tCounter;
             m_tCounter = 0;
             m_tAccum = 0;
@@ -97,10 +98,16 @@ public:
         m_tCounter = 0;
     }
 
+    inline long long GetIntervalTime() {
+        return m_tInterval;
+    }
+
 private:
     long long m_interval;
     long long m_tStart;
     long long m_tIntervalBegin;
     long long m_tCounter;
     long long m_tAccum;
+
+    long long m_tInterval;
 };

@@ -7,6 +7,9 @@
     <Filter Include="skse64">
       <UniqueIdentifier>{5a6344a3-807b-4d63-bb1c-05f7cbab2b0d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="skse64\internal">
+      <UniqueIdentifier>{d1cd6d78-afdd-4e82-9fbd-fd25a18f96d0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ext\AddressLibrary.h">
@@ -200,6 +203,9 @@
     </ClInclude>
     <ClInclude Include="ext\ITasks.h">
       <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="skse64\skse64\skse64\PluginAPI.h">
+      <Filter>skse64\internal</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

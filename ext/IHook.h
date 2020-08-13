@@ -1,9 +1,11 @@
 #pragma once
 
+#include "skse64/PluginAPI.h"
 #include "skse64_common/BranchTrampoline.h"
 
 namespace Hook
 {
+
 #pragma pack(push, 1)
     struct CB5Code
     {
@@ -130,4 +132,7 @@ namespace Hook
 
     size_t GetAllocGranularity();
     size_t GetAlignedTrampolineSize(size_t maxSize);
+
+    size_t InitBranchTrampoline(const SKSEInterface* skse, size_t a_size);
+    size_t InitLocalTrampoline(const SKSEInterface* skse, size_t a_size);
 }

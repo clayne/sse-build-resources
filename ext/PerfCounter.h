@@ -98,7 +98,7 @@ public:
         m_tCounter = 0;
     }
 
-    inline long long GetIntervalTime() {
+    inline long long GetIntervalTime() const {
         return m_tInterval;
     }
 

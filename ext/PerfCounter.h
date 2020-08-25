@@ -75,11 +75,22 @@ public:
         m_tCounter++;
 
         m_tInterval = PerfCounter::delta_us(m_tIntervalBegin, tEnd);
-        if (m_tInterval >= m_interval) {
-            a_out = m_tAccum / m_tCounter;
-            m_tCounter = 0;
-            m_tAccum = 0;
-            m_tIntervalBegin = tEnd;
+        if (m_tInterval >= m_interval) 
+        {
+            if (m_tCounter > 0)
+            {
+                a_out = m_tAccum / m_tCounter;
+
+                m_tCounter = 0;
+                m_tAccum = 0;
+                m_tIntervalBegin = tEnd;
+            }
+            else // overflow
+            {
+                a_out = 0;
+                Reset();
+            }
+
             return true;
         }
 

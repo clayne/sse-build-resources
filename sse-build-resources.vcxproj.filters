@@ -207,6 +207,15 @@
     <ClInclude Include="skse64\skse64\skse64\PluginAPI.h">
       <Filter>skse64\internal</Filter>
     </ClInclude>
+    <ClInclude Include="IMisc.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\ILogging.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\IAssert.h">
+      <Filter>ext</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ext\AddressLibrary.cpp">
@@ -387,6 +396,9 @@
       <Filter>ext</Filter>
     </ClCompile>
     <ClCompile Include="ext\Patching.cpp">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\ILogging.cpp">
       <Filter>ext</Filter>
     </ClCompile>
   </ItemGroup>

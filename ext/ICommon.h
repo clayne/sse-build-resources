@@ -2,6 +2,9 @@
 
 #define FN_NAMEPROC(x) virtual const char *ModuleName() { return x; };
 
+#include <string>
+#include <exception>
+
 namespace except
 {
     class descriptor

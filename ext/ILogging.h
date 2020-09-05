@@ -16,7 +16,7 @@ class Logger
     typedef void (*onWriteCallback_t)(char* a_buffer);
 public:
     enum class LogLevel : int {
-        FatalError,
+        FatalError = 0,
         Error,
         Warning,
         Message,
@@ -39,37 +39,29 @@ public:
     template<typename... Args>
     void Debug(const char* a_fmt, Args... a_args)
     {
-        if (!CheckLogLevel(LogLevel::Debug))
-            return;
-
-        Write(a_fmt, a_args...);
+        if (CheckLogLevel(LogLevel::Debug))
+            Write(a_fmt, a_args...);
     }
 
     template<typename... Args>
     void Message(const char* a_fmt, Args... a_args)
     {
-        if (!CheckLogLevel(LogLevel::Message))
-            return;
-
-        Write(a_fmt, a_args...);
+        if (CheckLogLevel(LogLevel::Message))
+            Write(a_fmt, a_args...);
     }
 
     template<typename... Args>
     void Warning(const char* a_fmt, Args... a_args)
     {
-        if (!CheckLogLevel(LogLevel::Warning))
-            return;
-
-        Write(a_fmt, a_args...);
+        if (CheckLogLevel(LogLevel::Warning))
+            Write(a_fmt, a_args...);
     }
 
     template<typename... Args>
     void Error(const char* a_fmt, Args... a_args)
     {
-        if (!CheckLogLevel(LogLevel::Error))
-            return;
-
-        Write(a_fmt, a_args...);
+        if (CheckLogLevel(LogLevel::Error))
+            Write(a_fmt, a_args...);
     }
 
     template<typename... Args>
@@ -98,18 +90,16 @@ private:
 
         _snprintf_s(buffer.get(), m_bufferSize, _TRUNCATE, fmt, a_args...);
 
-        m_criticalSection.Enter();
-
         try
         {
+            IScopedCriticalSection _(&m_criticalSection);
+
             if (m_ofstream.is_open())
                 m_ofstream << buffer.get() << std::endl;
         }
         catch (...)
         {
         }
-
-        m_criticalSection.Leave();
 
         if (m_onWriteCallback != nullptr)
             m_onWriteCallback(buffer.get());
@@ -174,8 +164,10 @@ private:
 
     inline std::string FormatString(const char* a_fmt, const char* a_pfix = nullptr) {
         std::ostringstream _fmt;
+
         if (a_pfix != nullptr)
             _fmt << "<" << a_pfix << "> ";
+
         _fmt << "[" << ModuleName() << "] " << a_fmt;
 
         return _fmt.str();

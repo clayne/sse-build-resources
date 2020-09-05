@@ -207,13 +207,16 @@
     <ClInclude Include="skse64\skse64\skse64\PluginAPI.h">
       <Filter>skse64\internal</Filter>
     </ClInclude>
-    <ClInclude Include="IMisc.h">
-      <Filter>ext</Filter>
-    </ClInclude>
     <ClInclude Include="ext\ILogging.h">
       <Filter>ext</Filter>
     </ClInclude>
     <ClInclude Include="ext\IAssert.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\IMisc.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\INIReader.h">
       <Filter>ext</Filter>
     </ClInclude>
   </ItemGroup>

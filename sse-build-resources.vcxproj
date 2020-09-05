@@ -40,13 +40,14 @@
     <ClInclude Include="ext\ICommon.h" />
     <ClInclude Include="ext\IHook.h" />
     <ClInclude Include="ext\ILogging.h" />
+    <ClInclude Include="ext\IMisc.h" />
+    <ClInclude Include="ext\INIReader.h" />
     <ClInclude Include="ext\ITasks.h" />
     <ClInclude Include="ext\JITASM.h" />
     <ClInclude Include="ext\Patching.h" />
     <ClInclude Include="ext\PerfCounter.h" />
     <ClInclude Include="ext\RTTI.h" />
     <ClInclude Include="ext\versiondb.h" />
-    <ClInclude Include="IMisc.h" />
     <ClInclude Include="skse64\skse64\skse64\BSModelDB.h" />
     <ClInclude Include="skse64\skse64\skse64\GameAPI.h" />
     <ClInclude Include="skse64\skse64\skse64\GameBSExtraData.h" />

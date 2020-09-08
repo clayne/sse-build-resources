@@ -1,8 +1,10 @@
 #include "RTTI.h"
 
+IRTTI::RDCImpl_T IRTTI::RDCImpl = IAL::Addr<RDCImpl_T>(102238);
+
 IRTTI::IRTTI()
 {
-    for (size_t i = 0; i < NUM_RTTI; i++) {
+    for (uint32_t i = 0; i < NUM_RTTI; i++) {
         addrs[i] = IAL::Addr<void*>(aids[i]);
     }
 }

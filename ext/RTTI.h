@@ -2,7 +2,7 @@
 
 #include "AddressLibrary.h"
 
-constexpr size_t NUM_RTTI = 3278;
+constexpr uint32_t NUM_RTTI = 3278;
 
 class IRTTI
 {
@@ -15,7 +15,7 @@ public:
 private:
     IRTTI();
 
-    inline static auto RDCImpl = IAL::Addr<RDCImpl_T>(102238);
+    static RDCImpl_T RDCImpl;
 
     static unsigned long long aids[NUM_RTTI];
     static void *addrs[NUM_RTTI];

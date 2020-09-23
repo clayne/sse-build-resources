@@ -1,6 +1,6 @@
 #pragma once
 
-#define FN_NAMEPROC(x) virtual const char *ModuleName() { return x; };
+#define FN_NAMEPROC(x) virtual const char *ModuleName() const { return x; };
 
 #include <string>
 #include <exception>

@@ -79,7 +79,7 @@ private:
 
     typedef std::unordered_map<std::string, LogLevel> logLevelMap_t;
 
-    inline bool CheckLogLevel(LogLevel a_logLevel) {
+    inline bool CheckLogLevel(LogLevel a_logLevel) const {
         return Enum::Underlying(m_logLevel) >= Enum::Underlying(a_logLevel);
     }
 
@@ -120,41 +120,41 @@ class ILog
 {
 public:
     template<typename... Args>
-    void Debug(const char* a_fmt, Args... a_args)
+    void Debug(const char* a_fmt, Args... a_args) const
     {
         gLogger.Debug(FormatString(a_fmt).c_str(), a_args...);
     }
 
     template<typename... Args>
-    void Message(const char* a_fmt, Args... a_args)
+    void Message(const char* a_fmt, Args... a_args) const
     {
         gLogger.Message(FormatString(a_fmt).c_str(), a_args...);
     }
 
     template<typename... Args>
-    void Warning(const char* a_fmt, Args... a_args)
+    void Warning(const char* a_fmt, Args... a_args) const
     {
         gLogger.Warning(FormatString(a_fmt, "WARNING").c_str(), a_args...);
     }
 
     template<typename... Args>
-    void Error(const char* a_fmt, Args... a_args)
+    void Error(const char* a_fmt, Args... a_args) const
     {
         gLogger.Error(FormatString(a_fmt, "ERROR").c_str(), a_args...);
     }
 
     template<typename... Args>
-    void FatalError(const char* a_fmt, Args... a_args)
+    void FatalError(const char* a_fmt, Args... a_args) const
     {
         gLogger.FatalError(FormatString(a_fmt, "FATAL").c_str(), a_args...);
     }
 
-    inline void LogPatchBegin(const char* a_id)
+    inline void LogPatchBegin(const char* a_id) const
     {
         gLogger.Debug("[Patch] [%s] Writing..", a_id);
     }
 
-    inline void LogPatchEnd(const char* a_id)
+    inline void LogPatchEnd(const char* a_id) const
     {
         gLogger.Debug("[Patch] [%s] OK", a_id);
     }
@@ -162,7 +162,8 @@ public:
     FN_NAMEPROC("ILog")
 private:
 
-    inline std::string FormatString(const char* a_fmt, const char* a_pfix = nullptr) {
+    inline std::string FormatString(const char* a_fmt, const char* a_pfix = nullptr) const
+    {
         std::ostringstream _fmt;
 
         if (a_pfix != nullptr)

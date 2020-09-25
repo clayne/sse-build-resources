@@ -37,35 +37,35 @@ public:
     }
 
     template<typename... Args>
-    void Debug(const char* a_fmt, Args... a_args)
+    inline void Debug(const char* a_fmt, Args... a_args)
     {
         if (CheckLogLevel(LogLevel::Debug))
             Write(a_fmt, a_args...);
     }
 
     template<typename... Args>
-    void Message(const char* a_fmt, Args... a_args)
+    inline void Message(const char* a_fmt, Args... a_args)
     {
         if (CheckLogLevel(LogLevel::Message))
             Write(a_fmt, a_args...);
     }
 
     template<typename... Args>
-    void Warning(const char* a_fmt, Args... a_args)
+    inline void Warning(const char* a_fmt, Args... a_args)
     {
         if (CheckLogLevel(LogLevel::Warning))
             Write(a_fmt, a_args...);
     }
 
     template<typename... Args>
-    void Error(const char* a_fmt, Args... a_args)
+    inline void Error(const char* a_fmt, Args... a_args)
     {
         if (CheckLogLevel(LogLevel::Error))
             Write(a_fmt, a_args...);
     }
 
     template<typename... Args>
-    void FatalError(const char* a_fmt, Args... a_args) {
+    inline void FatalError(const char* a_fmt, Args... a_args) {
         Write(a_fmt, a_args...);
     }
 
@@ -120,43 +120,43 @@ class ILog
 {
 public:
     template<typename... Args>
-    void Debug(const char* a_fmt, Args... a_args) const
+    inline void Debug(const char* a_fmt, Args... a_args) const
     {
         gLogger.Debug(FormatString(a_fmt).c_str(), a_args...);
     }
 
     template<typename... Args>
-    void Message(const char* a_fmt, Args... a_args) const
+    inline void Message(const char* a_fmt, Args... a_args) const
     {
         gLogger.Message(FormatString(a_fmt).c_str(), a_args...);
     }
 
     template<typename... Args>
-    void Warning(const char* a_fmt, Args... a_args) const
+    inline void Warning(const char* a_fmt, Args... a_args) const
     {
         gLogger.Warning(FormatString(a_fmt, "WARNING").c_str(), a_args...);
     }
 
     template<typename... Args>
-    void Error(const char* a_fmt, Args... a_args) const
+    inline void Error(const char* a_fmt, Args... a_args) const
     {
         gLogger.Error(FormatString(a_fmt, "ERROR").c_str(), a_args...);
     }
 
     template<typename... Args>
-    void FatalError(const char* a_fmt, Args... a_args) const
+    inline void FatalError(const char* a_fmt, Args... a_args) const
     {
         gLogger.FatalError(FormatString(a_fmt, "FATAL").c_str(), a_args...);
     }
 
     inline void LogPatchBegin(const char* a_id) const
     {
-        gLogger.Debug("[Patch] [%s] Writing..", a_id);
+        gLogger.Debug(FormatString("[Patch] [%s] Writing..").c_str(), a_id);
     }
 
     inline void LogPatchEnd(const char* a_id) const
     {
-        gLogger.Debug("[Patch] [%s] OK", a_id);
+        gLogger.Debug(FormatString("[Patch] [%s] OK").c_str(), a_id);
     }
 
     FN_NAMEPROC("ILog")
@@ -164,13 +164,13 @@ private:
 
     inline std::string FormatString(const char* a_fmt, const char* a_pfix = nullptr) const
     {
-        std::ostringstream _fmt;
+        std::ostringstream fmt;
 
         if (a_pfix != nullptr)
-            _fmt << "<" << a_pfix << "> ";
+            fmt << "<" << a_pfix << "> ";
 
-        _fmt << "[" << ModuleName() << "] " << a_fmt;
+        fmt << "[" << ModuleName() << "] " << a_fmt;
 
-        return _fmt.str();
+        return fmt.str();
     }
 };

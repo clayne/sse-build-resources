@@ -2,119 +2,9 @@
 
 #include "IMisc.h"
 
-#include <memory>
 #include <unordered_map>
 #include <string>
 #include <sstream>
-#include <fstream>
-#include <common/ICriticalSection.h>
-
-class Logger
-{
-    static constexpr size_t DEFAULT_BUFFER_SIZE = 8192;
-
-    typedef void (*onWriteCallback_t)(char* a_buffer);
-public:
-    enum class LogLevel : int {
-        FatalError = 0,
-        Error,
-        Warning,
-        Message,
-        Debug
-    };
-
-    Logger(size_t a_bufferSize = DEFAULT_BUFFER_SIZE);
-    Logger(LogLevel a_logLevel, size_t a_bufferSize = DEFAULT_BUFFER_SIZE);
-    virtual ~Logger() noexcept;
-
-    bool Open(const char* a_fname);
-    bool Open(const char* a_basepath, const char* a_fname);
-    bool OpenRelative(int a_fid, const char* a_fname);
-    void Close();
-
-    inline void SetLogLevel(LogLevel a_logLevel) {
-        m_logLevel = a_logLevel;
-    }
-
-    template<typename... Args>
-    inline void Debug(const char* a_fmt, Args... a_args)
-    {
-        if (CheckLogLevel(LogLevel::Debug))
-            Write(a_fmt, a_args...);
-    }
-
-    template<typename... Args>
-    inline void Message(const char* a_fmt, Args... a_args)
-    {
-        if (CheckLogLevel(LogLevel::Message))
-            Write(a_fmt, a_args...);
-    }
-
-    template<typename... Args>
-    inline void Warning(const char* a_fmt, Args... a_args)
-    {
-        if (CheckLogLevel(LogLevel::Warning))
-            Write(a_fmt, a_args...);
-    }
-
-    template<typename... Args>
-    inline void Error(const char* a_fmt, Args... a_args)
-    {
-        if (CheckLogLevel(LogLevel::Error))
-            Write(a_fmt, a_args...);
-    }
-
-    template<typename... Args>
-    inline void FatalError(const char* a_fmt, Args... a_args) {
-        Write(a_fmt, a_args...);
-    }
-
-    inline void SetWriteCallback(onWriteCallback_t a_func) {
-        m_onWriteCallback = a_func;
-    }
-
-    static LogLevel TranslateLogLevel(const std::string& a_level);
-
-private:
-
-    typedef std::unordered_map<std::string, LogLevel> logLevelMap_t;
-
-    inline bool CheckLogLevel(LogLevel a_logLevel) const {
-        return Enum::Underlying(m_logLevel) >= Enum::Underlying(a_logLevel);
-    }
-
-    template<typename... Args>
-    void Write(const char* fmt, Args... a_args)
-    {
-        std::unique_ptr<char[]> buffer(new char[m_bufferSize]);
-
-        _snprintf_s(buffer.get(), m_bufferSize, _TRUNCATE, fmt, a_args...);
-
-        try
-        {
-            IScopedCriticalSection _(&m_criticalSection);
-
-            if (m_ofstream.is_open())
-                m_ofstream << buffer.get() << std::endl;
-        }
-        catch (...)
-        {
-        }
-
-        if (m_onWriteCallback != nullptr)
-            m_onWriteCallback(buffer.get());
-    }
-
-    std::ofstream m_ofstream;
-    ICriticalSection m_criticalSection;
-    LogLevel m_logLevel;
-    size_t m_bufferSize;
-    onWriteCallback_t m_onWriteCallback;
-
-    static logLevelMap_t m_logLevelMap;
-};
-
-extern Logger gLogger;
 
 class ILog
 {
@@ -122,42 +12,44 @@ public:
     template<typename... Args>
     inline void Debug(const char* a_fmt, Args... a_args) const
     {
-        gLogger.Debug(FormatString(a_fmt).c_str(), a_args...);
+        gLog.Debug(FormatString(a_fmt).c_str(), a_args...);
     }
 
     template<typename... Args>
     inline void Message(const char* a_fmt, Args... a_args) const
     {
-        gLogger.Message(FormatString(a_fmt).c_str(), a_args...);
+        gLog.Message(FormatString(a_fmt).c_str(), a_args...);
     }
 
     template<typename... Args>
     inline void Warning(const char* a_fmt, Args... a_args) const
     {
-        gLogger.Warning(FormatString(a_fmt, "WARNING").c_str(), a_args...);
+        gLog.Warning(FormatString(a_fmt, "WARNING").c_str(), a_args...);
     }
 
     template<typename... Args>
     inline void Error(const char* a_fmt, Args... a_args) const
     {
-        gLogger.Error(FormatString(a_fmt, "ERROR").c_str(), a_args...);
+        gLog.Error(FormatString(a_fmt, "ERROR").c_str(), a_args...);
     }
 
     template<typename... Args>
     inline void FatalError(const char* a_fmt, Args... a_args) const
     {
-        gLogger.FatalError(FormatString(a_fmt, "FATAL").c_str(), a_args...);
+        gLog.FatalError(FormatString(a_fmt, "FATAL").c_str(), a_args...);
     }
 
     inline void LogPatchBegin(const char* a_id) const
     {
-        gLogger.Debug(FormatString("[Patch] [%s] Writing..").c_str(), a_id);
+        gLog.Debug(FormatString("[Patch] [%s] Writing..").c_str(), a_id);
     }
 
     inline void LogPatchEnd(const char* a_id) const
     {
-        gLogger.Debug(FormatString("[Patch] [%s] OK").c_str(), a_id);
+        gLog.Debug(FormatString("[Patch] [%s] OK").c_str(), a_id);
     }
+
+    static IDebugLog::LogLevel TranslateLogLevel(const std::string& a_level);
 
     FN_NAMEPROC("ILog")
 private:
@@ -173,4 +65,58 @@ private:
 
         return fmt.str();
     }
+
+    typedef std::unordered_map<std::string, IDebugLog::LogLevel> logLevelMap_t;
+    static logLevelMap_t m_logLevelMap;
+
+};
+
+class BackLog
+{
+    typedef std::vector<std::string> vec_t;
+
+    using iterator = typename vec_t::iterator;
+    using const_iterator = typename vec_t::const_iterator;
+
+public:
+
+    BackLog(size_t a_limit) :
+        m_limit(a_limit)
+    {
+    }
+
+    [[nodiscard]] inline const_iterator begin() const noexcept {
+        return m_data.begin();
+    }
+    [[nodiscard]] inline const_iterator end() const noexcept {
+        return m_data.end();
+    }
+
+    inline void Lock() {
+        m_lock.Enter();
+    }
+
+    inline void Unlock() {
+        m_lock.Leave();
+    }
+
+    inline auto& GetLock() {
+        return m_lock;
+    }
+
+    inline void Add(const char* a_string)
+    {
+        m_lock.Enter();
+
+        m_data.emplace_back(a_string);
+        if (m_data.size() > m_limit)
+            m_data.erase(m_data.begin());
+
+        m_lock.Leave();
+    }
+private:
+    ICriticalSection m_lock;
+    std::vector<std::string> m_data;
+
+    size_t m_limit;
 };

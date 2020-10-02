@@ -64,7 +64,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ext\AddressLibrary.h" />
-    <ClInclude Include="ext\IAssert.h" />
     <ClInclude Include="ext\ICommon.h" />
     <ClInclude Include="ext\IHook.h" />
     <ClInclude Include="ext\ILogging.h" />

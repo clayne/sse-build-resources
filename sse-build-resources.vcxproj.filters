@@ -210,9 +210,6 @@
     <ClInclude Include="ext\ILogging.h">
       <Filter>ext</Filter>
     </ClInclude>
-    <ClInclude Include="ext\IAssert.h">
-      <Filter>ext</Filter>
-    </ClInclude>
     <ClInclude Include="ext\IMisc.h">
       <Filter>ext</Filter>
     </ClInclude>

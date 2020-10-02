@@ -41,4 +41,3 @@ namespace except
 #include "Patching.h"
 #include "IHook.h"
 #include "ILogging.h"
-#include "IAssert.h"

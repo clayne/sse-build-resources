@@ -5,86 +5,89 @@
 #include "common/ICriticalSection.h"
 #include "skse64/gamethreads.h"
 
+template <class N>
 class TaskQueueBase
 {
+    using element_type = typename std::remove_reference_t<N>;
+
 public:
-    void AddTask(TaskDelegate* task)
+
+    template <class T, typename... Args, typename = std::enable_if_t<std::is_pointer_v<element_type>>>
+    __forceinline void AddTask(Args&&... a_args)
     {
-        m_taskLock.Enter();
-        m_taskQueue.push(task);
-        m_taskLock.Leave();
+        using alloc_type = typename std::remove_pointer_t<std::remove_reference_t<T>>;
+
+        static_assert(
+            std::is_base_of_v<std::remove_pointer_t<element_type>, alloc_type>);
+
+        m_lock.Enter();
+        m_queue.emplace(new alloc_type(std::forward<Args>(a_args)...));
+        m_lock.Leave();
     }
 
-    inline bool IsTaskQueueEmpty()
+    template <typename... Args, typename = std::enable_if_t<!std::is_pointer_v<element_type>>>
+    __forceinline void AddTask(Args&&... a_args)
     {
-        m_taskLock.Enter();
-        bool r = m_taskQueue.size() == 0;
-        m_taskLock.Leave();
+        m_lock.Enter();
+        m_queue.emplace(element_type{ std::forward<Args>(a_args)... });
+        m_lock.Leave();
+    }
+
+protected:
+    TaskQueueBase() = default;
+
+    __forceinline bool TaskQueueEmpty()
+    {
+        m_lock.Enter();
+        bool r = m_queue.empty();
+        m_lock.Leave();
         return r;
     }
 
-    virtual void ProcessTasks() = 0;
+    std::queue<element_type> m_queue;
+    ICriticalSection m_lock;
 
-protected:
-    std::queue<TaskDelegate*> m_taskQueue;
-    ICriticalSection m_taskLock;
+private:
 
 };
 
 class TaskQueue :
-    public TaskQueueBase
+    public TaskQueueBase<TaskDelegate*>
 {
 public:
 
-    virtual void ProcessTasks()
+    __forceinline void ProcessTasks()
     {
-        while (!IsTaskQueueEmpty())
+        while (!TaskQueueEmpty())
         {
-            m_taskLock.Enter();
-            auto task = m_taskQueue.front();
-            m_taskQueue.pop();
-            m_taskLock.Leave();
+            m_lock.Enter();
+
+            auto task = m_queue.front();
+            m_queue.pop();
+
+            m_lock.Leave();
 
             task->Run();
             task->Dispose();
         }
     }
 
-};
-
-class TaskQueueUnsafe :
-    public TaskQueueBase
-{
-public:
-
-    virtual void ProcessTasks()
+    __forceinline void ClearTasks()
     {
-        m_taskLock.Enter();
+        m_lock.Enter();
 
-        while (m_taskQueue.size())
+        while (!m_queue.empty())
         {
-            auto task = m_taskQueue.front();
-            m_taskQueue.pop();
-
-            task->Run();
-            task->Dispose();
-        }
-
-        m_taskLock.Leave();
-    }
-
-    void ClearTasks()
-    {
-        m_taskLock.Enter();
-        while (m_taskQueue.size()) {
-            auto task = m_taskQueue.front();
-            m_taskQueue.pop();
+            auto task = m_queue.front();
+            m_queue.pop();
 
             task->Dispose();
         }
-        m_taskLock.Leave();
+
+        m_lock.Leave();
     }
 };
+
 
 class TaskDelegateFixed
 {

@@ -80,6 +80,8 @@ class BackLog
 
 public:
 
+    using size_type = vec_t::size_type;
+
     BackLog(size_t a_limit) :
         m_limit(a_limit)
     {
@@ -106,17 +108,26 @@ public:
 
     inline void Add(const char* a_string)
     {
-        m_lock.Enter();
+        IScopedCriticalSection _(&m_lock);
 
         m_data.emplace_back(a_string);
         if (m_data.size() > m_limit)
             m_data.erase(m_data.begin());
-
-        m_lock.Leave();
     }
+
+    inline void SetLimit(size_type a_limit)
+    {
+        IScopedCriticalSection _(&m_lock);
+
+        m_limit = std::max<size_type>(a_limit, 1);
+
+        while (m_data.size() > m_limit)
+            m_data.erase(m_data.begin());
+    }
+
 private:
     ICriticalSection m_lock;
-    std::vector<std::string> m_data;
 
-    size_t m_limit;
+    vec_t m_data;
+    size_type m_limit;
 };

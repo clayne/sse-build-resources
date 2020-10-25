@@ -33,6 +33,14 @@ public:
         m_lock.Leave();
     }
 
+    template <typename = std::enable_if_t<std::is_pointer_v<element_type>>>
+    __forceinline void AddTask(element_type a_item)
+    {
+        m_lock.Enter();
+        m_queue.emplace(a_item);
+        m_lock.Leave();
+    }
+
 protected:
     TaskQueueBase() = default;
 
@@ -87,7 +95,6 @@ public:
         m_lock.Leave();
     }
 };
-
 
 class TaskDelegateFixed
 {

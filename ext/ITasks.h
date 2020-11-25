@@ -13,7 +13,7 @@ class TaskQueueBase
 public:
 
     template <class T, typename... Args, typename = std::enable_if_t<std::is_pointer_v<element_type>>>
-    __forceinline void AddTask(Args&&... a_args)
+    SKMP_FORCEINLINE void AddTask(Args&&... a_args)
     {
         using alloc_type = typename std::remove_pointer_t<std::remove_reference_t<T>>;
 
@@ -26,7 +26,7 @@ public:
     }
 
     template <typename... Args, typename = std::enable_if_t<!std::is_pointer_v<element_type>>>
-    __forceinline void AddTask(Args&&... a_args)
+    SKMP_FORCEINLINE void AddTask(Args&&... a_args)
     {
         m_lock.Enter();
         m_queue.emplace(element_type{ std::forward<Args>(a_args)... });
@@ -34,7 +34,7 @@ public:
     }
 
     template <typename = std::enable_if_t<std::is_pointer_v<element_type>>>
-    __forceinline void AddTask(element_type a_item)
+    SKMP_FORCEINLINE void AddTask(element_type a_item)
     {
         m_lock.Enter();
         m_queue.emplace(a_item);
@@ -44,7 +44,7 @@ public:
 protected:
     TaskQueueBase() = default;
 
-    __forceinline bool TaskQueueEmpty()
+    SKMP_FORCEINLINE bool TaskQueueEmpty()
     {
         m_lock.Enter();
         bool r = m_queue.empty();
@@ -64,7 +64,7 @@ class TaskQueue :
 {
 public:
 
-    __forceinline void ProcessTasks()
+    SKMP_FORCEINLINE void ProcessTasks()
     {
         while (!TaskQueueEmpty())
         {
@@ -80,7 +80,7 @@ public:
         }
     }
 
-    __forceinline void ClearTasks()
+    SKMP_FORCEINLINE void ClearTasks()
     {
         m_lock.Enter();
 

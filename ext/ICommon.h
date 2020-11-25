@@ -2,6 +2,9 @@
 
 #define FN_NAMEPROC(x) virtual const char *ModuleName() const { return x; };
 
+#define SKMP_FORCEINLINE __forceinline
+#define SKMP_ALIGN(x,y) __declspec(align(y)) x
+
 #include <string>
 #include <exception>
 
@@ -10,22 +13,26 @@ namespace except
     class descriptor
     {
     public:
-        descriptor() noexcept
-        {
-        }
+        descriptor() noexcept = default;
 
-        descriptor(std::exception const& a_rhs) noexcept
+        SKMP_FORCEINLINE descriptor(std::exception const& a_rhs) noexcept
         {
             m_desc = a_rhs.what();
         }
 
-        descriptor& operator=(std::exception const& a_rhs) noexcept
+        SKMP_FORCEINLINE descriptor& operator=(std::exception const& a_rhs) noexcept
         {
             m_desc = a_rhs.what();
             return *this;
         }
 
-        inline const char* what() const noexcept {
+        SKMP_FORCEINLINE descriptor& operator=(const char* a_desc)
+        {
+            m_desc = a_desc;
+            return *this;
+        }
+
+        SKMP_FORCEINLINE const char* what() const noexcept {
             return m_desc.c_str();
         }
 
@@ -57,78 +64,78 @@ public:
 
     virtual ~SelectedItem() noexcept = default;
 
-    inline void Set(const T& a_rhs) {
+    SKMP_FORCEINLINE void Set(const T& a_rhs) {
         m_isSelected = true;
         m_item = a_rhs;
     }
 
-    inline void Set(T&& a_rhs) {
+    SKMP_FORCEINLINE void Set(T&& a_rhs) {
         m_isSelected = true;
         m_item = std::forward<T>(a_rhs);
     }
 
-    inline SelectedItem<T>& operator=(const T& a_rhs) {
+    SKMP_FORCEINLINE SelectedItem<T>& operator=(const T& a_rhs) {
         m_isSelected = true;
         m_item = a_rhs;
         return *this;
     }
 
-    inline SelectedItem<T>& operator=(T&& a_rhs) {
+    SKMP_FORCEINLINE SelectedItem<T>& operator=(T&& a_rhs) {
         m_isSelected = true;
         m_item = std::forward<T>(a_rhs);
         return *this;
     }
 
-    inline bool operator==(const T& a_rhs) const {
+    SKMP_FORCEINLINE bool operator==(const T& a_rhs) const {
         if (!m_isSelected)
             return false;
 
         return m_item == a_rhs;
     }
 
-    inline bool operator!=(const T& a_rhs) const {
+    SKMP_FORCEINLINE bool operator!=(const T& a_rhs) const {
         if (!m_isSelected)
             return true;
 
         return m_item != a_rhs;
     }
 
-    inline bool operator==(const SelectedItem<T>& a_rhs) const {
+    SKMP_FORCEINLINE bool operator==(const SelectedItem<T>& a_rhs) const {
         if (!m_isSelected)
             return false;
 
         return m_item == a_rhs.m_item;
     }
 
-    inline void Clear() noexcept {
+    SKMP_FORCEINLINE void Clear() noexcept {
         m_isSelected = false;
     }
 
-    [[nodiscard]] inline const T& Get() const noexcept {
+    [[nodiscard]] SKMP_FORCEINLINE const T& Get() const noexcept {
         return m_item;
     }
 
-    [[nodiscard]] inline const T& operator*() const noexcept {
+    [[nodiscard]] SKMP_FORCEINLINE const T& operator*() const noexcept {
         return m_item;
     }
 
-    [[nodiscard]] inline T& operator*() noexcept {
+    [[nodiscard]] SKMP_FORCEINLINE T& operator*() noexcept {
         return m_item;
     }
 
-    [[nodiscard]] inline const T* operator->() const noexcept {
+    [[nodiscard]] SKMP_FORCEINLINE const T* operator->() const noexcept {
         return std::addressof(m_item);
     }
 
-    [[nodiscard]] inline T* operator->() noexcept {
+    [[nodiscard]] SKMP_FORCEINLINE T* operator->() noexcept {
         return std::addressof(m_item);
     }
 
-    [[nodiscard]] inline bool Has() const noexcept {
+    [[nodiscard]] SKMP_FORCEINLINE bool Has() const noexcept {
         return m_isSelected;
     }
 
-    [[nodiscard]] inline explicit operator bool() const noexcept {
+    [[nodiscard]] SKMP_FORCEINLINE explicit operator bool() const noexcept {
         return m_isSelected;
     }
 

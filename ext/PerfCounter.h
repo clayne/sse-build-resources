@@ -3,21 +3,21 @@
 class PerfCounter
 {
 public:
-    inline static float delta(long long tp1, long long tp2) {
+    SKMP_FORCEINLINE static float delta(long long tp1, long long tp2) {
         return static_cast<float>(static_cast<double>(tp2 - tp1) / perf_freqf);
     }
 
-    inline static long long delta_us(long long tp1, long long tp2) {
+    SKMP_FORCEINLINE static long long delta_us(long long tp1, long long tp2) {
         return ((tp2 - tp1) * 1000000LL) / perf_freq.QuadPart;
     }
 
-    inline static long long Query() {
+    SKMP_FORCEINLINE static long long Query() {
         LARGE_INTEGER t;
         QueryPerformanceCounter(&t);
         return t.QuadPart;
     }
 
-    inline static long long T(long long tp)
+    SKMP_FORCEINLINE static long long T(long long tp)
     {
         return (perf_freq.QuadPart / 1000000LL) * tp;
     }
@@ -37,12 +37,12 @@ public:
     {
     }
 
-    inline void Start()
+    SKMP_FORCEINLINE void Start()
     {
         m_tStart = PerfCounter::Query();
     }
 
-    inline float Stop()
+    SKMP_FORCEINLINE float Stop()
     {
         return PerfCounter::delta(m_tStart, PerfCounter::Query());
     }
@@ -61,12 +61,12 @@ public:
     {
     }
 
-    inline void Begin()
+    SKMP_FORCEINLINE void Begin()
     {
         m_tStart = PerfCounter::Query();
     }
 
-    inline bool End(long long& a_out)
+    SKMP_FORCEINLINE bool End(long long& a_out)
     {
         auto tEnd = PerfCounter::Query();
         m_tAccum += PerfCounter::delta_us(m_tStart, tEnd);
@@ -95,19 +95,19 @@ public:
         return false;
     }
 
-    inline void SetInterval(long long a_interval)
+    SKMP_FORCEINLINE void SetInterval(long long a_interval)
     {
         m_interval = a_interval;
     }
 
-    inline void Reset()
+    SKMP_FORCEINLINE void Reset()
     {
         m_tIntervalBegin = PerfCounter::Query();
         m_tAccum = 0;
         m_tCounter = 0;
     }
 
-    inline long long GetIntervalTime() const {
+    SKMP_FORCEINLINE long long GetIntervalTime() const {
         return m_tInterval;
     }
 

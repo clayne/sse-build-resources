@@ -10,41 +10,41 @@ class ILog
 {
 public:
     template<typename... Args>
-    inline void Debug(const char* a_fmt, Args... a_args) const
+    SKMP_FORCEINLINE void Debug(const char* a_fmt, Args... a_args) const
     {
         gLog.Debug(FormatString(a_fmt).c_str(), a_args...);
     }
 
     template<typename... Args>
-    inline void Message(const char* a_fmt, Args... a_args) const
+    SKMP_FORCEINLINE void Message(const char* a_fmt, Args... a_args) const
     {
         gLog.Message(FormatString(a_fmt).c_str(), a_args...);
     }
 
     template<typename... Args>
-    inline void Warning(const char* a_fmt, Args... a_args) const
+    SKMP_FORCEINLINE void Warning(const char* a_fmt, Args... a_args) const
     {
         gLog.Warning(FormatString(a_fmt, "WARNING").c_str(), a_args...);
     }
 
     template<typename... Args>
-    inline void Error(const char* a_fmt, Args... a_args) const
+    SKMP_FORCEINLINE void Error(const char* a_fmt, Args... a_args) const
     {
         gLog.Error(FormatString(a_fmt, "ERROR").c_str(), a_args...);
     }
 
     template<typename... Args>
-    inline void FatalError(const char* a_fmt, Args... a_args) const
+    SKMP_FORCEINLINE void FatalError(const char* a_fmt, Args... a_args) const
     {
         gLog.FatalError(FormatString(a_fmt, "FATAL").c_str(), a_args...);
     }
 
-    inline void LogPatchBegin(const char* a_id) const
+    SKMP_FORCEINLINE void LogPatchBegin(const char* a_id) const
     {
         gLog.Debug(FormatString("[Patch] [%s] Writing..").c_str(), a_id);
     }
 
-    inline void LogPatchEnd(const char* a_id) const
+    SKMP_FORCEINLINE void LogPatchEnd(const char* a_id) const
     {
         gLog.Debug(FormatString("[Patch] [%s] OK").c_str(), a_id);
     }
@@ -54,7 +54,7 @@ public:
     FN_NAMEPROC("ILog")
 private:
 
-    inline std::string FormatString(const char* a_fmt, const char* a_pfix = nullptr) const
+    SKMP_FORCEINLINE std::string FormatString(const char* a_fmt, const char* a_pfix = nullptr) const
     {
         std::ostringstream fmt;
 
@@ -87,26 +87,26 @@ public:
     {
     }
 
-    [[nodiscard]] inline const_iterator begin() const noexcept {
+    [[nodiscard]] SKMP_FORCEINLINE const_iterator begin() const noexcept {
         return m_data.begin();
     }
-    [[nodiscard]] inline const_iterator end() const noexcept {
+    [[nodiscard]] SKMP_FORCEINLINE const_iterator end() const noexcept {
         return m_data.end();
     }
 
-    inline void Lock() {
+    SKMP_FORCEINLINE void Lock() {
         m_lock.Enter();
     }
 
-    inline void Unlock() {
+    SKMP_FORCEINLINE void Unlock() {
         m_lock.Leave();
     }
 
-    inline auto& GetLock() {
+    SKMP_FORCEINLINE auto& GetLock() {
         return m_lock;
     }
 
-    inline void Add(const char* a_string)
+    SKMP_FORCEINLINE void Add(const char* a_string)
     {
         IScopedCriticalSection _(&m_lock);
 
@@ -115,7 +115,7 @@ public:
             m_data.erase(m_data.begin());
     }
 
-    inline void SetLimit(size_type a_limit)
+    SKMP_FORCEINLINE void SetLimit(size_type a_limit)
     {
         IScopedCriticalSection _(&m_lock);
 

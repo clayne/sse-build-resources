@@ -3,7 +3,7 @@
 #define FN_NAMEPROC(x) virtual const char *ModuleName() const { return x; };
 
 #define SKMP_FORCEINLINE __forceinline
-#define SKMP_ALIGN(x,y) __declspec(align(y)) x
+#define SKMP_ALIGN(x) __declspec(align(x))
 
 #include <string>
 #include <exception>
@@ -13,14 +13,17 @@ namespace except
     class descriptor
     {
     public:
-        descriptor() noexcept = default;
+        SKMP_FORCEINLINE descriptor() :
+            m_desc(std::exception().what())
+        {
+        }
 
-        SKMP_FORCEINLINE descriptor(std::exception const& a_rhs) noexcept
+        SKMP_FORCEINLINE descriptor(std::exception const& a_rhs)
         {
             m_desc = a_rhs.what();
         }
 
-        SKMP_FORCEINLINE descriptor& operator=(std::exception const& a_rhs) noexcept
+        SKMP_FORCEINLINE descriptor& operator=(std::exception const& a_rhs)
         {
             m_desc = a_rhs.what();
             return *this;
@@ -144,6 +147,9 @@ private:
     bool m_isSelected;
 };
 
+#include "Mem.h"
+#include "STL.h"
+#include "Hash.h"
 #include "IMisc.h"
 #include "PerfCounter.h"
 #include "AddressLibrary.h"

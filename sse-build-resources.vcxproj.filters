@@ -216,6 +216,15 @@
     <ClInclude Include="ext\INIReader.h">
       <Filter>ext</Filter>
     </ClInclude>
+    <ClInclude Include="ext\Hash.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\Mem.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\STL.h">
+      <Filter>ext</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ext\AddressLibrary.cpp">
@@ -399,6 +408,9 @@
       <Filter>ext</Filter>
     </ClCompile>
     <ClCompile Include="ext\ILogging.cpp">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\Mem.cpp">
       <Filter>ext</Filter>
     </ClCompile>
   </ItemGroup>

@@ -6,6 +6,8 @@
 #include <string>
 #include <sstream>
 
+#include "skse64/common/IDebugLog.h"
+
 class ILog
 {
 public:

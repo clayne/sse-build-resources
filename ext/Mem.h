@@ -159,3 +159,13 @@ namespace mem
     };
 
 };
+
+#define SKMP_DECLARE_ALIGNED_ALLOCATOR(x)                                                                     \
+	SKMP_FORCEINLINE void *operator new(size_t sizeInBytes) { void* const ptr = _mm_malloc(sizeInBytes, x); return ptr ? ptr : throw std::bad_alloc(); }   \
+	SKMP_FORCEINLINE void operator delete(void *ptr) { _mm_free(ptr); }                              \
+	SKMP_FORCEINLINE void *operator new(size_t, void *ptr) { return ptr; }                                \
+	SKMP_FORCEINLINE void operator delete(void *, void *) {}                                              \
+	SKMP_FORCEINLINE void *operator new[](size_t sizeInBytes) { void* const ptr = _mm_malloc(sizeInBytes, x); return ptr ? ptr : throw std::bad_alloc(); } \
+	SKMP_FORCEINLINE void operator delete[](void *ptr) { _mm_free(ptr); }                            \
+	SKMP_FORCEINLINE void *operator new[](size_t, void *ptr) { return ptr; }                              \
+	SKMP_FORCEINLINE void operator delete[](void *, void *) {}

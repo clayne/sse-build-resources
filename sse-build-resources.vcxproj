@@ -77,6 +77,7 @@
     <ClInclude Include="ext\PerfCounter.h" />
     <ClInclude Include="ext\RTTI.h" />
     <ClInclude Include="ext\STL.h" />
+    <ClInclude Include="ext\StrHelpers.h" />
     <ClInclude Include="ext\versiondb.h" />
     <ClInclude Include="skse64\skse64\skse64\BSModelDB.h" />
     <ClInclude Include="skse64\skse64\skse64\GameAPI.h" />
@@ -459,6 +460,13 @@
     <VcpkgTriplet>x64-windows-rel-static</VcpkgTriplet>
     <VcpkgConfiguration>Release</VcpkgConfiguration>
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release MT|x64'">
+    <VcpkgTriplet>x64-windows-rel-static</VcpkgTriplet>
+    <VcpkgConfiguration>Release</VcpkgConfiguration>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnabled>false</VcpkgEnabled>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -517,15 +525,15 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(ProjectDir)\skse64;$(ProjectDir)\skse64\skse64\;$(ProjectDir)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>common/IPrefix.h;ext/ICommon.h</ForcedIncludeFiles>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <UseFullPaths>false</UseFullPaths>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <IntelJCCErratum>true</IntelJCCErratum>
-      <DebugInformationFormat>None</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <StringPooling>true</StringPooling>
-      <AdditionalOptions>/Ob3 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Ob3 /permissive %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

@@ -13,6 +13,7 @@ namespace except
     class descriptor
     {
     public:
+
         SKMP_FORCEINLINE descriptor() :
             m_desc(std::exception().what())
         {
@@ -48,18 +49,18 @@ template <class T>
 class SelectedItem
 {
 public:
-    SelectedItem() :
+    SKMP_FORCEINLINE SelectedItem() :
         m_isSelected(false)
     {
     }
 
-    SelectedItem(const T& a_rhs) :
+    SKMP_FORCEINLINE SelectedItem(const T& a_rhs) :
         m_isSelected(true),
         m_item(a_rhs)
     {
     }
 
-    SelectedItem(T&& a_rhs) :
+    SKMP_FORCEINLINE SelectedItem(T&& a_rhs) :
         m_isSelected(true),
         m_item(a_rhs)
     {
@@ -74,40 +75,31 @@ public:
 
     SKMP_FORCEINLINE void Set(T&& a_rhs) {
         m_isSelected = true;
-        m_item = std::forward<T>(a_rhs);
+        m_item = std::move(a_rhs);
     }
 
     SKMP_FORCEINLINE SelectedItem<T>& operator=(const T& a_rhs) {
-        m_isSelected = true;
         m_item = a_rhs;
+        m_isSelected = true;
         return *this;
     }
 
     SKMP_FORCEINLINE SelectedItem<T>& operator=(T&& a_rhs) {
+        m_item = std::move(a_rhs);
         m_isSelected = true;
-        m_item = std::forward<T>(a_rhs);
         return *this;
     }
 
     SKMP_FORCEINLINE bool operator==(const T& a_rhs) const {
-        if (!m_isSelected)
-            return false;
-
-        return m_item == a_rhs;
+        return m_isSelected && m_item == a_rhs;
     }
 
     SKMP_FORCEINLINE bool operator!=(const T& a_rhs) const {
-        if (!m_isSelected)
-            return true;
-
-        return m_item != a_rhs;
+        return !m_isSelected || m_item != a_rhs;
     }
 
     SKMP_FORCEINLINE bool operator==(const SelectedItem<T>& a_rhs) const {
-        if (!m_isSelected)
-            return false;
-
-        return m_item == a_rhs.m_item;
+        return m_isSelected && m_item == a_rhs.m_item;
     }
 
     SKMP_FORCEINLINE void Clear() noexcept {
@@ -140,6 +132,10 @@ public:
 
     [[nodiscard]] SKMP_FORCEINLINE explicit operator bool() const noexcept {
         return m_isSelected;
+    }
+
+    SKMP_FORCEINLINE void Mark(bool a_switch) {
+        m_isSelected = a_switch;
     }
 
 private:

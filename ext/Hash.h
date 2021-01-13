@@ -4,8 +4,6 @@
 
 #include "Mem.h"
 
-#include <boost/container_hash/hash.hpp>
-
 #define ERRMSG_HASH_NOT_IMPL "Not implemented"
 
 namespace hash
@@ -88,7 +86,7 @@ namespace hash
         }
     };
 
-    struct ihash
+    /*struct ihash
     {
         template <class T, is_char_t<T> = 0>
         std::size_t operator()(std::basic_string<T> const& a_in) const
@@ -152,7 +150,7 @@ namespace hash
             static_assert(false, ERRMSG_HASH_NOT_IMPL);
             return 0;
         }
-    };
+    };*/
 
     namespace fnv1
     {

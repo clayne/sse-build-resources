@@ -225,6 +225,9 @@
     <ClInclude Include="ext\STL.h">
       <Filter>ext</Filter>
     </ClInclude>
+    <ClInclude Include="ext\StrHelpers.h">
+      <Filter>ext</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ext\AddressLibrary.cpp">

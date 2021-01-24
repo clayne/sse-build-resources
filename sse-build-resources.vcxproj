@@ -41,6 +41,10 @@
       <Configuration>PreRelease</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Release DT|x64">
+      <Configuration>Release DT</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release MT|x64">
       <Configuration>Release MT</Configuration>
       <Platform>x64</Platform>
@@ -64,6 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ext\AddressLibrary.h" />
+    <ClInclude Include="ext\GameHandles.h" />
     <ClInclude Include="ext\Hash.h" />
     <ClInclude Include="ext\ICommon.h" />
     <ClInclude Include="ext\IHook.h" />
@@ -72,9 +77,11 @@
     <ClInclude Include="ext\INIReader.h" />
     <ClInclude Include="ext\ITasks.h" />
     <ClInclude Include="ext\JITASM.h" />
+    <ClInclude Include="ext\Math.h" />
     <ClInclude Include="ext\Mem.h" />
     <ClInclude Include="ext\Patching.h" />
     <ClInclude Include="ext\PerfCounter.h" />
+    <ClInclude Include="ext\PW.h" />
     <ClInclude Include="ext\RTTI.h" />
     <ClInclude Include="ext\STL.h" />
     <ClInclude Include="ext\StrHelpers.h" />
@@ -138,6 +145,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ext\AddressLibrary.cpp" />
+    <ClCompile Include="ext\GameHandles.cpp" />
     <ClCompile Include="ext\IHook.cpp" />
     <ClCompile Include="ext\ILogging.cpp" />
     <ClCompile Include="ext\JITASM.cpp" />
@@ -235,6 +243,13 @@
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release MT|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release DT|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
@@ -348,6 +363,9 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release MT|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release DT|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Dep-SSE2|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -392,6 +410,9 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release MT|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release DT|x64'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dep-SSE2|x64'">
@@ -464,8 +485,12 @@
     <VcpkgTriplet>x64-windows-rel-static</VcpkgTriplet>
     <VcpkgConfiguration>Release</VcpkgConfiguration>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release DT|x64'" Label="Vcpkg">
+    <VcpkgTriplet>x64-windows-rel-static</VcpkgTriplet>
+    <VcpkgConfiguration>Release</VcpkgConfiguration>
+  </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
-    <VcpkgEnabled>false</VcpkgEnabled>
+    <VcpkgEnabled>true</VcpkgEnabled>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -534,6 +559,35 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <StringPooling>true</StringPooling>
       <AdditionalOptions>/Ob3 /permissive %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release DT|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;NDEBUG;SSEBUILDRESOURCES_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>false</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(ProjectDir)\skse64;$(ProjectDir)\skse64\skse64\;$(ProjectDir)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>common/IPrefix.h;ext/ICommon.h</ForcedIncludeFiles>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <UseFullPaths>false</UseFullPaths>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <IntelJCCErratum>true</IntelJCCErratum>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <StringPooling>true</StringPooling>
+      <AdditionalOptions>/permissive %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

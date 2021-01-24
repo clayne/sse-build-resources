@@ -2,13 +2,13 @@
 
 #include <queue>
 
-#include "common/ICriticalSection.h"
-#include "skse64/gamethreads.h"
+#include <common/ICriticalSection.h>
+#include <skse64/gamethreads.h>
 
 template <class N>
 class TaskQueueBase
 {
-    using element_type = typename std::remove_reference_t<N>;
+    using element_type = typename std::remove_reference_t<std::remove_cv_t<N>>;
 
 public:
 
@@ -20,25 +20,22 @@ public:
         static_assert(
             std::is_base_of_v<std::remove_pointer_t<element_type>, alloc_type>);
 
-        m_lock.Enter();
+        IScopedCriticalSection _(&m_lock);
         m_queue.emplace(new alloc_type(std::forward<Args>(a_args)...));
-        m_lock.Leave();
     }
 
     template <typename... Args, typename = std::enable_if_t<!std::is_pointer_v<element_type>>>
     SKMP_FORCEINLINE void AddTask(Args&&... a_args)
     {
-        m_lock.Enter();
+        IScopedCriticalSection _(&m_lock);
         m_queue.emplace(element_type{ std::forward<Args>(a_args)... });
-        m_lock.Leave();
     }
 
     template <typename = std::enable_if_t<std::is_pointer_v<element_type>>>
     SKMP_FORCEINLINE void AddTask(element_type a_item)
     {
-        m_lock.Enter();
+        IScopedCriticalSection _(&m_lock);
         m_queue.emplace(a_item);
-        m_lock.Leave();
     }
 
 protected:
@@ -46,10 +43,8 @@ protected:
 
     SKMP_FORCEINLINE bool TaskQueueEmpty()
     {
-        m_lock.Enter();
-        bool r = m_queue.empty();
-        m_lock.Leave();
-        return r;
+        IScopedCriticalSection _(&m_lock);
+        return m_queue.empty();
     }
 
     std::queue<element_type> m_queue;
@@ -82,7 +77,7 @@ public:
 
     SKMP_FORCEINLINE void ClearTasks()
     {
-        m_lock.Enter();
+        IScopedCriticalSection _(&m_lock);
 
         while (!m_queue.empty())
         {
@@ -92,7 +87,6 @@ public:
             task->Dispose();
         }
 
-        m_lock.Leave();
     }
 };
 

@@ -144,12 +144,14 @@ private:
 };
 
 #include "Mem.h"
-#include "STL.h"
 #include "Hash.h"
+#include "STL.h"
 #include "IMisc.h"
+#include "Math.h"
 #include "PerfCounter.h"
 #include "AddressLibrary.h"
 #include "RTTI.h"
 #include "Patching.h"
 #include "IHook.h"
 #include "ILogging.h"
+#include "GameHandles.h"

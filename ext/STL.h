@@ -1,15 +1,12 @@
 #pragma once
 
 #include "Mem.h"
+#include "Hash.h"
 
 #include <unordered_set>
 #include <set>
 #include <unordered_map>
 #include <map>
-#include <vector>
-#include <string>
-#include <sstream>
-//#include <codecvt>
 
 namespace stl
 {
@@ -28,27 +25,16 @@ namespace stl
     template <class V, class A = mem::aligned_allocator<V, 32>>
     using vector = std::vector<V, A>;
 
-    template <class C, class T = std::char_traits<C>, class A = mem::aligned_allocator<C, 32>>
-    using basic_string = std::basic_string<C, T, A>;
+    template <class K, class V, class A = mem::aligned_allocator<std::pair<const K, V>, 32>>
+    using iunordered_map = std::unordered_map<K, V, hash::i_fnv_1a, hash::iequal_to, A>;
 
-    template <class C, class T = std::char_traits<C>, class A = mem::aligned_allocator<C, 32>>
-    using basic_ostringstream = std::basic_ostringstream<C, T, A>;
+    template <class K, class V, class A = mem::aligned_allocator<std::pair<const K, V>, 32>>
+    using imap = std::map<K, V, hash::icase_comp, A>;
 
-    template <class C, class T = std::char_traits<C>, class A = mem::aligned_allocator<C, 32>>
-    using basic_istringstream = std::basic_istringstream<C, T, A>;
+    template <class K, class A = mem::aligned_allocator<K, 32>>
+    using iunordered_set = std::unordered_set<K, hash::i_fnv_1a, hash::iequal_to, A>;
 
-    template <class C, class T = std::char_traits<C>, class A = mem::aligned_allocator<C, 32>>
-    using basic_stringstream = std::basic_stringstream<C, T, A>;
-
-    using string = basic_string<char, std::char_traits<char>>;
-    using wstring = basic_string<wchar_t, std::char_traits<wchar_t>>;
-
-    /*template <class C, class D, class Aw = mem::aligned_allocator<D, 32>, class Ab = mem::aligned_allocator<char, 32>>
-    using wstring_convert = std::wstring_convert<C, D, Aw, Ab>;*/
-
-    using ostringstream = basic_ostringstream<char, std::char_traits<char>>;
-    using istringstream = basic_istringstream<char, std::char_traits<char>>;
-    using wistringstream = basic_istringstream<wchar_t, std::char_traits<wchar_t>>;
-    using stringstream = basic_stringstream<char, std::char_traits<char>>;
+    template <class K, class A = mem::aligned_allocator<K, 32>>
+    using iset = std::set<K, hash::icase_comp, A>;
 
 }

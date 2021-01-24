@@ -228,6 +228,15 @@
     <ClInclude Include="ext\StrHelpers.h">
       <Filter>ext</Filter>
     </ClInclude>
+    <ClInclude Include="ext\Math.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\GameHandles.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\PW.h">
+      <Filter>ext</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ext\AddressLibrary.cpp">
@@ -414,6 +423,9 @@
       <Filter>ext</Filter>
     </ClCompile>
     <ClCompile Include="ext\Mem.cpp">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\GameHandles.cpp">
       <Filter>ext</Filter>
     </ClCompile>
   </ItemGroup>

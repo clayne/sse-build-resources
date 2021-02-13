@@ -23,8 +23,52 @@ private:
     static IRTTI m_Instance;
 };
 
-namespace RTTI
+#include <skse64/NiTypes.h>
+
+template <class T>
+struct RTTI
 {
+private:
+    template <class A>
+    using strip_type = std::remove_cv_t<std::remove_all_extents_t<std::remove_reference_t<A>>>;
+
+    using to_type = strip_type<T>;
+
+public:
+
+    template <class U>
+    static to_type* Cast(U* a_from)
+    {
+        using from_type = strip_type<U>;
+
+        return static_cast<to_type*>(IRTTI::Cast<to_type>(static_cast<void*>(a_from), from_type::RTTI, to_type::RTTI));
+    }
+
+    template <class U>
+    to_type* operator()(U* a_from)
+    {
+        return Cast<U>(a_from);
+    }
+
+    template <class U>
+    static to_type* Cast(NiPointer<U>& a_from)
+    {
+        using from_type = strip_type<U>;
+
+        return static_cast<to_type*>(IRTTI::Cast<to_type>(static_cast<void*>(a_from.get()), from_type::RTTI, to_type::RTTI));
+    }
+
+    template <class U>
+    to_type* operator()(NiPointer<U>& a_from)
+    {
+        return Cast<U>(a_from);
+    }
+};
+
+
+namespace RTTI_IID
+{
+   
     constexpr uint32_t BaseFormComponent = 0;
     constexpr uint32_t IFormFactory = 1;
     constexpr uint32_t AlchemyItem = 2;

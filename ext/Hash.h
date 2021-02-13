@@ -11,7 +11,6 @@
 
 namespace hash
 {
-
     template <class _Ty, class... _Types>
     inline constexpr bool is_any_base_of_v =
         std::disjunction_v<std::is_base_of<_Types, _Ty>...>;
@@ -91,10 +90,9 @@ namespace hash
         }
 
         template <class T>
-        bool operator() (const T&, const T&) const
+        __declspec(noreturn) bool operator() (const T&, const T&) const
         {
             static_assert(false, ERRMSG_HASH_NOT_IMPL);
-            return false;
         }
     };
 
@@ -103,45 +101,62 @@ namespace hash
         template <class T, class U, is_pair_int_char_t<T, U> = 0>
         bool operator()(std::pair<T, std::basic_string<U>> const& a_lhs, std::pair<T, std::basic_string<U>> const& a_rhs) const
         {
-            return a_lhs.first == a_rhs.first && _stricmp(a_lhs.second.c_str(), a_rhs.second.c_str()) == 0;
+            if (a_lhs.first != a_rhs.first)
+                return false;
+
+            if (a_lhs.second.size() != a_rhs.second.size())
+                return false;
+
+            return _stricmp(a_lhs.second.c_str(), a_rhs.second.c_str()) == 0;
         }
 
         template <class T, class U, is_pair_int_wchar_t<T, U> = 0>
         bool operator()(std::pair<T, std::basic_string<U>> const& a_lhs, std::pair<T, std::basic_string<U>> const& a_rhs) const
         {
-            return a_lhs.first == a_rhs.first && _wcsicmp(a_lhs.second.c_str(), a_rhs.second.c_str()) == 0;
+            if (a_lhs.first != a_rhs.first)
+                return false;
+
+            if (a_lhs.second.size() != a_rhs.second.size())
+                return false;
+
+            return _wcsicmp(a_lhs.second.c_str(), a_rhs.second.c_str()) == 0;
         }
 
         template <class T, is_char_t<T> = 0>
         bool operator()(std::basic_string<T> const& a_lhs, std::basic_string<T> const& a_rhs) const
         {
+            if (a_lhs.size() != a_rhs.size())
+                return false;
+
             return _stricmp(a_lhs.c_str(), a_rhs.c_str()) == 0;
         }
 
         template <class T, is_wchar_t<T> = 0>
         bool operator()(std::basic_string<T> const& a_lhs, std::basic_string<T> const& a_rhs) const
         {
+            if (a_lhs.size() != a_rhs.size())
+                return false;
+
             return _wcsicmp(a_lhs.c_str(), a_rhs.c_str()) == 0;
         }
 
         template <class T>
-        bool operator() (const T&, const T&) const
+        __declspec(noreturn) bool operator() (const T&, const T&) const
         {
             static_assert(false, ERRMSG_HASH_NOT_IMPL);
-            return false;
         }
     };
 
     namespace fnv1
     {
         // 64 bit
-        static inline constexpr std::size_t fnv_prime = 1099511628211u;
-        static inline constexpr std::size_t fnv_offset_basis = 14695981039346656037u;
+        static inline constexpr std::size_t fnv_prime = 1099511628211ui64;
+        static inline constexpr std::size_t fnv_offset_basis = 14695981039346656037ui64;
 
         __forceinline std::size_t _append_hash_bytes_fnv1a(std::size_t a_hash, const uint8_t* const a_in, std::size_t a_size)
         {
             for (std::size_t i = 0; i < a_size; i++) {
-                a_hash ^= a_in[i];
+                a_hash ^= static_cast<std::size_t>(a_in[i]);
                 a_hash *= fnv_prime;
             }
 
@@ -152,7 +167,7 @@ namespace hash
         {
             for (std::size_t i = 0; i < a_size; i++) {
                 a_hash *= fnv_prime;
-                a_hash ^= a_in[i];
+                a_hash ^= static_cast<std::size_t>(a_in[i]);
             }
 
             return a_hash;
@@ -170,7 +185,7 @@ namespace hash
                 for (auto e : a_in.second)
                 {
                     hash *= fnv_prime;
-                    hash ^= static_cast<uint8_t>(std::toupper(int(e)));
+                    hash ^= static_cast<std::size_t>(std::toupper(int(e)));
                 }
 
                 return hash;
@@ -188,9 +203,9 @@ namespace hash
                     auto c = std::towupper(static_cast<std::wint_t>(e));
 
                     hash *= fnv_prime;
-                    hash ^= static_cast<uint8_t>((c & 0xFF00) >> 8);
+                    hash ^= static_cast<std::size_t>((c & 0xFF00) >> 8);
                     hash *= fnv_prime;
-                    hash ^= static_cast<uint8_t>(c & 0x00FF);
+                    hash ^= static_cast<std::size_t>(c & 0x00FF);
                 }
 
                 return hash;
@@ -204,7 +219,7 @@ namespace hash
                 for (auto e : a_in)
                 {
                     hash *= fnv_prime;
-                    hash ^= static_cast<uint8_t>(std::toupper(int(e)));
+                    hash ^= static_cast<std::size_t>(std::toupper(int(e)));
                 }
 
                 return hash;
@@ -220,19 +235,18 @@ namespace hash
                     auto c = std::towupper(static_cast<std::wint_t>(e));
 
                     hash *= fnv_prime;
-                    hash ^= static_cast<uint8_t>((c & 0xFF00) >> 8);
+                    hash ^= static_cast<std::size_t>((c & 0xFF00) >> 8);
                     hash *= fnv_prime;
-                    hash ^= static_cast<uint8_t>(c & 0x00FF);
+                    hash ^= static_cast<std::size_t>(c & 0x00FF);
                 }
 
                 return hash;
             }
 
             template <class T>
-            std::size_t operator()(T const&) const
+            __declspec(noreturn) void operator()(T const&) const
             {
                 static_assert(false, ERRMSG_HASH_NOT_IMPL);
-                return 0;
             }
 
         };
@@ -248,7 +262,7 @@ namespace hash
 
                 for (auto e : a_in.second)
                 {
-                    hash ^= static_cast<uint8_t>(std::toupper(int(e)));
+                    hash ^= static_cast<std::size_t>(std::toupper(int(e)));
                     hash *= fnv_prime;
                 }
 
@@ -266,9 +280,9 @@ namespace hash
                 {
                     auto c = std::towupper(static_cast<std::wint_t>(e));
 
-                    hash ^= static_cast<uint8_t>((c & 0xFF00) >> 8);
+                    hash ^= static_cast<std::size_t>((c & 0xFF00) >> 8);
                     hash *= fnv_prime;
-                    hash ^= static_cast<uint8_t>(c & 0x00FF);
+                    hash ^= static_cast<std::size_t>(c & 0x00FF);
                     hash *= fnv_prime;
 
                 }
@@ -283,7 +297,7 @@ namespace hash
 
                 for (auto e : a_in)
                 {
-                    hash ^= static_cast<uint8_t>(std::toupper(int(e)));
+                    hash ^= static_cast<std::size_t>(std::toupper(int(e)));
                     hash *= fnv_prime;
                 }
 
@@ -299,9 +313,9 @@ namespace hash
                 {
                     auto c = std::towupper(static_cast<std::wint_t>(e));
 
-                    hash ^= static_cast<uint8_t>((c & 0xFF00) >> 8);
+                    hash ^= static_cast<std::size_t>((c & 0xFF00) >> 8);
                     hash *= fnv_prime;
-                    hash ^= static_cast<uint8_t>(c & 0x00FF);
+                    hash ^= static_cast<std::size_t>(c & 0x00FF);
                     hash *= fnv_prime;
                 }
 
@@ -309,18 +323,12 @@ namespace hash
             }
 
             template <class T>
-            std::size_t operator()(T const&) const
+            __declspec(noreturn) void operator()(T const&) const
             {
                 static_assert(false, ERRMSG_HASH_NOT_IMPL);
-                return 0;
             }
 
         };
-
-        /*SKMP_FORCEINLINE std::size_t _compute_hash_bytes_fnv1a(const uint8_t* const a_in, std::size_t a_size)
-        {
-            return _append_hash_bytes_fnv1a(fnv_offset_basis, a_in, a_size);
-        }*/
 
         template <class T>
         std::size_t _compute_hash_fnv1a(T const& a_in)
@@ -334,8 +342,6 @@ namespace hash
 
     typedef fnv1::icase_fnv1 i_fnv_1;
     typedef fnv1::icase_fnv1a i_fnv_1a;
-
-
 }
 
 #define STD_SPECIALIZE_HASH(T) namespace std { template<> struct hash<T> { std::size_t operator()(T const& a_in) const noexcept { return ::hash::fnv1::_compute_hash_fnv1a(a_in); } };}

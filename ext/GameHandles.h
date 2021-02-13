@@ -13,6 +13,7 @@ class NiPointer;
 namespace Game
 {
     struct FormID;
+
     struct ObjectHandle :
         IntegralWrapper<UInt64>
     {
@@ -39,6 +40,7 @@ namespace Game
         [[nodiscard]] bool GetPluginIndex(UInt32& a_out) const;
         [[nodiscard]] bool GetPluginPartialIndex(UInt32& a_out) const;
 
+
     };
 
     static_assert(sizeof(ObjectHandle) == sizeof(UInt64));
@@ -55,8 +57,8 @@ namespace Game
         [[nodiscard]] bool GetReference(NiPointer<TESObjectREFR>& a_out) const;
         [[nodiscard]] TESForm* Lookup() const;
 
-        /*template <class T>
-        [[nodiscard]] T* Lookup() const;*/
+        template <class T>
+        [[nodiscard]] T* Lookup() const;
 
     };
 
@@ -76,7 +78,11 @@ namespace Game
 
 }
 
-#include <skse64/PapyrusVM.h>
+STD_SPECIALIZE_HASH(::Game::ObjectHandle)
+STD_SPECIALIZE_HASH(::Game::FormID)
+STD_SPECIALIZE_HASH(::Game::ActorHandle)
+
+#include "skse64/PapyrusVM.h"
 
 namespace Game
 {
@@ -106,6 +112,22 @@ namespace Game
 
 }
 
-STD_SPECIALIZE_HASH(::Game::ObjectHandle)
-STD_SPECIALIZE_HASH(::Game::FormID)
-STD_SPECIALIZE_HASH(::Game::ActorHandle)
+#include "skse64/GameForms.h"
+
+#include "RTTI.h"
+
+namespace Game
+{
+    template <class T>
+    T* FormID::Lookup() const
+    {
+        auto form = Lookup();
+
+        if (form) {
+            return RTTI<T>::Cast(form);
+        }
+
+        return nullptr;
+    }
+
+}

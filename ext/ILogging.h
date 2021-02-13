@@ -3,6 +3,7 @@
 #include "IMisc.h"
 
 #include <unordered_map>
+#include <vector>
 #include <string>
 #include <sstream>
 
@@ -14,31 +15,31 @@ public:
     template<typename... Args>
     SKMP_FORCEINLINE void Debug(const char* a_fmt, Args... a_args) const
     {
-        gLog.Debug(FormatString(a_fmt).c_str(), a_args...);
+        gLog.Debug(FormatString(a_fmt).c_str(), std::forward<Args>(a_args)...);
     }
 
     template<typename... Args>
     SKMP_FORCEINLINE void Message(const char* a_fmt, Args... a_args) const
     {
-        gLog.Message(FormatString(a_fmt).c_str(), a_args...);
+        gLog.Message(FormatString(a_fmt).c_str(), std::forward<Args>(a_args)...);
     }
 
     template<typename... Args>
     SKMP_FORCEINLINE void Warning(const char* a_fmt, Args... a_args) const
     {
-        gLog.Warning(FormatString(a_fmt, "WARNING").c_str(), a_args...);
+        gLog.Warning(FormatString(a_fmt, "WARNING").c_str(), std::forward<Args>(a_args)...);
     }
 
     template<typename... Args>
     SKMP_FORCEINLINE void Error(const char* a_fmt, Args... a_args) const
     {
-        gLog.Error(FormatString(a_fmt, "ERROR").c_str(), a_args...);
+        gLog.Error(FormatString(a_fmt, "ERROR").c_str(), std::forward<Args>(a_args)...);
     }
 
     template<typename... Args>
     SKMP_FORCEINLINE void FatalError(const char* a_fmt, Args... a_args) const
     {
-        gLog.FatalError(FormatString(a_fmt, "FATAL").c_str(), a_args...);
+        gLog.FatalError(FormatString(a_fmt, "FATAL").c_str(), std::forward<Args>(a_args)...);
     }
 
     SKMP_FORCEINLINE void LogPatchBegin(const char* a_id) const
@@ -56,9 +57,9 @@ public:
     FN_NAMEPROC("ILog")
 private:
 
-    SKMP_FORCEINLINE std::string FormatString(const char* a_fmt, const char* a_pfix = nullptr) const
+    SKMP_FORCEINLINE stl::string FormatString(const char* a_fmt, const char* a_pfix = nullptr) const
     {
-        std::ostringstream fmt;
+        stl::ostringstream fmt;
 
         if (a_pfix != nullptr)
             fmt << "<" << a_pfix << "> ";
@@ -68,14 +69,14 @@ private:
         return fmt.str();
     }
 
-    typedef std::unordered_map<std::string, IDebugLog::LogLevel> logLevelMap_t;
+    typedef stl::iunordered_map<std::string, IDebugLog::LogLevel> logLevelMap_t;
     static logLevelMap_t m_logLevelMap;
 
 };
 
 class BackLog
 {
-    typedef std::vector<std::string> vec_t;
+    typedef stl::vector<std::string> vec_t;
 
     using iterator = typename vec_t::iterator;
     using const_iterator = typename vec_t::const_iterator;

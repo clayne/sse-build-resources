@@ -209,6 +209,7 @@
     <ClCompile Include="skse64\skse64\skse64\ScaleformVM.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="cpp.hint" />
     <None Include="README.md" />
     <None Include="skse64\skse64\skse64\PapyrusNativeFunctionDef.inl" />
     <None Include="skse64\skse64\skse64\PapyrusNativeFunctionDef_Base.inl" />

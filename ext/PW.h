@@ -30,7 +30,7 @@ struct IntegralWrapper
         return m_item;
     }
 
-    T* operator&() {
+    /*T* operator&() {
         return &m_item;
     }
     
@@ -44,7 +44,7 @@ struct IntegralWrapper
     
     const T& operator*() const {
         return m_item;
-    }
+    }*/
 
     T get() const {
         return m_item;

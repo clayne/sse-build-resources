@@ -39,7 +39,7 @@
 namespace StrHelpers
 {
     typedef std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> wsconv_t;
-    static wsconv_t strconverter;
+    static inline wsconv_t strconverter;
 
     SKMP_FORCEINLINE std::string ToString(const std::wstring& wstr)
     {
@@ -63,8 +63,7 @@ namespace StrHelpers
     }
 
     template <typename T>
-    SKMP_FORCEINLINE void
-        SplitString(const std::wstring& s, wchar_t delim, stl::vector<T>& elems)
+    void SplitString(const std::wstring& s, wchar_t delim, stl::vector<T>& elems)
     {
         stl::vector<std::wstring> tmp;
         SplitString(s, delim, tmp);
@@ -94,8 +93,7 @@ namespace StrHelpers
     }
 
     template <typename T>
-    SKMP_FORCEINLINE void
-        SplitString(const std::string& s, char delim, stl::vector<T>& elems)
+    void SplitString(const std::string& s, char delim, stl::vector<T>& elems)
     {
         stl::vector<std::string> tmp;
         SplitString(s, delim, tmp);

@@ -1,11 +1,12 @@
-
-#include "GameHandles.h"
-
 #include <skse64/PapyrusVM.h>
 #include <skse64/NiTypes.h>
 #include <skse64/GameForms.h>
 #include <skse64/GameReferences.h>
 #include <skse64/GameRTTI.h>
+
+
+#include "GameHandles.h"
+#include "RTTI.h"
 
 // ObjectHandle
 namespace Game
@@ -23,7 +24,7 @@ namespace Game
     {
         return m_item & HANDLE_UPPER_MASK;
     }
-    
+
     FormID ObjectHandle::GetFormID() const
     {
         return (m_item & 0xFFFFFFFF);
@@ -94,7 +95,7 @@ namespace Game
         if (!form)
             return false;
 
-        auto ptr = DYNAMIC_CAST(form, TESForm, TESObjectREFR);
+        auto ptr = RTTI<TESObjectREFR>::Cast(form);
         if (!ptr)
             return false;
 
@@ -102,7 +103,7 @@ namespace Game
 
         return true;
     }
-    
+
     TESForm* FormID::Lookup() const
     {
         return LookupFormByID(m_item);

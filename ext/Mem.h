@@ -65,6 +65,13 @@ namespace mem
             new (pv) T(t);
         }
 
+        SKMP_FORCEINLINE void construct(T* const p, T&& t) const
+        {
+            void* const pv = static_cast<void*>(p);
+
+            new (pv) T(std::move(t));
+        }
+
         SKMP_FORCEINLINE void destroy(T* const p) const
         {
             p->~T();

@@ -60,7 +60,9 @@ namespace stl
     using basic_ostringstream = std::basic_ostringstream<T, std::char_traits<T>, A>;
 
     using string = basic_string<char>;
+    using wstring = basic_string<wchar_t>;
     using stringstream = basic_stringstream<char>;
+    using wostringstream = basic_ostringstream<wchar_t>;
     using ostringstream = basic_ostringstream<char>;
 
 }

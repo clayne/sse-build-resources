@@ -46,6 +46,10 @@ struct IntegralWrapper
         return m_item;
     }*/
 
+    T& operator*() {
+        return m_item;
+    }
+
     T get() const {
         return m_item;
     }

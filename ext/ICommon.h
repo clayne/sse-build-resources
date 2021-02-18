@@ -3,6 +3,7 @@
 #define FN_NAMEPROC(x) virtual const char *ModuleName() const noexcept { return x; };
 
 #define SKMP_FORCEINLINE __forceinline
+#define SKMP_NOINLINE __declspec(noinline)
 #define SKMP_ALIGN(x) __declspec(align(x))
 
 #include <string>

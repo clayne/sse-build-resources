@@ -1,6 +1,6 @@
 #pragma once
 
-#define FN_NAMEPROC(x) virtual const char *ModuleName() const noexcept { return x; };
+#define FN_NAMEPROC(x) virtual const char *ModuleName() const noexcept { static_assert(sizeof(x) <= 40); return x; };
 
 #define SKMP_FORCEINLINE __forceinline
 #define SKMP_NOINLINE __declspec(noinline)

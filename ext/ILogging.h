@@ -1,78 +1,80 @@
 #pragma once
 
-#include "IMisc.h"
-
-#include <unordered_map>
-#include <vector>
-#include <string>
-#include <sstream>
-
-#include "skse64/common/IDebugLog.h"
-
 class ILog
 {
+    inline static constexpr std::size_t FORMAT_STACK_BUFFER_SIZE = 64;
+
 public:
+
     template<typename... Args>
-    SKMP_FORCEINLINE void Debug(const char* a_fmt, Args... a_args) const
+    void Debug(const char* a_fmt, Args... a_args) const
     {
-        gLog.Debug(FormatString(a_fmt).c_str(), std::forward<Args>(a_args)...);
+        char buf[FORMAT_STACK_BUFFER_SIZE];
+        gLog.Debug(FormatString(buf, a_fmt), std::forward<Args>(a_args)...);
     }
 
     template<typename... Args>
-    SKMP_FORCEINLINE void Message(const char* a_fmt, Args... a_args) const
+    void Message(const char* a_fmt, Args... a_args) const
     {
-        gLog.Message(FormatString(a_fmt).c_str(), std::forward<Args>(a_args)...);
+        char buf[FORMAT_STACK_BUFFER_SIZE];
+        gLog.Message(FormatString(buf, a_fmt), std::forward<Args>(a_args)...);
     }
 
     template<typename... Args>
-    SKMP_FORCEINLINE void Warning(const char* a_fmt, Args... a_args) const
+    void Warning(const char* a_fmt, Args... a_args) const
     {
-        gLog.Warning(FormatString(a_fmt, "WARNING").c_str(), std::forward<Args>(a_args)...);
+        char buf[FORMAT_STACK_BUFFER_SIZE];
+        gLog.Warning(FormatString(buf, a_fmt, "WARNING"), std::forward<Args>(a_args)...);
     }
 
     template<typename... Args>
-    SKMP_FORCEINLINE void Error(const char* a_fmt, Args... a_args) const
+    void Error(const char* a_fmt, Args... a_args) const
     {
-        gLog.Error(FormatString(a_fmt, "ERROR").c_str(), std::forward<Args>(a_args)...);
+        char buf[FORMAT_STACK_BUFFER_SIZE];
+        gLog.Error(FormatString(buf, a_fmt, "ERROR"), std::forward<Args>(a_args)...);
     }
 
     template<typename... Args>
-    SKMP_FORCEINLINE void FatalError(const char* a_fmt, Args... a_args) const
+    void FatalError(const char* a_fmt, Args... a_args) const
     {
-        gLog.FatalError(FormatString(a_fmt, "FATAL").c_str(), std::forward<Args>(a_args)...);
+        char buf[FORMAT_STACK_BUFFER_SIZE];
+        gLog.FatalError(FormatString(buf, a_fmt, "FATAL"), std::forward<Args>(a_args)...);
     }
 
     SKMP_FORCEINLINE void LogPatchBegin(const char* a_id) const
     {
-        gLog.Debug(FormatString("[Patch] [%s] Writing..").c_str(), a_id);
+        gLog.Debug("[Patch] [%s] Writing..", a_id);
     }
 
     SKMP_FORCEINLINE void LogPatchEnd(const char* a_id) const
     {
-        gLog.Debug(FormatString("[Patch] [%s] OK").c_str(), a_id);
+        gLog.Debug("[Patch] [%s] OK", a_id);
     }
+
+    typedef stl::iunordered_map<std::string, IDebugLog::LogLevel> logLevelMap_t;
+    static logLevelMap_t m_logLevelMap;
 
     static IDebugLog::LogLevel TranslateLogLevel(const std::string& a_level);
 
     FN_NAMEPROC("ILog")
 private:
 
-    SKMP_FORCEINLINE stl::string FormatString(const char* a_fmt, const char* a_pfix = nullptr) const
+    template <std::size_t _size>
+    char* FormatString(char(&a_buf)[_size], const char* a_fmt) const
     {
-        stl::ostringstream fmt;
-
-        if (a_pfix != nullptr)
-            fmt << "<" << a_pfix << "> ";
-
-        fmt << "[" << ModuleName() << "] " << a_fmt;
-
-        return fmt.str();
+        _snprintf_s(a_buf, _TRUNCATE, "[%s] %s", ModuleName(), a_fmt);
+        return a_buf;
     }
 
-    typedef stl::iunordered_map<std::string, IDebugLog::LogLevel> logLevelMap_t;
-    static logLevelMap_t m_logLevelMap;
+    template <std::size_t _size>
+    char* FormatString(char(&a_buf)[_size], const char* a_fmt, const char* a_pfix) const
+    {
+        _snprintf_s(a_buf, _TRUNCATE, "<%s> [%s] %s", a_pfix, ModuleName(), a_fmt);
+        return a_buf;
+    }
 
 };
+
 
 class BackLog
 {
@@ -85,7 +87,7 @@ public:
 
     using size_type = vec_t::size_type;
 
-    BackLog(size_t a_limit) :
+    SKMP_FORCEINLINE BackLog(std::size_t a_limit) :
         m_limit(a_limit)
     {
     }
@@ -93,40 +95,26 @@ public:
     [[nodiscard]] SKMP_FORCEINLINE const_iterator begin() const noexcept {
         return m_data.begin();
     }
+
     [[nodiscard]] SKMP_FORCEINLINE const_iterator end() const noexcept {
         return m_data.end();
     }
 
-    SKMP_FORCEINLINE void Lock() {
+    SKMP_FORCEINLINE void Lock() noexcept {
         m_lock.Enter();
     }
 
-    SKMP_FORCEINLINE void Unlock() {
+    SKMP_FORCEINLINE void Unlock() noexcept {
         m_lock.Leave();
     }
 
-    SKMP_FORCEINLINE auto& GetLock() {
+    [[nodiscard]] SKMP_FORCEINLINE auto& GetLock() noexcept {
         return m_lock;
     }
 
-    SKMP_FORCEINLINE void Add(const char* a_string)
-    {
-        IScopedCriticalSection _(&m_lock);
+    SKMP_FORCEINLINE void Add(const char* a_string);
 
-        m_data.emplace_back(a_string);
-        if (m_data.size() > m_limit)
-            m_data.erase(m_data.begin());
-    }
-
-    SKMP_FORCEINLINE void SetLimit(size_type a_limit)
-    {
-        IScopedCriticalSection _(&m_lock);
-
-        m_limit = std::max<size_type>(a_limit, 1);
-
-        while (m_data.size() > m_limit)
-            m_data.erase(m_data.begin());
-    }
+    SKMP_FORCEINLINE void SetLimit(size_type a_limit);
 
 private:
     ICriticalSection m_lock;
@@ -134,3 +122,24 @@ private:
     vec_t m_data;
     size_type m_limit;
 };
+
+void BackLog::Add(const char* a_string)
+{
+    IScopedCriticalSection _(std::addressof(m_lock));
+
+    m_data.emplace_back(a_string);
+    if (m_data.size() > m_limit)
+        m_data.erase(m_data.begin());
+}
+
+void BackLog::SetLimit(size_type a_limit)
+{
+    IScopedCriticalSection _(std::addressof(m_lock));
+
+    m_limit = std::max<size_type>(a_limit, 1);
+
+    while (m_data.size() > m_limit)
+        m_data.erase(m_data.begin());
+
+    m_data.shrink_to_fit();
+}

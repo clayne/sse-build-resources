@@ -13,10 +13,10 @@ https://github.com/benhoyt/inih
 
 */
 
-#include "ICommon.h"
-
 #ifndef __INI_H__
 #define __INI_H__
+
+#include "ICommon.h"
 
 /* Make this header file easier to include in C++ code */
 #ifdef __cplusplus
@@ -69,7 +69,7 @@ extern "C" {
 #define INI_ALLOW_BOM 1
 #endif
 
-          /* Nonzero to allow inline comments (with valid SKMP_FORCEINLINE comment characters
+          /* Nonzero to allow SKMP_FORCEINLINE comments (with valid SKMP_FORCEINLINE comment characters
              specified by INI_INLINE_COMMENT_PREFIXES). Set to 0 to turn off and match
              Python 3.2+ configparser behaviour. */
 #ifndef INI_ALLOW_INLINE_COMMENTS
@@ -305,6 +305,10 @@ SKMP_FORCEINLINE int ini_parse(const char* filename, ini_handler handler, void* 
 #ifndef __INIREADER_H__
 #define __INIREADER_H__
 
+#include <map>
+#include <set>
+#include <string>
+
 // Read an INI file into easy-to-access fullname/value pairs. (Note that I've gone
 // for simplicity here rather than speed, but it should be pretty decent.)
 class INIReader
@@ -322,17 +326,20 @@ public:
     INIReader(FILE* file);
 
     void Load(const std::string& filename);
+    void Clear();
 
     // Return the result of ini_parse(), i.e., 0 on success, line number of
     // first error on parse error, or -1 on file open error.
     int ParseError() const;
 
     // Return the list of sections found in ini file
-    const stl::iunordered_set<std::string>& Sections() const;
+    //const stl::iunordered_set<std::string>& Sections() const;
 
     // Get a string value from INI file, returning default_value if not found.
-    const std::string& Get(const std::string& section, const std::string& name,
-        const std::string& default_value) const;
+    const char* Get(const std::string& section, const std::string& name,
+        const char* default_value) const;
+
+    const std::string* Get(const std::string& section, const std::string& name) const;
 
     // Get an integer (long) value from INI file, returning default_value if
     // not found or not a valid integer (decimal "1234", "-1234", or hex "0x4d2").
@@ -356,9 +363,8 @@ public:
 protected:
     int _error;
     bool _init;
-    stl::iunordered_map<std::string, std::string> _values;
-    stl::iunordered_set<std::string> _sections;
-    static std::string MakeKey(const std::string& section, const std::string& name);
+    stl::iunordered_map<std::string, stl::iunordered_map<std::string, std::string>> _values;
+    //stl::iunordered_set<std::string> _sections;
     static int ValueHandler(void* user, const char* section, const char* name,
         const char* value);
 };
@@ -387,6 +393,11 @@ SKMP_FORCEINLINE void INIReader::Load(const std::string& filename)
     }
 }
 
+SKMP_FORCEINLINE void INIReader::Clear()
+{
+    _values.swap(decltype(_values)());
+}
+
 SKMP_FORCEINLINE INIReader::INIReader(FILE* file)
 {
     _error = ini_parse_file(file, ValueHandler, this);
@@ -398,21 +409,44 @@ SKMP_FORCEINLINE int INIReader::ParseError() const
     return _error;
 }
 
-SKMP_FORCEINLINE const stl::iunordered_set<std::string>& INIReader::Sections() const
+/*SKMP_FORCEINLINE const stl::iunordered_set<std::string>& INIReader::Sections() const
 {
-    return _sections;
+    return _values;
+}*/
+
+SKMP_FORCEINLINE const char* INIReader::Get(const std::string& section, const std::string& name, const char* default_value) const
+{
+    auto it1 = _values.find(section);
+    if (it1 == _values.end())
+        return default_value;
+
+    auto it2 = it1->second.find(name);
+    if (it2 == it1->second.end())
+        return default_value;
+
+    return it2->second.c_str();
 }
 
-SKMP_FORCEINLINE const std::string& INIReader::Get(const std::string& section, const std::string& name, const std::string& default_value) const
+SKMP_FORCEINLINE const std::string* INIReader::Get(const std::string& section, const std::string& name) const
 {
-    auto it = _values.find(MakeKey(section, name));
-    return it != _values.end() ? it->second : default_value;
+    auto it1 = _values.find(section);
+    if (it1 == _values.end())
+        return nullptr;
+
+    auto it2 = it1->second.find(name);
+    if (it2 == it1->second.end())
+        return nullptr;
+
+    return std::addressof(it2->second);
 }
 
 SKMP_FORCEINLINE long INIReader::GetInteger(const std::string& section, const std::string& name, long default_value) const
 {
-    std::string valstr = Get(section, name, std::string(""));
-    const char* value = valstr.c_str();
+    auto valstr = Get(section, name);
+    if (!valstr)
+        return default_value;
+
+    const char* value = valstr->c_str();
     char* end;
     // This parses "1234" (decimal) and also "0x4D2" (hex)
     long n = strtol(value, &end, 0);
@@ -421,8 +455,11 @@ SKMP_FORCEINLINE long INIReader::GetInteger(const std::string& section, const st
 
 SKMP_FORCEINLINE double INIReader::GetReal(const std::string& section, const std::string& name, double default_value) const
 {
-    std::string valstr = Get(section, name, std::string(""));
-    const char* value = valstr.c_str();
+    auto valstr = Get(section, name);
+    if (!valstr)
+        return default_value;
+
+    const char* value = valstr->c_str();
     char* end;
     double n = strtod(value, &end);
     return end > value ? n : default_value;
@@ -430,8 +467,11 @@ SKMP_FORCEINLINE double INIReader::GetReal(const std::string& section, const std
 
 SKMP_FORCEINLINE float INIReader::GetFloat(const std::string& section, const std::string& name, float default_value) const
 {
-    std::string valstr = Get(section, name, std::string(""));
-    const char* value = valstr.c_str();
+    auto valstr = Get(section, name);
+    if (!valstr)
+        return default_value;
+
+    const char* value = valstr->c_str();
     char* end;
     float n = strtof(value, &end);
     return end > value ? n : default_value;
@@ -439,31 +479,35 @@ SKMP_FORCEINLINE float INIReader::GetFloat(const std::string& section, const std
 
 SKMP_FORCEINLINE bool INIReader::GetBoolean(const std::string& section, const std::string& name, bool default_value) const
 {
-    std::string valstr = Get(section, name, std::string(""));
-    // Convert to lower case to make string comparisons case-insensitive
-    std::transform(valstr.begin(), valstr.end(), valstr.begin(), ::tolower);
-    if (valstr == "true" || valstr == "yes" || valstr == "on" || valstr == "1")
+    auto valstr = Get(section, name);
+    if (!valstr)
+        return default_value;
+
+    const char* value = valstr->c_str();
+
+    if (_stricmp(value, "true") == 0 || _stricmp(value, "yes") == 0 || _stricmp(value, "on") == 0 || _stricmp(value, "1") == 0)
         return true;
-    else if (valstr == "false" || valstr == "no" || valstr == "off" || valstr == "0")
+    else if (_stricmp(value, "false") == 0 || _stricmp(value, "no") == 0 || _stricmp(value, "off") == 0 || _stricmp(value, "0") == 0)
         return false;
     else
         return default_value;
-}
-
-SKMP_FORCEINLINE std::string INIReader::MakeKey(const std::string& section, const std::string& name)
-{
-    return section + "=" + name;
 }
 
 SKMP_FORCEINLINE int INIReader::ValueHandler(void* user, const char* section, const char* name,
     const char* value)
 {
     INIReader* reader = (INIReader*)user;
-    std::string key = MakeKey(section, name);
-    if (reader->_values[key].size() > 0)
-        reader->_values[key] += "\n";
-    reader->_values[key] += value;
-    reader->_sections.insert(section);
+
+    auto r = reader->_values.try_emplace(section);
+    auto o = r.first->second.try_emplace(name, value);
+
+    if (!o.second) {
+        o.first->second += "\n";
+        o.first->second += value;
+    }
+
+    //_DMESSAGE("add: %s, %s : %s", section, name, value);
+
     return 1;
 }
 

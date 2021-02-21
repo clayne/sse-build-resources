@@ -2,43 +2,48 @@
 
 class ILog
 {
-    inline static constexpr std::size_t FORMAT_STACK_BUFFER_SIZE = 64;
+    inline static constexpr std::size_t FORMAT_BUFFER_SIZE = 8192;
 
 public:
 
     template<typename... Args>
     void Debug(const char* a_fmt, Args... a_args) const
     {
-        char buf[FORMAT_STACK_BUFFER_SIZE];
+        auto buf = static_cast<char*>(_aligned_malloc(FORMAT_BUFFER_SIZE, 32));
         gLog.Debug(FormatString(buf, a_fmt), std::forward<Args>(a_args)...);
+        _aligned_free(buf);
     }
 
     template<typename... Args>
     void Message(const char* a_fmt, Args... a_args) const
     {
-        char buf[FORMAT_STACK_BUFFER_SIZE];
+        auto buf = static_cast<char*>(_aligned_malloc(FORMAT_BUFFER_SIZE, 32));
         gLog.Message(FormatString(buf, a_fmt), std::forward<Args>(a_args)...);
+        _aligned_free(buf);
     }
 
     template<typename... Args>
     void Warning(const char* a_fmt, Args... a_args) const
     {
-        char buf[FORMAT_STACK_BUFFER_SIZE];
+        auto buf = static_cast<char*>(_aligned_malloc(FORMAT_BUFFER_SIZE, 32));
         gLog.Warning(FormatString(buf, a_fmt, "WARNING"), std::forward<Args>(a_args)...);
+        _aligned_free(buf);
     }
 
     template<typename... Args>
     void Error(const char* a_fmt, Args... a_args) const
     {
-        char buf[FORMAT_STACK_BUFFER_SIZE];
+        auto buf = static_cast<char*>(_aligned_malloc(FORMAT_BUFFER_SIZE, 32));
         gLog.Error(FormatString(buf, a_fmt, "ERROR"), std::forward<Args>(a_args)...);
+        _aligned_free(buf);
     }
 
     template<typename... Args>
     void FatalError(const char* a_fmt, Args... a_args) const
     {
-        char buf[FORMAT_STACK_BUFFER_SIZE];
+        auto buf = static_cast<char*>(_aligned_malloc(FORMAT_BUFFER_SIZE, 32));
         gLog.FatalError(FormatString(buf, a_fmt, "FATAL"), std::forward<Args>(a_args)...);
+        _aligned_free(buf);
     }
 
     SKMP_FORCEINLINE void LogPatchBegin(const char* a_id) const
@@ -59,17 +64,15 @@ public:
     FN_NAMEPROC("ILog")
 private:
 
-    template <std::size_t _size>
-    char* FormatString(char(&a_buf)[_size], const char* a_fmt) const
+    SKMP_FORCEINLINE char* FormatString(char* a_buf, const char* a_fmt) const
     {
-        _snprintf_s(a_buf, _TRUNCATE, "[%s] %s", ModuleName(), a_fmt);
+        _snprintf_s(a_buf, FORMAT_BUFFER_SIZE, _TRUNCATE, "[%s] %s", ModuleName(), a_fmt);
         return a_buf;
     }
 
-    template <std::size_t _size>
-    char* FormatString(char(&a_buf)[_size], const char* a_fmt, const char* a_pfix) const
+    SKMP_FORCEINLINE char* FormatString(char* a_buf, const char* a_fmt, const char* a_pfix) const
     {
-        _snprintf_s(a_buf, _TRUNCATE, "<%s> [%s] %s", a_pfix, ModuleName(), a_fmt);
+        _snprintf_s(a_buf, FORMAT_BUFFER_SIZE, _TRUNCATE, "<%s> [%s] %s", a_pfix, ModuleName(), a_fmt);
         return a_buf;
     }
 

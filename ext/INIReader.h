@@ -396,6 +396,7 @@ SKMP_FORCEINLINE void INIReader::Load(const std::string& filename)
 SKMP_FORCEINLINE void INIReader::Clear()
 {
     _values.swap(decltype(_values)());
+    _init = false;
 }
 
 SKMP_FORCEINLINE INIReader::INIReader(FILE* file)

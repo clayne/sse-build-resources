@@ -1,6 +1,11 @@
 #pragma once
 
-#define FN_NAMEPROC(x) virtual const char *ModuleName() const noexcept { static_assert(sizeof(x) <= 40); return x; };
+#define FN_NAMEPROC(x) \
+virtual const char* ModuleName() const noexcept { return x; }; \
+virtual const char* LogPrefix() const noexcept { return "["  x  "]"; }; \
+virtual const char* LogPrefixWarning() const noexcept { return "<WARNING> ["  x  "]"; }; \
+virtual const char* LogPrefixError() const noexcept { return "<ERROR> ["  x  "]"; }; \
+virtual const char* LogPrefixFatal() const noexcept { return "<FATAL> ["  x  "]"; }; 
 
 #define SKMP_FORCEINLINE __forceinline
 #define SKMP_NOINLINE __declspec(noinline)

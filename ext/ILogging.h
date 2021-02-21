@@ -9,41 +9,36 @@ public:
     template<typename... Args>
     void Debug(const char* a_fmt, Args... a_args) const
     {
-        auto buf = static_cast<char*>(_aligned_malloc(FORMAT_BUFFER_SIZE, 32));
-        gLog.Debug(FormatString(buf, a_fmt), std::forward<Args>(a_args)...);
-        _aligned_free(buf);
+        if (gLog.CheckLogLevel(IDebugLog::LogLevel::Debug))
+            gLog.Write(a_fmt, LogPrefix(), std::forward<Args>(a_args)...);
     }
 
     template<typename... Args>
     void Message(const char* a_fmt, Args... a_args) const
     {
-        auto buf = static_cast<char*>(_aligned_malloc(FORMAT_BUFFER_SIZE, 32));
-        gLog.Message(FormatString(buf, a_fmt), std::forward<Args>(a_args)...);
-        _aligned_free(buf);
+        if (gLog.CheckLogLevel(IDebugLog::LogLevel::Message))
+            gLog.Write(a_fmt, LogPrefix(), std::forward<Args>(a_args)...);
     }
 
     template<typename... Args>
     void Warning(const char* a_fmt, Args... a_args) const
     {
-        auto buf = static_cast<char*>(_aligned_malloc(FORMAT_BUFFER_SIZE, 32));
-        gLog.Warning(FormatString(buf, a_fmt, "WARNING"), std::forward<Args>(a_args)...);
-        _aligned_free(buf);
+        if (gLog.CheckLogLevel(IDebugLog::LogLevel::Warning))
+            gLog.Write(a_fmt, LogPrefixWarning(), std::forward<Args>(a_args)...);
     }
 
     template<typename... Args>
     void Error(const char* a_fmt, Args... a_args) const
     {
-        auto buf = static_cast<char*>(_aligned_malloc(FORMAT_BUFFER_SIZE, 32));
-        gLog.Error(FormatString(buf, a_fmt, "ERROR"), std::forward<Args>(a_args)...);
-        _aligned_free(buf);
+        if (gLog.CheckLogLevel(IDebugLog::LogLevel::Error))
+            gLog.Write(a_fmt, LogPrefixError(), std::forward<Args>(a_args)...);
     }
 
     template<typename... Args>
     void FatalError(const char* a_fmt, Args... a_args) const
     {
-        auto buf = static_cast<char*>(_aligned_malloc(FORMAT_BUFFER_SIZE, 32));
-        gLog.FatalError(FormatString(buf, a_fmt, "FATAL"), std::forward<Args>(a_args)...);
-        _aligned_free(buf);
+        if (gLog.CheckLogLevel(IDebugLog::LogLevel::FatalError))
+            gLog.Write(a_fmt, LogPrefixFatal(), std::forward<Args>(a_args)...);
     }
 
     SKMP_FORCEINLINE void LogPatchBegin(const char* a_id) const
@@ -63,18 +58,6 @@ public:
 
     FN_NAMEPROC("ILog")
 private:
-
-    SKMP_FORCEINLINE char* FormatString(char* a_buf, const char* a_fmt) const
-    {
-        _snprintf_s(a_buf, FORMAT_BUFFER_SIZE, _TRUNCATE, "[%s] %s", ModuleName(), a_fmt);
-        return a_buf;
-    }
-
-    SKMP_FORCEINLINE char* FormatString(char* a_buf, const char* a_fmt, const char* a_pfix) const
-    {
-        _snprintf_s(a_buf, FORMAT_BUFFER_SIZE, _TRUNCATE, "<%s> [%s] %s", a_pfix, ModuleName(), a_fmt);
-        return a_buf;
-    }
 
 };
 

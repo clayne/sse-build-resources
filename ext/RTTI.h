@@ -36,6 +36,8 @@ private:
 
 public:
 
+    RTTI() = default;
+
     template <class U>
     static to_type* Cast(U* a_from)
     {

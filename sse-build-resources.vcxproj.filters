@@ -237,7 +237,7 @@
     <ClInclude Include="ext\PW.h">
       <Filter>ext</Filter>
     </ClInclude>
-    <ClInclude Include="IRandom.h">
+    <ClInclude Include="ext\IRandom.h">
       <Filter>ext</Filter>
     </ClInclude>
   </ItemGroup>

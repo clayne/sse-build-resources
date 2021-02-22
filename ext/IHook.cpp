@@ -20,12 +20,11 @@ namespace Hook
         return r ? maxSize + (alignTo - r) : maxSize;
     }
 
-    size_t InitBranchTrampoline(const SKSEInterface* skse, size_t a_size)
+    size_t InitBranchTrampoline(const SKSEInterface* skse, SKSETrampolineInterface *a_trampolineInterface, size_t a_size)
     {
-        auto iface = reinterpret_cast<SKSETrampolineInterface*>(skse->QueryInterface(kInterface_Trampoline));
-        if (iface != nullptr) 
+        if (a_trampolineInterface != nullptr)
         {
-            auto base = iface->AllocateFromBranchPool(skse->GetPluginHandle(), a_size);
+            auto base = a_trampolineInterface->AllocateFromBranchPool(skse->GetPluginHandle(), a_size);
             if (base != nullptr)
             {
                 g_branchTrampoline.SetBase(a_size, base);
@@ -40,12 +39,11 @@ namespace Hook
             return 0;
     }
 
-    size_t InitLocalTrampoline(const SKSEInterface* skse, size_t a_size)
+    size_t InitLocalTrampoline(const SKSEInterface* skse, SKSETrampolineInterface* a_trampolineInterface, size_t a_size)
     {
-        auto iface = reinterpret_cast<SKSETrampolineInterface*>(skse->QueryInterface(kInterface_Trampoline));
-        if (iface != nullptr)
+        if (a_trampolineInterface != nullptr)
         {
-            auto base = iface->AllocateFromLocalPool(skse->GetPluginHandle(), a_size);
+            auto base = a_trampolineInterface->AllocateFromLocalPool(skse->GetPluginHandle(), a_size);
             if (base != nullptr)
             {
                 g_localTrampoline.SetBase(a_size, base);

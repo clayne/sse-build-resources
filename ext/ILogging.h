@@ -19,6 +19,13 @@ public:
         if (gLog.CheckLogLevel(IDebugLog::LogLevel::Message))
             gLog.Write(a_fmt, LogPrefix(), std::forward<Args>(a_args)...);
     }
+    
+    template<typename... Args>
+    void VMessage(const char* a_fmt, Args... a_args) const
+    {
+        if (gLog.CheckLogLevel(IDebugLog::LogLevel::Verbose))
+            gLog.Write(a_fmt, LogPrefix(), std::forward<Args>(a_args)...);
+    }
 
     template<typename... Args>
     void Warning(const char* a_fmt, Args... a_args) const

@@ -12,7 +12,7 @@ public:
     }
 
     static float GetLoadTime() {
-        return PerfCounter::delta(
+        return IPerfCounter::delta(
             m_Instance.tLoadStart, m_Instance.tLoadEnd);
     }
 
@@ -31,7 +31,7 @@ public:
     template <typename T>
     __forceinline static T Addr(unsigned long long id)
     {
-        T r = reinterpret_cast<T>(m_Instance.db.FindAddressById(id));
+        T r = reinterpret_cast<T>(m_Instance.db->FindAddressById(id));
         if (!r) {
             m_Instance.hasBadQuery = true;
         }
@@ -40,7 +40,7 @@ public:
 
     __forceinline static uintptr_t Addr(unsigned long long id, uintptr_t offset)
     {
-        void* addr = m_Instance.db.FindAddressById(id);
+        void* addr = m_Instance.db->FindAddressById(id);
         if (addr == NULL) {
             m_Instance.hasBadQuery = true;
             return uintptr_t(0);
@@ -57,7 +57,7 @@ public:
     __forceinline static bool Offset(unsigned long long id, uintptr_t& result)
     {
         unsigned long long r;
-        if (!m_Instance.db.FindOffsetById(id, r)) {
+        if (!m_Instance.db->FindOffsetById(id, r)) {
             m_Instance.hasBadQuery = true;
             return false;
         }
@@ -68,7 +68,7 @@ public:
     __forceinline static uintptr_t Offset(unsigned long long id)
     {
         unsigned long long r;
-        if (!m_Instance.db.FindOffsetById(id, r)) {
+        if (!m_Instance.db->FindOffsetById(id, r)) {
             m_Instance.hasBadQuery = true;
             return uintptr_t(0);
         }
@@ -77,12 +77,13 @@ public:
 
 private:
     IAL();
+    ~IAL();
 
     bool isLoaded;
     bool hasBadQuery;
     long long tLoadStart, tLoadEnd;
 
-    VersionDb db;
+    VersionDb *db;
 
     static IAL m_Instance;
 };

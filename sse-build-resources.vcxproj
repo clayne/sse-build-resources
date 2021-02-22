@@ -86,6 +86,7 @@
     <ClInclude Include="ext\STL.h" />
     <ClInclude Include="ext\StrHelpers.h" />
     <ClInclude Include="ext\versiondb.h" />
+    <ClInclude Include="IRandom.h" />
     <ClInclude Include="skse64\skse64\skse64\BSModelDB.h" />
     <ClInclude Include="skse64\skse64\skse64\GameAPI.h" />
     <ClInclude Include="skse64\skse64\skse64\GameBSExtraData.h" />
@@ -617,7 +618,7 @@
       <IntelJCCErratum>true</IntelJCCErratum>
       <DebugInformationFormat>None</DebugInformationFormat>
       <StringPooling>true</StringPooling>
-      <AdditionalOptions>/Ob3 /permissive %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/permissive %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -675,7 +676,6 @@
       <IntelJCCErratum>true</IntelJCCErratum>
       <StringPooling>true</StringPooling>
       <DebugInformationFormat>None</DebugInformationFormat>
-      <AdditionalOptions>/Ob3 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -705,7 +705,7 @@
       <IntelJCCErratum>true</IntelJCCErratum>
       <StringPooling>true</StringPooling>
       <DebugInformationFormat>None</DebugInformationFormat>
-      <AdditionalOptions>/Ob3 /permissive %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/permissive %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -735,7 +735,7 @@
       <IntelJCCErratum>true</IntelJCCErratum>
       <StringPooling>true</StringPooling>
       <DebugInformationFormat>None</DebugInformationFormat>
-      <AdditionalOptions>/Ob3 /permissive %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/permissive %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -765,7 +765,6 @@
       <IntelJCCErratum>true</IntelJCCErratum>
       <StringPooling>true</StringPooling>
       <DebugInformationFormat>None</DebugInformationFormat>
-      <AdditionalOptions>/Ob3 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

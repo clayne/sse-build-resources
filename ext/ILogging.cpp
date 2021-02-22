@@ -4,6 +4,7 @@ IDebugLog gLog;
 
 ILog::logLevelMap_t ILog::m_logLevelMap = {
     {"debug", IDebugLog::LogLevel::Debug},
+    {"verbose", IDebugLog::LogLevel::Verbose},
     {"message", IDebugLog::LogLevel::Message},
     {"warning", IDebugLog::LogLevel::Warning},
     {"error", IDebugLog::LogLevel::Error},

@@ -1,32 +1,66 @@
 #pragma once
 
+#include <profileapi.h>
+
 class PerfCounter
 {
 public:
-    SKMP_FORCEINLINE static float delta(long long tp1, long long tp2) {
-        return static_cast<float>(static_cast<double>(tp2 - tp1) / perf_freqf);
+
+    SKMP_FORCEINLINE PerfCounter()
+    {
+        ::QueryPerformanceFrequency(&perf_freq);
+        perf_freqf = static_cast<double>(perf_freq.QuadPart);
     }
 
-    SKMP_FORCEINLINE static long long delta_us(long long tp1, long long tp2) {
-        return ((tp2 - tp1) * 1000000LL) / perf_freq.QuadPart;
-    }
-
-    SKMP_FORCEINLINE static long long Query() {
+    SKMP_FORCEINLINE long long Query() {
         LARGE_INTEGER t;
         QueryPerformanceCounter(&t);
         return t.QuadPart;
     }
 
-    SKMP_FORCEINLINE static long long T(long long tp)
+    template <class T = float>
+    SKMP_FORCEINLINE float delta(long long tp1, long long tp2) {
+        return static_cast<T>(static_cast<double>(tp2 - tp1) / perf_freqf);
+    }
+
+    SKMP_FORCEINLINE long long delta_us(long long tp1, long long tp2) {
+        return ((tp2 - tp1) * 1000000LL) / perf_freq.QuadPart;
+    }
+
+    SKMP_FORCEINLINE long long T(long long tp)
     {
         return (perf_freq.QuadPart / 1000000LL) * tp;
     }
 
 private:
-    PerfCounter();
+    LARGE_INTEGER perf_freq;
+    double perf_freqf;
+};
 
-    static LARGE_INTEGER perf_freq;
-    static double perf_freqf;
+
+class IPerfCounter
+{
+public:
+
+    SKMP_FORCEINLINE static long long Query() {
+        return m_Instance.Query();
+    }
+
+    SKMP_FORCEINLINE static float delta(long long tp1, long long tp2) {
+        return m_Instance.delta(tp1, tp2);
+    }
+
+    SKMP_FORCEINLINE static long long delta_us(long long tp1, long long tp2) {
+        return m_Instance.delta_us(tp1, tp2);
+    }
+
+    SKMP_FORCEINLINE static long long T(long long tp)
+    {
+        return m_Instance.T(tp);
+    }
+
+private:
+
     static PerfCounter m_Instance;
 };
 
@@ -39,12 +73,12 @@ public:
 
     SKMP_FORCEINLINE void Start()
     {
-        m_tStart = PerfCounter::Query();
+        m_tStart = IPerfCounter::Query();
     }
 
     SKMP_FORCEINLINE float Stop()
     {
-        return PerfCounter::delta(m_tStart, PerfCounter::Query());
+        return IPerfCounter::delta(m_tStart, IPerfCounter::Query());
     }
 private:
     long long m_tStart;
@@ -56,24 +90,24 @@ public:
     PerfTimerInt(long long a_interval) :
         m_interval(a_interval),
         m_tAccum(0),
-        m_tIntervalBegin(PerfCounter::Query()),
+        m_tIntervalBegin(IPerfCounter::Query()),
         m_tCounter(0)
     {
     }
 
     SKMP_FORCEINLINE void Begin()
     {
-        m_tStart = PerfCounter::Query();
+        m_tStart = IPerfCounter::Query();
     }
 
     SKMP_FORCEINLINE bool End(long long& a_out)
     {
-        auto tEnd = PerfCounter::Query();
-        m_tAccum += PerfCounter::delta_us(m_tStart, tEnd);
+        auto tEnd = IPerfCounter::Query();
+        m_tAccum += IPerfCounter::delta_us(m_tStart, tEnd);
         m_tCounter++;
 
-        m_tInterval = PerfCounter::delta_us(m_tIntervalBegin, tEnd);
-        if (m_tInterval >= m_interval) 
+        m_tInterval = IPerfCounter::delta_us(m_tIntervalBegin, tEnd);
+        if (m_tInterval >= m_interval)
         {
             if (m_tCounter > 0)
             {
@@ -102,7 +136,7 @@ public:
 
     SKMP_FORCEINLINE void Reset()
     {
-        m_tIntervalBegin = PerfCounter::Query();
+        m_tIntervalBegin = IPerfCounter::Query();
         m_tAccum = 0;
         m_tCounter = 0;
     }

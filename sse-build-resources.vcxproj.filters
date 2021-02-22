@@ -237,6 +237,9 @@
     <ClInclude Include="ext\PW.h">
       <Filter>ext</Filter>
     </ClInclude>
+    <ClInclude Include="IRandom.h">
+      <Filter>ext</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ext\AddressLibrary.cpp">

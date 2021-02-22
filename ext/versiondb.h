@@ -16,7 +16,9 @@ public:
     ~VersionDb() { }
 
 private:
-    stl::map<unsigned long long, unsigned long long> _data;
+    using map_type = std::map<unsigned long long, unsigned long long>;
+
+    map_type _data;
     //std::map<unsigned long long, unsigned long long> _rdata;
     int _ver[4];
     std::string _verStr;
@@ -51,7 +53,7 @@ public:
     //const std::string& GetModuleName() const { return _moduleName; }
     const std::string& GetLoadedVersionString() const { return _verStr; }
 
-    const stl::map<unsigned long long, unsigned long long>& GetOffsetMap() const
+    const map_type& GetOffsetMap() const
     {
         return _data;
     }
@@ -160,7 +162,7 @@ public:
 
     void Clear()
     {
-        _data.clear();
+        _data.swap(decltype(_data)());
         //_rdata.clear();
         for (int i = 0; i < 4; i++) _ver[i] = 0;
         //_moduleName = std::string();

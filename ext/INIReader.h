@@ -507,8 +507,6 @@ SKMP_FORCEINLINE int INIReader::ValueHandler(void* user, const char* section, co
         o.first->second += value;
     }
 
-    //_DMESSAGE("add: %s, %s : %s", section, name, value);
-
     return 1;
 }
 

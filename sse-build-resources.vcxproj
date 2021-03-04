@@ -560,7 +560,7 @@
       <IntelJCCErratum>true</IntelJCCErratum>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <StringPooling>true</StringPooling>
-      <AdditionalOptions>/Ob3 /permissive %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/permissive %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

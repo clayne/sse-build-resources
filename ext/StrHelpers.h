@@ -81,8 +81,9 @@ namespace StrHelpers
         }
     }
 
+    template <class T>
     SKMP_FORCEINLINE void
-        SplitString(const std::string& s, char delim, stl::vector<std::string>& elems)
+        SplitString(const std::string& s, char delim, T& elems)
     {
         std::istringstream ss(s);
         std::string item;
@@ -92,8 +93,8 @@ namespace StrHelpers
         }
     }
 
-    template <typename T>
-    void SplitString(const std::string& s, char delim, stl::vector<T>& elems)
+    template <class T, class U>
+    void SplitString(const std::string& s, char delim, U& elems)
     {
         stl::vector<std::string> tmp;
         SplitString(s, delim, tmp);

@@ -66,3 +66,4 @@ namespace stl
     using ostringstream = basic_ostringstream<char>;
 
 }
+

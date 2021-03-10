@@ -96,7 +96,7 @@ namespace StrHelpers
     template <class T, class U>
     void SplitString(const std::string& s, char delim, U& elems)
     {
-        stl::vector<std::string> tmp;
+        std::vector<std::string> tmp;
         SplitString(s, delim, tmp);
 
         if (tmp.size())
@@ -155,5 +155,15 @@ namespace StrHelpers
     {
         return _stricmp(a_lhs, a_rhs);
     }
+
+    SKMP_FORCEINLINE bool iequal(const std::string& a_lhs, const std::string& a_rhs)
+    {
+        if (a_lhs.size() != a_rhs.size())
+            return false;
+
+        return _stricmp(a_lhs.c_str(), a_rhs.c_str()) == 0;
+    }
+
+
 
 }

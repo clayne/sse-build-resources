@@ -240,6 +240,12 @@
     <ClInclude Include="ext\IRandom.h">
       <Filter>ext</Filter>
     </ClInclude>
+    <ClInclude Include="ext\STLCommon.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\Threads.h">
+      <Filter>ext</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ext\AddressLibrary.cpp">
@@ -429,6 +435,12 @@
       <Filter>ext</Filter>
     </ClCompile>
     <ClCompile Include="ext\GameHandles.cpp">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\Threads.cpp">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\ITasks.cpp">
       <Filter>ext</Filter>
     </ClCompile>
   </ItemGroup>

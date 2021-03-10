@@ -11,6 +11,18 @@ virtual const char* LogPrefixFatal() const noexcept { return "<FATAL> ["  x  "] 
 #define SKMP_NOINLINE __declspec(noinline)
 #define SKMP_ALIGN(x) __declspec(align(x))
 
+#define SKMP_CACHE_SIZE 64
+//#define SKMP_ALIGN_CACHE __declspec(align(SKMP_CACHE_SIZE))
+
+#if defined(__AVX__) || defined(__AVX2__)
+#define SIMD_ALIGNMENT 32
+#else
+#define SIMD_ALIGNMENT 16
+#endif
+
+#define SKMP_ALIGN_AUTO __declspec(align(SIMD_ALIGNMENT))
+
+
 #include <string>
 #include <exception>
 
@@ -149,7 +161,9 @@ private:
     bool m_isSelected;
 };
 
+#include "STLCommon.h"
 #include "Mem.h"
+#include "Threads.h"
 #include "Hash.h"
 #include "STL.h"
 #include "Math.h"

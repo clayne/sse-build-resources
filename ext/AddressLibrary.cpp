@@ -17,7 +17,7 @@ IAL::IAL() :
     tLoadEnd = pc.Query();
 }
 
-IAL::~IAL()
+IAL::~IAL() noexcept
 {
     if (db != nullptr)
         delete db;

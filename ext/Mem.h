@@ -176,3 +176,5 @@ namespace mem
 	SKMP_FORCEINLINE void operator delete[](void *ptr) { _mm_free(ptr); }                            \
 	SKMP_FORCEINLINE void *operator new[](size_t, void *ptr) { return ptr; }                              \
 	SKMP_FORCEINLINE void operator delete[](void *, void *) {}
+
+#define SKMP_DECLARE_ALIGNED_ALLOCATOR_AUTO() SKMP_DECLARE_ALIGNED_ALLOCATOR(SIMD_ALIGNMENT)

@@ -6,39 +6,41 @@
 class IAL
 {
 public:
+
+
     static void Release();
     static bool IsLoaded() {
         return m_Instance.isLoaded;
     }
 
-    static float GetLoadTime() {
+    SKMP_FORCEINLINE static float GetLoadTime() {
         return IPerfCounter::delta(
             m_Instance.tLoadStart, m_Instance.tLoadEnd);
     }
 
-    static long long GetLoadStart() {
+    SKMP_FORCEINLINE static long long GetLoadStart() {
         return m_Instance.tLoadStart;
     }
 
-    static long long GetLoadEnd() {
+    SKMP_FORCEINLINE static long long GetLoadEnd() {
         return m_Instance.tLoadEnd;
     }
 
-    static bool HasBadQuery() {
+    SKMP_FORCEINLINE static bool HasBadQuery() {
         return m_Instance.hasBadQuery;
     }
 
     template <typename T>
-    __forceinline static T Addr(unsigned long long id)
+    SKMP_NOINLINE static T Addr(unsigned long long id)
     {
-        T r = reinterpret_cast<T>(m_Instance.db->FindAddressById(id));
+        auto r = reinterpret_cast<T>(m_Instance.db->FindAddressById(id));
         if (!r) {
             m_Instance.hasBadQuery = true;
         }
         return r;
     }
 
-    __forceinline static uintptr_t Addr(unsigned long long id, uintptr_t offset)
+    SKMP_NOINLINE static uintptr_t Addr(unsigned long long id, uintptr_t offset)
     {
         void* addr = m_Instance.db->FindAddressById(id);
         if (addr == NULL) {
@@ -49,12 +51,12 @@ public:
     }
 
     template <typename T>
-    __forceinline static T Addr(unsigned long long id, uintptr_t offset)
+    SKMP_FORCEINLINE static T Addr(unsigned long long id, uintptr_t offset)
     {
         return reinterpret_cast<T>(Addr(id, offset));
     }
 
-    __forceinline static bool Offset(unsigned long long id, uintptr_t& result)
+    SKMP_NOINLINE static bool Offset(unsigned long long id, uintptr_t& result)
     {
         unsigned long long r;
         if (!m_Instance.db->FindOffsetById(id, r)) {
@@ -65,7 +67,7 @@ public:
         return true;
     }
 
-    __forceinline static uintptr_t Offset(unsigned long long id)
+    SKMP_NOINLINE static uintptr_t Offset(unsigned long long id)
     {
         unsigned long long r;
         if (!m_Instance.db->FindOffsetById(id, r)) {
@@ -75,9 +77,39 @@ public:
         return static_cast<uintptr_t>(r);
     }
 
+
+    template <class T>
+    class Address
+    {
+    public:
+        Address() = delete;
+        Address(Address&) = delete;
+        Address& operator=(Address&) = delete;
+
+        SKMP_FORCEINLINE Address(unsigned long long a_id) :
+            m_offset(IAL::Addr<BlockConversionType*>(a_id))
+        {
+        }
+
+        SKMP_FORCEINLINE operator T()
+        {
+            return reinterpret_cast <T>(m_offset);
+        }
+
+        SKMP_FORCEINLINE std::uintptr_t GetUIntPtr() const
+        {
+            return reinterpret_cast<std::uintptr_t>(m_offset);
+        }
+
+    private:
+
+        struct BlockConversionType { };
+        BlockConversionType* m_offset;
+    };
+
 private:
     IAL();
-    ~IAL();
+    ~IAL() noexcept;
 
     bool isLoaded;
     bool hasBadQuery;

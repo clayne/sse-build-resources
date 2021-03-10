@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Threads.h"
+
 class ILog
 {
     inline static constexpr std::size_t FORMAT_BUFFER_SIZE = 8192;
@@ -71,18 +73,69 @@ private:
 
 class BackLog
 {
-    typedef stl::vector<std::string> vec_t;
+    class LogString
+    {
+    public:
+        using size_type = std::size_t;
 
-    using iterator = typename vec_t::iterator;
-    using const_iterator = typename vec_t::const_iterator;
+        LogString() = delete;
+        ~LogString() noexcept
+        {
+            if (m_data) {
+                _mm_free(m_data);
+            }
+        }
+
+        explicit LogString(const LoggerMessageEvent& a_event) noexcept;
+
+        LogString(const LogString&) = delete;
+
+        explicit LogString(LogString&& a_rhs) noexcept :
+            m_data(nullptr)
+        {
+            __move(std::move(a_rhs));
+        };
+
+        LogString& operator=(const LogString&) = delete;
+
+        LogString& operator=(LogString&& a_rhs) noexcept
+        {
+            this->~LogString();
+            __move(std::move(a_rhs));
+            return *this;
+        };
+
+        SKMP_FORCEINLINE const char* c_str() const noexcept {
+            return m_data;
+        }
+
+        SKMP_FORCEINLINE const char* data() const noexcept {
+            return m_data;
+        }
+
+    private:
+
+        SKMP_FORCEINLINE void __move(LogString&& a_rhs)
+        {
+            m_data = a_rhs.m_data;
+            a_rhs.m_data = nullptr;
+        }
+
+        char* m_data;
+    };
+
+    using storage_type = stl::vector<LogString>;
+    using iterator = typename storage_type::iterator;
+    using const_iterator = typename storage_type::const_iterator;
 
 public:
 
-    using size_type = vec_t::size_type;
+    using size_type = storage_type::size_type;
 
     SKMP_FORCEINLINE BackLog(std::size_t a_limit) :
         m_limit(a_limit)
     {
+        m_data.reserve(std::min<size_type>(a_limit, 1000));
     }
 
     [[nodiscard]] SKMP_FORCEINLINE const_iterator begin() const noexcept {
@@ -93,46 +146,24 @@ public:
         return m_data.end();
     }
 
-    SKMP_FORCEINLINE void Lock() noexcept {
-        m_lock.Enter();
+    SKMP_FORCEINLINE void Lock() const noexcept {
+        m_lock.lock();
     }
 
-    SKMP_FORCEINLINE void Unlock() noexcept {
-        m_lock.Leave();
+    SKMP_FORCEINLINE void Unlock() const noexcept {
+        m_lock.unlock();
     }
 
-    [[nodiscard]] SKMP_FORCEINLINE auto& GetLock() noexcept {
+    [[nodiscard]] SKMP_FORCEINLINE auto& GetLock() const noexcept {
         return m_lock;
     }
 
-    SKMP_FORCEINLINE void Add(const char* a_string);
-
-    SKMP_FORCEINLINE void SetLimit(size_type a_limit);
+    void Add(const LoggerMessageEvent& a_event);
+    void SetLimit(size_type a_limit);
 
 private:
-    ICriticalSection m_lock;
+    mutable WCriticalSection m_lock;
 
-    vec_t m_data;
+    storage_type m_data;
     size_type m_limit;
 };
-
-void BackLog::Add(const char* a_string)
-{
-    IScopedCriticalSection _(std::addressof(m_lock));
-
-    m_data.emplace_back(a_string);
-    if (m_data.size() > m_limit)
-        m_data.erase(m_data.begin());
-}
-
-void BackLog::SetLimit(size_type a_limit)
-{
-    IScopedCriticalSection _(std::addressof(m_lock));
-
-    m_limit = std::max<size_type>(a_limit, 1);
-
-    while (m_data.size() > m_limit)
-        m_data.erase(m_data.begin());
-
-    m_data.shrink_to_fit();
-}

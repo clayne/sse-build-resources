@@ -85,7 +85,9 @@
     <ClInclude Include="ext\PW.h" />
     <ClInclude Include="ext\RTTI.h" />
     <ClInclude Include="ext\STL.h" />
+    <ClInclude Include="ext\STLCommon.h" />
     <ClInclude Include="ext\StrHelpers.h" />
+    <ClInclude Include="ext\Threads.h" />
     <ClInclude Include="ext\versiondb.h" />
     <ClInclude Include="skse64\skse64\skse64\BSModelDB.h" />
     <ClInclude Include="skse64\skse64\skse64\GameAPI.h" />
@@ -149,11 +151,13 @@
     <ClCompile Include="ext\GameHandles.cpp" />
     <ClCompile Include="ext\IHook.cpp" />
     <ClCompile Include="ext\ILogging.cpp" />
+    <ClCompile Include="ext\ITasks.cpp" />
     <ClCompile Include="ext\JITASM.cpp" />
     <ClCompile Include="ext\Mem.cpp" />
     <ClCompile Include="ext\Patching.cpp" />
     <ClCompile Include="ext\PerfCounter.cpp" />
     <ClCompile Include="ext\RTTI.cpp" />
+    <ClCompile Include="ext\Threads.cpp" />
     <ClCompile Include="skse64\skse64\skse64\BSModelDB.cpp" />
     <ClCompile Include="skse64\skse64\skse64\GameAPI.cpp" />
     <ClCompile Include="skse64\skse64\skse64\GameBSExtraData.cpp" />

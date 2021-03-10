@@ -3,9 +3,9 @@
 #include <queue>
 #include <functional>
 
-#include <common/ICriticalSection.h>
 #include <skse64/gamethreads.h>
 
+#include "Threads.h"
 #include "STL.h"
 
 class TaskFunctor :
@@ -17,6 +17,11 @@ public:
 
     TaskFunctor(func_t&& a_func) :
         m_func(std::move(a_func))
+    {
+    }
+
+    TaskFunctor(const func_t& a_func) :
+        m_func(a_func)
     {
     }
 
@@ -34,6 +39,7 @@ private:
     func_t m_func;
 };
 
+
 template <class N>
 class TaskQueueBase
 {
@@ -41,7 +47,7 @@ class TaskQueueBase
     using base_type = std::remove_pointer_t<element_type>;
 
     template <class T>
-    using strip_type = std::remove_pointer_t<std::remove_reference_t<T>>;
+    using strip_type = std::remove_pointer_t<std::remove_reference_t<std::remove_cv_t<T>>>;
 
     template <class T>
     using is_base_type = std::enable_if_t<std::is_base_of_v<base_type, strip_type<T>>>;
@@ -59,28 +65,28 @@ public:
     {
         using alloc_type = typename strip_type<T>;
 
-        IScopedCriticalSection _(&m_lock);
+        IScopedLock _(m_lock);
         m_queue.emplace(new alloc_type(std::forward<Args>(a_args)...));
     }
 
     template <typename... Args, typename = is_not_pointer<element_type>>
     void AddTask(Args&&... a_args)
     {
-        IScopedCriticalSection _(&m_lock);
+        IScopedLock _(m_lock);
         m_queue.emplace(element_type{ std::forward<Args>(a_args)... });
     }
 
     template <typename = is_pointer<element_type>, typename = is_base_type<TaskFunctor>>
     void AddTask(TaskFunctor::func_t&& a_func)
     {
-        IScopedCriticalSection _(&m_lock);
+        IScopedLock _(m_lock);
         m_queue.emplace(new TaskFunctor(std::move(a_func)));
     }
 
     template <typename = is_pointer<element_type>>
     void AddTask(element_type a_item)
     {
-        IScopedCriticalSection _(&m_lock);
+        IScopedLock _(m_lock);
         m_queue.emplace(a_item);
     }
 
@@ -89,15 +95,12 @@ protected:
 
     SKMP_FORCEINLINE bool TaskQueueEmpty() const
     {
-        IScopedCriticalSection _(&m_lock);
+        IScopedLock _(m_lock);
         return m_queue.empty();
     }
 
     stl::queue<element_type> m_queue;
-    mutable ICriticalSection m_lock;
-
-private:
-
+    mutable FastSpinMutex m_lock;
 };
 
 class TaskQueue :
@@ -105,32 +108,6 @@ class TaskQueue :
 {
 public:
 
-    SKMP_FORCEINLINE void ProcessTasks()
-    {
-        while (!TaskQueueEmpty())
-        {
-            m_lock.Enter();
-
-            auto task = m_queue.front();
-            m_queue.pop();
-
-            m_lock.Leave();
-
-            task->Run();
-            task->Dispose();
-        }
-    }
-
-    SKMP_FORCEINLINE void ClearTasks()
-    {
-        IScopedCriticalSection _(&m_lock);
-
-        while (!m_queue.empty())
-        {
-            auto task = m_queue.front();
-            m_queue.pop();
-
-            task->Dispose();
-        }
-    }
+    void ProcessTasks();
+    void ClearTasks();
 };

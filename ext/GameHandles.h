@@ -3,12 +3,13 @@
 #include "common/ITypes.h"
 #include "PW.h"
 #include "Hash.h"
+#include "RTTI.h"
+#include "STLCommon.h"
+
+#include <skse64/NiTypes.h>
 
 class TESObjectREFR;
 class TESForm;
-
-template <class T>
-class NiPointer;
 
 namespace Game
 {
@@ -17,17 +18,17 @@ namespace Game
     struct ObjectHandle :
         IntegralWrapper<UInt64>
     {
-        static inline constexpr UInt64 HANDLE_UPPER_MASK = 0xFFFFFFFF00000000ULL;
+        static inline constexpr UInt64 HANDLE_UPPER_MASK = 0xFFFFFFFF00000000ui64;
 
         using IntegralWrapper<UInt64>::IntegralWrapper;
         using IntegralWrapper<UInt64>::operator=;
 
-        template <class T>
-        [[nodiscard]] T* Resolve() const;
+        template <class T, class form_type = stl::strip_type<T>>
+        [[nodiscard]] form_type* Resolve() const;
 
-        template <class T>
+        template <class T, class form_type = stl::strip_type<T>>
         [[nodiscard]] bool Get(T* a_ptr);
-        template <class T>
+        template <class T, class form_type = stl::strip_type<T>>
         [[nodiscard]] bool Get(NiPointer<T>& a_ptr);
 
         [[nodiscard]] bool Get(UInt32 a_type, void* a_ptr);
@@ -57,14 +58,14 @@ namespace Game
         [[nodiscard]] bool GetReference(NiPointer<TESObjectREFR>& a_out) const;
         [[nodiscard]] TESForm* Lookup() const;
 
-        template <class T>
-        [[nodiscard]] T* Lookup() const;
+        template <class T, class form_type = stl::strip_type<T>>
+        [[nodiscard]] form_type* Lookup() const;
 
     };
 
     static_assert(sizeof(FormID) == sizeof(UInt32));
 
-    struct ActorHandle :
+    struct ObjectRefHandle :
         IntegralWrapper<UInt32>
     {
         using IntegralWrapper<UInt32>::IntegralWrapper;
@@ -74,20 +75,20 @@ namespace Game
         [[nodiscard]] bool IsValid() const;
     };
 
-    static_assert(sizeof(ActorHandle) == sizeof(UInt32));
+    static_assert(sizeof(ObjectRefHandle) == sizeof(UInt32));
 
 }
 
 STD_SPECIALIZE_HASH(::Game::ObjectHandle)
 STD_SPECIALIZE_HASH(::Game::FormID)
-STD_SPECIALIZE_HASH(::Game::ActorHandle)
+STD_SPECIALIZE_HASH(::Game::ObjectRefHandle)
 
-#include "skse64/PapyrusVM.h"
+#include <skse64/PapyrusVM.h>
 
 namespace Game
 {
-    template <class T>
-    T* ObjectHandle::Resolve() const
+    template <class T, class form_type>
+    form_type* ObjectHandle::Resolve() const
     {
         auto policy = (*g_skyrimVM)->GetClassRegistry()->GetHandlePolicy();
 
@@ -95,36 +96,32 @@ namespace Game
             return nullptr;
         }
 
-        return static_cast<T*>(policy->Resolve(static_cast<UInt32>(T::kTypeID), *this));
+        return static_cast<T*>(policy->Resolve(static_cast<UInt32>(form_type::kTypeID), *this));
     }
 
-    template <class T>
+    template <class T, class form_type>
     bool ObjectHandle::Get(T* a_ptr)
     {
-        return Get(T::kTypeID, a_ptr);
+        return Get(form_type::kTypeID, a_ptr);
     }
 
-    template <class T>
+    template <class T, class form_type>
     bool ObjectHandle::Get(NiPointer<T>& a_niptr)
     {
-        return Get(T::kTypeID, a_niptr.get());
+        return Get(form_type::kTypeID, a_niptr.get());
     }
 
 }
 
-#include "skse64/GameForms.h"
-
-#include "RTTI.h"
-
 namespace Game
 {
-    template <class T>
-    T* FormID::Lookup() const
+    template <class T, class form_type>
+    form_type* FormID::Lookup() const
     {
         auto form = Lookup();
 
         if (form) {
-            return RTTI<T>::Cast(form);
+            return RTTI<form_type>::Cast(form);
         }
 
         return nullptr;

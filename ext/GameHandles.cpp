@@ -4,7 +4,6 @@
 #include <skse64/GameReferences.h>
 #include <skse64/GameRTTI.h>
 
-
 #include "GameHandles.h"
 #include "RTTI.h"
 
@@ -22,7 +21,7 @@ namespace Game
 
     ObjectHandle ObjectHandle::StripLower() const
     {
-        return m_item & HANDLE_UPPER_MASK;
+        return (m_item & HANDLE_UPPER_MASK);
     }
 
     FormID ObjectHandle::GetFormID() const
@@ -114,7 +113,7 @@ namespace Game
 // ActorHandle
 namespace Game
 {
-    bool ActorHandle::LookupREFR(NiPointer<TESObjectREFR>& a_out) const
+    bool ObjectRefHandle::LookupREFR(NiPointer<TESObjectREFR>& a_out) const
     {
         if (!IsValid())
             return false;
@@ -124,7 +123,7 @@ namespace Game
         return a_out != nullptr;
     }
 
-    bool ActorHandle::IsValid() const
+    bool ObjectRefHandle::IsValid() const
     {
         return (m_item != *g_invalidRefHandle);
     }

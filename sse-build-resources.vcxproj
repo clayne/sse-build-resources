@@ -71,6 +71,7 @@
     <ClInclude Include="ext\GameHandles.h" />
     <ClInclude Include="ext\Hash.h" />
     <ClInclude Include="ext\ICommon.h" />
+    <ClInclude Include="ext\ID3D11.h" />
     <ClInclude Include="ext\IHook.h" />
     <ClInclude Include="ext\ILogging.h" />
     <ClInclude Include="ext\IMisc.h" />

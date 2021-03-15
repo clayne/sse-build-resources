@@ -4,8 +4,23 @@
 
 namespace stl
 {
+    template <typename T>
+    struct remove_all_pointers {
+    public:
+        using type = T;
+    };
+
+    template <typename T>
+    struct remove_all_pointers<T*> {
+    public:
+        using type = typename remove_all_pointers<T>::type;
+    };
+
     template <class T>
-    using strip_type = std::remove_all_extents_t<std::remove_pointer_t<std::remove_reference_t<std::remove_cv_t<T>>>>;
+    using remove_all_pointers_t = typename remove_all_pointers<T>::type;
+
+    template <class T>
+    using strip_type = std::remove_cv_t<std::remove_pointer_t<std::remove_all_extents_t<remove_all_pointers_t<std::remove_reference_t<T>>>>>;
 
     template <class _Ty, class... _Types>
     inline constexpr bool is_any_base_of_v =

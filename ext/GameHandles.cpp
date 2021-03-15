@@ -26,7 +26,7 @@ namespace Game
 
     FormID ObjectHandle::GetFormID() const
     {
-        return (m_item & 0xFFFFFFFF);
+        return static_cast<FormID::held_type>(m_item & HANDLE_LOWER_MASK);
     }
 
     bool ObjectHandle::IsTemporary() const

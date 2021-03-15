@@ -246,6 +246,9 @@
     <ClInclude Include="ext\Threads.h">
       <Filter>ext</Filter>
     </ClInclude>
+    <ClInclude Include="ext\ID3D11.h">
+      <Filter>ext</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ext\AddressLibrary.cpp">

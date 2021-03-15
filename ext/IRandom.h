@@ -2,6 +2,7 @@
 
 #include <random>
 
+
 template <class T = float, class = std::enable_if_t<std::is_fundamental_v<T>, void>>
 class RandomNumberGenerator
 {
@@ -30,7 +31,7 @@ protected:
     producer_type m_producer;
 };
 
-#include <common/ICriticalSection.h>
+#include "Threads.h"
 
 template <class T = float>
 class ThreadSafeRandomNumberGenerator :
@@ -42,10 +43,10 @@ public:
 
     virtual T Get()
     {
-        IScopedCriticalSection _(std::addressof(m_lock));
+        IScopedLock _(m_lock);
         return m_producer(m_generator);
     }
 
 private:
-    ICriticalSection m_lock;
+    WCriticalSection m_lock;
 };

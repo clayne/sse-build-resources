@@ -19,6 +19,7 @@ namespace Game
         IntegralWrapper<UInt64>
     {
         static inline constexpr UInt64 HANDLE_UPPER_MASK = 0xFFFFFFFF00000000ui64;
+        static inline constexpr UInt64 HANDLE_LOWER_MASK = 0x00000000FFFFFFFFui64;
 
         using IntegralWrapper<UInt64>::IntegralWrapper;
         using IntegralWrapper<UInt64>::operator=;
@@ -79,9 +80,9 @@ namespace Game
 
 }
 
-STD_SPECIALIZE_HASH(::Game::ObjectHandle)
-STD_SPECIALIZE_HASH(::Game::FormID)
-STD_SPECIALIZE_HASH(::Game::ObjectRefHandle)
+STD_SPECIALIZE_HASH(::Game::ObjectHandle);
+STD_SPECIALIZE_HASH(::Game::FormID);
+STD_SPECIALIZE_HASH(::Game::ObjectRefHandle);
 
 #include <skse64/PapyrusVM.h>
 
@@ -96,7 +97,7 @@ namespace Game
             return nullptr;
         }
 
-        return static_cast<T*>(policy->Resolve(static_cast<UInt32>(form_type::kTypeID), *this));
+        return static_cast<form_type*>(policy->Resolve(static_cast<UInt32>(form_type::kTypeID), *this));
     }
 
     template <class T, class form_type>

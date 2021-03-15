@@ -7,44 +7,48 @@ struct D3D11StateBackup
 public:
 
     D3D11StateBackup() = delete;
-    D3D11StateBackup(ID3D11DeviceContext* ctx)
+    D3D11StateBackup(ID3D11DeviceContext* a_ctx, bool a_renderTargets = false) :
+        m_renderTargets(a_renderTargets),
+        m_ctx(a_ctx)
     {
-        ctx->OMGetRenderTargets(D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT, RenderTargetViews, &DepthStencilView);
+        if (a_renderTargets)
+            a_ctx->OMGetRenderTargets(D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT, RenderTargetViews, &DepthStencilView);
 
         ScissorRectsCount = ViewportsCount = D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE;
-        ctx->RSGetScissorRects(&ScissorRectsCount, ScissorRects);
-        ctx->RSGetViewports(&ViewportsCount, Viewports);
-        ctx->RSGetState(&RS);
-        ctx->OMGetBlendState(&BlendState, BlendFactor, &SampleMask);
-        ctx->OMGetDepthStencilState(&DepthStencilState, &StencilRef);
-        ctx->PSGetShaderResources(0, 1, &PSShaderResource);
-        ctx->PSGetSamplers(0, 1, &PSSampler);
+        a_ctx->RSGetScissorRects(&ScissorRectsCount, ScissorRects);
+        a_ctx->RSGetViewports(&ViewportsCount, Viewports);
+        a_ctx->RSGetState(&RS);
+        a_ctx->OMGetBlendState(&BlendState, BlendFactor, &SampleMask);
+        a_ctx->OMGetDepthStencilState(&DepthStencilState, &StencilRef);
+        a_ctx->PSGetShaderResources(0, 1, &PSShaderResource);
+        a_ctx->PSGetSamplers(0, 1, &PSSampler);
         PSInstancesCount = VSInstancesCount = GSInstancesCount = 256;
-        ctx->PSGetShader(&PS, PSInstances, &PSInstancesCount);
-        ctx->VSGetShader(&VS, VSInstances, &VSInstancesCount);
-        ctx->VSGetConstantBuffers(0, 1, &VSConstantBuffer);
-        ctx->GSGetShader(&GS, GSInstances, &GSInstancesCount);
+        a_ctx->PSGetShader(&PS, PSInstances, &PSInstancesCount);
+        a_ctx->VSGetShader(&VS, VSInstances, &VSInstancesCount);
+        a_ctx->VSGetConstantBuffers(0, 1, &VSConstantBuffer);
+        a_ctx->GSGetShader(&GS, GSInstances, &GSInstancesCount);
 
-        ctx->IAGetPrimitiveTopology(&PrimitiveTopology);
-        ctx->IAGetIndexBuffer(&IndexBuffer, &IndexBufferFormat, &IndexBufferOffset);
-        ctx->IAGetVertexBuffers(0, 1, &VertexBuffer, &VertexBufferStride, &VertexBufferOffset);
-        ctx->IAGetInputLayout(&InputLayout);
-
-        m_ctx = ctx;
+        a_ctx->IAGetPrimitiveTopology(&PrimitiveTopology);
+        a_ctx->IAGetIndexBuffer(&IndexBuffer, &IndexBufferFormat, &IndexBufferOffset);
+        a_ctx->IAGetVertexBuffers(0, 1, &VertexBuffer, &VertexBufferStride, &VertexBufferOffset);
+        a_ctx->IAGetInputLayout(&InputLayout);
     }
 
     ~D3D11StateBackup()
     {
-        m_ctx->OMSetRenderTargets(D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT, RenderTargetViews, DepthStencilView);
+        if (m_renderTargets)
+        {
+            m_ctx->OMSetRenderTargets(D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT, RenderTargetViews, DepthStencilView);
 
-        for (UINT i = 0; i < D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT; i++) {
-            if (RenderTargetViews[i]) {
-                RenderTargetViews[i]->Release();
+            for (UINT i = 0; i < D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT; i++) {
+                if (RenderTargetViews[i]) {
+                    RenderTargetViews[i]->Release();
+                }
             }
-        }
 
-        if (DepthStencilView)
-            DepthStencilView->Release();
+            if (DepthStencilView)
+                DepthStencilView->Release();
+        }
 
         m_ctx->RSSetScissorRects(ScissorRectsCount, ScissorRects);
         m_ctx->RSSetViewports(ViewportsCount, Viewports);
@@ -109,6 +113,8 @@ public:
     }
 
 private:
+
+    bool m_renderTargets;
 
     UINT                        ScissorRectsCount, ViewportsCount;
     D3D11_RECT                  ScissorRects[D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE];

@@ -91,7 +91,8 @@ public:
         m_interval(a_interval),
         m_tAccum(0),
         m_tIntervalBegin(IPerfCounter::Query()),
-        m_tCounter(0)
+        m_tCounter(0),
+        m_tLast(0)
     {
     }
 
@@ -100,9 +101,15 @@ public:
         m_tStart = IPerfCounter::Query();
     }
 
+    SKMP_FORCEINLINE void End()
+    {
+        End(m_tLast);
+    }
+
     SKMP_FORCEINLINE bool End(long long& a_out)
     {
         auto tEnd = IPerfCounter::Query();
+
         m_tAccum += IPerfCounter::delta_us(m_tStart, tEnd);
         m_tCounter++;
 
@@ -139,10 +146,15 @@ public:
         m_tIntervalBegin = IPerfCounter::Query();
         m_tAccum = 0;
         m_tCounter = 0;
+        m_tLast = 0;
     }
 
     SKMP_FORCEINLINE long long GetIntervalTime() const {
         return m_tInterval;
+    }
+
+    SKMP_FORCEINLINE long long GetTime() const {
+        return m_tLast;
     }
 
 private:
@@ -153,4 +165,6 @@ private:
     long long m_tAccum;
 
     long long m_tInterval;
+
+    long long m_tLast;
 };

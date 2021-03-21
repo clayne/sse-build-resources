@@ -152,6 +152,7 @@
     <ClCompile Include="ext\GameHandles.cpp" />
     <ClCompile Include="ext\IHook.cpp" />
     <ClCompile Include="ext\ILogging.cpp" />
+    <ClCompile Include="ext\INIReader.cpp" />
     <ClCompile Include="ext\ITasks.cpp" />
     <ClCompile Include="ext\JITASM.cpp" />
     <ClCompile Include="ext\Mem.cpp" />

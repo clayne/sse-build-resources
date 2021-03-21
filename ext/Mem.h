@@ -1,6 +1,9 @@
 #pragma once
 
+#include "ICommon.h"
+
 #include <stdexcept>
+#include <xstddef>
 
 namespace mem
 {

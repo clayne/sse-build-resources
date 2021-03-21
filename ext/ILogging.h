@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Threads.h"
+#include "STL.h"
 
 class ILog
 {

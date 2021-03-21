@@ -446,6 +446,9 @@
     <ClCompile Include="ext\ITasks.cpp">
       <Filter>ext</Filter>
     </ClCompile>
+    <ClCompile Include="ext\INIReader.cpp">
+      <Filter>ext</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="skse64\skse64\skse64\PapyrusNativeFunctionDef.inl">

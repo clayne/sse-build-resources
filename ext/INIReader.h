@@ -13,10 +13,10 @@ https://github.com/benhoyt/inih
 
 */
 
+#include "STL.h"
+
 #ifndef __INI_H__
 #define __INI_H__
-
-#include "ICommon.h"
 
 /* Make this header file easier to include in C++ code */
 #ifdef __cplusplus
@@ -122,182 +122,6 @@ https://github.com/benhoyt/inih
 #define MAX_SECTION 128
 #define MAX_NAME 128
 
-/* Strip whitespace chars off end of given string, in place. Return s. */
-SKMP_FORCEINLINE static char* rstrip(char* s)
-{
-    char* p = s + strlen(s);
-    while (p > s && isspace((unsigned char)(*--p)))
-        *p = '\0';
-    return s;
-}
-
-/* Return pointer to first non-whitespace char in given string. */
-SKMP_FORCEINLINE static char* lskip(const char* s)
-{
-    while (*s && isspace((unsigned char)(*s)))
-        s++;
-    return (char*)s;
-}
-
-/* Return pointer to first char (of chars) or SKMP_FORCEINLINE comment in given string,
-   or pointer to null at end of string if neither found. SKMP_FORCEINLINE comment must
-   be prefixed by a whitespace character to register as a comment. */
-SKMP_FORCEINLINE static char* find_chars_or_comment(const char* s, const char* chars)
-{
-#if INI_ALLOW_INLINE_COMMENTS
-    int was_space = 0;
-    while (*s && (!chars || !strchr(chars, *s)) &&
-        !(was_space && strchr(INI_INLINE_COMMENT_PREFIXES, *s))) {
-        was_space = isspace((unsigned char)(*s));
-        s++;
-    }
-#else
-    while (*s && (!chars || !strchr(chars, *s))) {
-        s++;
-    }
-#endif
-    return (char*)s;
-}
-
-/* Version of strncpy that ensures dest (size bytes) is null-terminated. */
-SKMP_FORCEINLINE static char* strncpy0(char* dest, const char* src, size_t size)
-{
-    strncpy_s(dest, size, src, size);
-    dest[size - 1] = '\0';
-    return dest;
-}
-
-/* See documentation in header file. */
-SKMP_FORCEINLINE int ini_parse_stream(ini_reader reader, void* stream, ini_handler handler,
-    void* user)
-{
-    /* Uses a fair bit of stack (use heap instead if you need to) */
-#if INI_USE_STACK
-    char line[INI_MAX_LINE];
-#else
-    char* line;
-#endif
-    char section[MAX_SECTION] = "";
-    char prev_name[MAX_NAME] = "";
-
-    char* start;
-    char* end;
-    char* name;
-    char* value;
-    int lineno = 0;
-    int error = 0;
-
-#if !INI_USE_STACK
-    line = (char*)malloc(INI_MAX_LINE);
-    if (!line) {
-        return -2;
-    }
-#endif
-
-    /* Scan through stream line by line */
-    while (reader(line, INI_MAX_LINE, stream) != nullptr) {
-        lineno++;
-
-        start = line;
-#if INI_ALLOW_BOM
-        if (lineno == 1 && (unsigned char)start[0] == 0xEF &&
-            (unsigned char)start[1] == 0xBB &&
-            (unsigned char)start[2] == 0xBF) {
-            start += 3;
-        }
-#endif
-        start = lskip(rstrip(start));
-
-        if (*start == ';' || *start == '#') {
-            /* Per Python configparser, allow both ; and # comments at the
-               start of a line */
-        }
-#if INI_ALLOW_MULTILINE
-        else if (*prev_name && *start && start > line) {
-
-#if INI_ALLOW_INLINE_COMMENTS
-            end = find_chars_or_comment(start, nullptr);
-            if (*end)
-                *end = '\0';
-            rstrip(start);
-#endif
-
-            /* Non-blank line with leading whitespace, treat as continuation
-               of previous fullname's value (as per Python configparser). */
-            if (!handler(user, section, prev_name, start) && !error)
-                error = lineno;
-        }
-#endif
-        else if (*start == '[') {
-            /* A "[section]" line */
-            end = find_chars_or_comment(start + 1, "]");
-            if (*end == ']') {
-                *end = '\0';
-                strncpy0(section, start + 1, sizeof(section));
-                *prev_name = '\0';
-            }
-            else if (!error) {
-                /* No ']' found on section line */
-                error = lineno;
-            }
-        }
-        else if (*start) {
-            /* Not a comment, must be a fullname[=:]value pair */
-            end = find_chars_or_comment(start, "=:");
-            if (*end == '=' || *end == ':') {
-                *end = '\0';
-                name = rstrip(start);
-                value = lskip(end + 1);
-#if INI_ALLOW_INLINE_COMMENTS
-                end = find_chars_or_comment(value, nullptr);
-                if (*end)
-                    *end = '\0';
-#endif
-                rstrip(value);
-
-                /* Valid fullname[=:]value pair found, call handler */
-                strncpy0(prev_name, name, sizeof(prev_name));
-                if (!handler(user, section, name, value) && !error)
-                    error = lineno;
-            }
-            else if (!error) {
-                /* No '=' or ':' found on fullname[=:]value line */
-                error = lineno;
-            }
-        }
-
-#if INI_STOP_ON_FIRST_ERROR
-        if (error)
-            break;
-#endif
-    }
-
-#if !INI_USE_STACK
-    free(line);
-#endif
-
-    return error;
-}
-
-/* See documentation in header file. */
-SKMP_FORCEINLINE int ini_parse_file(FILE* file, ini_handler handler, void* user)
-{
-    return ini_parse_stream((ini_reader)fgets, file, handler, user);
-}
-
-/* See documentation in header file. */
-SKMP_FORCEINLINE int ini_parse(const char* filename, ini_handler handler, void* user)
-{
-    FILE* file;
-    int error;
-
-    if (fopen_s(&file, filename, "r"))
-        return -1;
-
-    error = ini_parse_file(file, handler, user);
-    fclose(file);
-    return error;
-}
 
 #endif /* __INI_H__ */
 
@@ -343,22 +167,33 @@ public:
 
     // Get an integer (long) value from INI file, returning default_value if
     // not found or not a valid integer (decimal "1234", "-1234", or hex "0x4d2").
-    long GetInteger(const std::string& section, const std::string& name, long default_value) const;
+    long Get(const std::string& section, const std::string& name, long default_value) const;
 
     // Get a real (floating point double) value from INI file, returning
     // default_value if not found or not a valid floating point value
     // according to strtod().
-    double GetReal(const std::string& section, const std::string& name, double default_value) const;
+    double Get(const std::string& section, const std::string& name, double default_value) const;
 
     // Get a single precision floating point number value from INI file, returning
     // default_value if not found or not a valid floating point value
     // according to strtof().
-    float GetFloat(const std::string& section, const std::string& name, float default_value) const;
+    float Get(const std::string& section, const std::string& name, float default_value) const;
 
     // Get a boolean value from INI file, returning default_value if not found or if
     // not a valid true/false value. Valid true values are "true", "yes", "on", "1",
     // and valid false values are "false", "no", "off", "0" (not case sensitive).
-    bool GetBoolean(const std::string& section, const std::string& name, bool default_value) const;
+    bool Get(const std::string& section, const std::string& name, bool default_value) const;
+
+
+
+    const char* ParseValue(const std::string* a_in, const char* default_value) const;
+    long ParseValue(const std::string* a_in, long default_value) const;
+    double ParseValue(const std::string* a_in, double default_value) const;
+    float ParseValue(const std::string* a_in, float default_value) const;
+    bool ParseValue(const std::string* a_in, bool default_value) const;
+
+
+    bool Exists(const std::string& section, const std::string& name) const;
 
 protected:
     int _error;
@@ -370,144 +205,3 @@ protected:
 };
 
 #endif  // __INIREADER_H__
-
-
-#ifndef __INIREADER__
-#define __INIREADER__
-
-#include <algorithm>
-#include <cctype>
-#include <cstdlib>
-
-SKMP_FORCEINLINE INIReader::INIReader(const std::string& filename)
-{
-    _error = ini_parse(filename.c_str(), ValueHandler, this);
-    _init = true;
-}
-
-SKMP_FORCEINLINE void INIReader::Load(const std::string& filename)
-{
-    if (!_init) {
-        _error = ini_parse(filename.c_str(), ValueHandler, this);
-        _init = true;
-    }
-}
-
-SKMP_FORCEINLINE void INIReader::Clear()
-{
-    _values.swap(decltype(_values)());
-    _init = false;
-}
-
-SKMP_FORCEINLINE INIReader::INIReader(FILE* file)
-{
-    _error = ini_parse_file(file, ValueHandler, this);
-    _init = true;
-}
-
-SKMP_FORCEINLINE int INIReader::ParseError() const
-{
-    return _error;
-}
-
-/*SKMP_FORCEINLINE const stl::iunordered_set<std::string>& INIReader::Sections() const
-{
-    return _values;
-}*/
-
-SKMP_FORCEINLINE const char* INIReader::Get(const std::string& section, const std::string& name, const char* default_value) const
-{
-    auto it1 = _values.find(section);
-    if (it1 == _values.end())
-        return default_value;
-
-    auto it2 = it1->second.find(name);
-    if (it2 == it1->second.end())
-        return default_value;
-
-    return it2->second.c_str();
-}
-
-SKMP_FORCEINLINE const std::string* INIReader::Get(const std::string& section, const std::string& name) const
-{
-    auto it1 = _values.find(section);
-    if (it1 == _values.end())
-        return nullptr;
-
-    auto it2 = it1->second.find(name);
-    if (it2 == it1->second.end())
-        return nullptr;
-
-    return std::addressof(it2->second);
-}
-
-SKMP_FORCEINLINE long INIReader::GetInteger(const std::string& section, const std::string& name, long default_value) const
-{
-    auto valstr = Get(section, name);
-    if (!valstr)
-        return default_value;
-
-    const char* value = valstr->c_str();
-    char* end;
-    // This parses "1234" (decimal) and also "0x4D2" (hex)
-    long n = strtol(value, &end, 0);
-    return end > value ? n : default_value;
-}
-
-SKMP_FORCEINLINE double INIReader::GetReal(const std::string& section, const std::string& name, double default_value) const
-{
-    auto valstr = Get(section, name);
-    if (!valstr)
-        return default_value;
-
-    const char* value = valstr->c_str();
-    char* end;
-    double n = strtod(value, &end);
-    return end > value ? n : default_value;
-}
-
-SKMP_FORCEINLINE float INIReader::GetFloat(const std::string& section, const std::string& name, float default_value) const
-{
-    auto valstr = Get(section, name);
-    if (!valstr)
-        return default_value;
-
-    const char* value = valstr->c_str();
-    char* end;
-    float n = strtof(value, &end);
-    return end > value ? n : default_value;
-}
-
-SKMP_FORCEINLINE bool INIReader::GetBoolean(const std::string& section, const std::string& name, bool default_value) const
-{
-    auto valstr = Get(section, name);
-    if (!valstr)
-        return default_value;
-
-    const char* value = valstr->c_str();
-
-    if (_stricmp(value, "true") == 0 || _stricmp(value, "yes") == 0 || _stricmp(value, "on") == 0 || _stricmp(value, "1") == 0)
-        return true;
-    else if (_stricmp(value, "false") == 0 || _stricmp(value, "no") == 0 || _stricmp(value, "off") == 0 || _stricmp(value, "0") == 0)
-        return false;
-    else
-        return default_value;
-}
-
-SKMP_FORCEINLINE int INIReader::ValueHandler(void* user, const char* section, const char* name,
-    const char* value)
-{
-    INIReader* reader = (INIReader*)user;
-
-    auto r = reader->_values.try_emplace(section);
-    auto o = r.first->second.try_emplace(name, value);
-
-    if (!o.second) {
-        o.first->second += "\n";
-        o.first->second += value;
-    }
-
-    return 1;
-}
-
-#endif  // __INIREADER__

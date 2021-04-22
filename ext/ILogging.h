@@ -53,12 +53,12 @@ public:
 
     SKMP_FORCEINLINE void LogPatchBegin(const char* a_id) const
     {
-        gLog.Debug("[Patch] [%s] Writing..", a_id);
+        Debug("[Patch] [%s] Writing..", a_id);
     }
 
     SKMP_FORCEINLINE void LogPatchEnd(const char* a_id) const
     {
-        gLog.Debug("[Patch] [%s] OK", a_id);
+        Debug("[Patch] [%s] OK", a_id);
     }
 
     typedef stl::iunordered_map<std::string, IDebugLog::LogLevel> logLevelMap_t;

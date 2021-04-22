@@ -247,7 +247,7 @@ namespace hash
             }
 
             template <class T>
-            __declspec(noreturn) void operator()(T const&) const
+            void operator()(T const&) const
             {
                 static_assert(false, ERRMSG_HASH_NOT_IMPL);
             }
@@ -326,7 +326,7 @@ namespace hash
             }
 
             template <class T>
-            __declspec(noreturn) void operator()(T const&) const
+            void operator()(T const&) const
             {
                 static_assert(false, ERRMSG_HASH_NOT_IMPL);
             }

@@ -164,6 +164,28 @@ namespace StrHelpers
         return _stricmp(a_lhs.c_str(), a_rhs.c_str()) == 0;
     }
 
+    template <std::size_t _Len>
+    SKMP_FORCEINLINE std::size_t strlen(const char(&a_string)[_Len])
+    {
+        return ::strnlen(a_string, _Len);
+    }
+
+    SKMP_FORCEINLINE std::string& ltrim(std::string& str, const std::string& chars = "\t\n\v\f\r ")
+    {
+        str.erase(0, str.find_first_not_of(chars));
+        return str;
+    }
+
+    SKMP_FORCEINLINE std::string& rtrim(std::string& str, const std::string& chars = "\t\n\v\f\r ")
+    {
+        str.erase(str.find_last_not_of(chars) + 1);
+        return str;
+    }
+
+    SKMP_FORCEINLINE std::string& trim(std::string& str, const std::string& chars = "\t\n\v\f\r ")
+    {
+        return ltrim(rtrim(str, chars), chars);
+    }
 
 
 }

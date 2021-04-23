@@ -53,6 +53,34 @@ namespace Game
 
 }
 
+// ObjectHandleRef
+namespace Game
+{
+    ObjectHandleRef::ObjectHandleRef(ObjectHandle a_handle) :
+        m_handle(a_handle)
+    {
+        auto policy = (*g_skyrimVM)->GetClassRegistry()->GetHandlePolicy();
+        ObjectHandle invalidHandle = policy->GetInvalidHandle();
+
+        if (a_handle != invalidHandle)
+        {
+            policy->AddRef(a_handle);
+        }
+    }
+
+    void ObjectHandleRef::release()
+    {
+        auto policy = (*g_skyrimVM)->GetClassRegistry()->GetHandlePolicy();
+        ObjectHandle invalidHandle = policy->GetInvalidHandle();
+
+        if (m_handle != invalidHandle)
+        {
+            policy->Release(m_handle);
+            m_handle = invalidHandle;
+        }
+    }
+}
+
 // FormID
 namespace Game
 {

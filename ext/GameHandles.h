@@ -41,11 +41,31 @@ namespace Game
         [[nodiscard]] FormID GetFormID() const;
         [[nodiscard]] bool GetPluginIndex(UInt32& a_out) const;
         [[nodiscard]] bool GetPluginPartialIndex(UInt32& a_out) const;
-
-
     };
 
     static_assert(sizeof(ObjectHandle) == sizeof(UInt64));
+
+    class ObjectHandleRef
+    {
+    public:
+
+        ObjectHandleRef() = delete;
+
+        explicit ObjectHandleRef(ObjectHandle a_handle);
+
+        SKMP_FORCEINLINE ~ObjectHandleRef() {
+            release();
+        }
+
+        void release();
+
+        [[nodiscard]] SKMP_FORCEINLINE ObjectHandle get() const {
+            return m_handle;
+        }
+
+    private:
+        ObjectHandle m_handle;
+    };
 
     struct FormID :
         IntegralWrapper<UInt32>

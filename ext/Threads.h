@@ -1,19 +1,15 @@
 #pragma once
 
 #include <immintrin.h>
+#include <atomic>
 
 // non-reentrant
 class FastSpinMutex
 {
-    static inline constexpr std::uint64_t MAX_SPIN_CYCLES = 1000ULL;
+    static inline constexpr std::uint64_t MAX_SPIN_CYCLES = 10000ULL;
 
 public:
-    FastSpinMutex() noexcept : m_lock(0L) {};
-
-    FastSpinMutex(const FastSpinMutex&) = delete;
-    FastSpinMutex(FastSpinMutex&&) = delete;
-    FastSpinMutex& operator=(const FastSpinMutex&) = delete;
-    FastSpinMutex& operator=(FastSpinMutex&&) = delete;
+    FastSpinMutex() noexcept = default;
 
     [[nodiscard]] SKMP_FORCEINLINE bool try_lock() noexcept;
     void lock() noexcept;
@@ -21,17 +17,17 @@ public:
 
 private:
 
-    volatile long m_lock;
+    std::atomic_flag m_lock = ATOMIC_FLAG_INIT;
 };
 
 bool FastSpinMutex::try_lock() noexcept
 {
-    return InterlockedCompareExchange(std::addressof(m_lock), 1L, 0L) == 0L;
+    return m_lock.test_and_set(std::memory_order_acquire) == false;
 }
 
 void FastSpinMutex::unlock() noexcept
 {
-    InterlockedExchange(&m_lock, 0L);
+    m_lock.clear(std::memory_order_release);
 }
 
 class WCriticalSection
@@ -55,7 +51,7 @@ public:
     SKMP_FORCEINLINE bool try_lock();
 
 private:
-    CRITICAL_SECTION	m_cs;
+    CRITICAL_SECTION m_cs;
 };
 
 SKMP_FORCEINLINE void WCriticalSection::lock() {
@@ -67,7 +63,7 @@ SKMP_FORCEINLINE void WCriticalSection::unlock() {
 }
 
 SKMP_FORCEINLINE bool WCriticalSection::try_lock() {
-    return TryEnterCriticalSection(&m_cs) != 0;
+    return TryEnterCriticalSection(&m_cs) == TRUE;
 }
 
 

@@ -69,7 +69,7 @@ extern "C" {
 #define INI_ALLOW_BOM 1
 #endif
 
-          /* Nonzero to allow SKMP_FORCEINLINE comments (with valid SKMP_FORCEINLINE comment characters
+          /* Nonzero to allow inline comments (with valid SKMP_FORCEINLINE comment characters
              specified by INI_INLINE_COMMENT_PREFIXES). Set to 0 to turn off and match
              Python 3.2+ configparser behaviour. */
 #ifndef INI_ALLOW_INLINE_COMMENTS
@@ -91,7 +91,7 @@ extern "C" {
 
 /* Maximum line length for any line in INI file. */
 #ifndef INI_MAX_LINE
-#define INI_MAX_LINE 1024
+#define INI_MAX_LINE 1024 * 32
 #endif
 
 #ifdef __cplusplus

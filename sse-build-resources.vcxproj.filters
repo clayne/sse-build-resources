@@ -249,6 +249,15 @@
     <ClInclude Include="ext\ID3D11.h">
       <Filter>ext</Filter>
     </ClInclude>
+    <ClInclude Include="ext\ISKSE.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\IOS.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\ISettingCollection.h">
+      <Filter>ext</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ext\AddressLibrary.cpp">
@@ -447,6 +456,15 @@
       <Filter>ext</Filter>
     </ClCompile>
     <ClCompile Include="ext\INIReader.cpp">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\ISKSE.cpp">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\IOS.cpp">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\StrHelpers.cpp">
       <Filter>ext</Filter>
     </ClCompile>
   </ItemGroup>

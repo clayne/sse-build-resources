@@ -1,25 +1,26 @@
 #include "JITASM.h"
 
-#include "skse64_common/BranchTrampoline.h"
+#include <skse64_common/BranchTrampoline.h>
 
 namespace JITASM
 {
-	JITASM::JITASM(size_t maxSize) :
+	JITASM::JITASM(BranchTrampoline &a_trampoline, std::size_t maxSize) :
 		_endedAlloc(false),
-		Xbyak::CodeGenerator(maxSize, g_localTrampoline.StartAlloc())
+		_m_trampoline(a_trampoline),
+		Xbyak::CodeGenerator(maxSize, a_trampoline.StartAlloc())
 	{}
 
 	void JITASM::done()
 	{
 		if (!_endedAlloc) {
 			_endedAlloc = true;
-			g_localTrampoline.EndAlloc(getCurr());
+			_m_trampoline.EndAlloc(getCurr());
 		}
 	}
 
-	uintptr_t JITASM::get()
+	std::uintptr_t JITASM::get()
 	{
 		done();
-		return reinterpret_cast<uintptr_t>(getCode());
+		return reinterpret_cast<std::uintptr_t>(getCode());
 	}
 }

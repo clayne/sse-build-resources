@@ -39,16 +39,16 @@
 namespace StrHelpers
 {
     typedef std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> wsconv_t;
-    static inline wsconv_t strconverter;
+    extern wsconv_t s_strconverter;
 
     SKMP_FORCEINLINE std::string ToString(const std::wstring& wstr)
     {
-        return strconverter.to_bytes(wstr);
+        return s_strconverter.to_bytes(wstr);
     }
 
     SKMP_FORCEINLINE std::wstring ToWString(const std::string& str)
     {
-        return strconverter.from_bytes(str);
+        return s_strconverter.from_bytes(str);
     }
 
     SKMP_FORCEINLINE void
@@ -63,7 +63,8 @@ namespace StrHelpers
     }
 
     template <typename T>
-    void SplitString(const std::wstring& s, wchar_t delim, stl::vector<T>& elems)
+    SKMP_FORCEINLINE void
+        SplitString(const std::wstring& s, wchar_t delim, stl::vector<T>& elems)
     {
         stl::vector<std::wstring> tmp;
         SplitString(s, delim, tmp);
@@ -81,9 +82,8 @@ namespace StrHelpers
         }
     }
 
-    template <class T>
     SKMP_FORCEINLINE void
-        SplitString(const std::string& s, char delim, T& elems)
+        SplitString(const std::string& s, char delim, stl::vector<std::string>& elems)
     {
         std::istringstream ss(s);
         std::string item;
@@ -93,17 +93,23 @@ namespace StrHelpers
         }
     }
 
-    template <class T, class U>
-    void SplitString(const std::string& s, char delim, U& elems)
+    template <typename T>
+    SKMP_FORCEINLINE void
+        SplitString(const std::string& s, char delim, stl::vector<T>& elems, bool a_skipEmpty = false)
     {
-        std::vector<std::string> tmp;
+        stl::vector<std::string> tmp;
         SplitString(s, delim, tmp);
 
-        if (tmp.size())
+        if (!tmp.empty())
         {
             T iv;
             std::stringstream oss;
-            for (const auto& e : tmp) {
+            for (const auto& e : tmp)
+            {
+                if (a_skipEmpty && e.empty()) {
+                    continue;
+                }
+
                 oss << e;
                 oss >> iv;
                 oss.clear();
@@ -115,7 +121,7 @@ namespace StrHelpers
 #ifdef UNICODE
     SKMP_FORCEINLINE std::wstring ToNative(const std::string& str)
     {
-        return strconverter.from_bytes(str);
+        return s_strconverter.from_bytes(str);
     }
 
     SKMP_FORCEINLINE const std::wstring& ToNative(const std::wstring& str)
@@ -125,13 +131,13 @@ namespace StrHelpers
 
     SKMP_FORCEINLINE std::string StrToStr(const std::wstring& str)
     {
-        return strconverter.to_bytes(str);
+        return s_strconverter.to_bytes(str);
     }
 
 #else
     SKMP_FORCEINLINE std::string ToNative(const std::wstring& wstr)
     {
-        return strconverter.to_bytes(wstr);
+        return s_strconverter.to_bytes(wstr);
     }
 
     SKMP_FORCEINLINE const std::string& ToNative(std::string& str)

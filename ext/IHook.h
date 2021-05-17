@@ -9,25 +9,32 @@ namespace Hook
 #pragma pack(push, 1)
     struct CB5Code
     {
-        uint8_t	op;
-        int32_t	displ;
+        std::uint8_t op;
+        std::int32_t displ;
     };
 
     struct CB6Code
     {
-        uint8_t	escape;
-        uint8_t	modrm;
-        uint32_t displ;
+        std::uint8_t escape;
+        std::uint8_t modrm;
+        std::uint32_t displ;
     };
 #pragma pack(pop)
 
-    static_assert(sizeof(CB5Code) == 0x5);
-    static_assert(sizeof(CB6Code) == 0x6);
-
-    template <uint8_t op>
-    bool CheckDst5(uintptr_t addr)
+    template <std::uint8_t op>
+    bool CheckDst5(std::uintptr_t addr)
     {
-        static_assert(op == 0xE8 || op == 0xE9, "invalid opcode");
+        static_assert(op == std::uint8_t(0xE8) || op == std::uint8_t(0xE9), "invalid opcode");
+
+        auto ins = reinterpret_cast<CB5Code*>(addr);
+
+        return ins->op == op;
+    }
+
+    template <std::uint8_t op, class T>
+    bool GetDst5(std::uintptr_t addr, T& out)
+    {
+        static_assert(op == std::uint8_t(0xE8) || op == std::uint8_t(0xE9), "invalid opcode");
 
         auto ins = reinterpret_cast<CB5Code*>(addr);
 
@@ -35,29 +42,22 @@ namespace Hook
             return false;
         }
 
-        return true;
-    }
+        auto oa = addr + sizeof(CB5Code) + ins->displ;
 
-    template <uint8_t op>
-    bool GetDst5(uintptr_t addr, uintptr_t& out)
-    {
-        static_assert(op == 0xE8 || op == 0xE9, "invalid opcode");
-
-        auto ins = reinterpret_cast<CB5Code*>(addr);
-
-        if (ins->op != op) {
-            return false;
+        if constexpr (std::is_same_v<T, std::uintptr_t>) {
+            out = oa;
+        }
+        else {
+            out = reinterpret_cast<T>(oa);
         }
 
-        out = addr + sizeof(CB5Code) + ins->displ;
-
         return true;
     }
 
-    template <uint8_t modrm>
-    bool GetDst6(uintptr_t addr, uintptr_t& out)
+    template <std::uint8_t modrm, class T>
+    bool GetDst6(std::uintptr_t addr, T& out)
     {
-        static_assert(modrm == 0x15 || modrm == 0x25, "invalid modr/m byte");
+        static_assert(modrm == std::uint8_t(0x15) || modrm == std::uint8_t(0x25), "invalid modr/m byte");
 
         auto ins = reinterpret_cast<CB6Code*>(addr);
 
@@ -65,74 +65,100 @@ namespace Hook
             return false;
         }
 
-        out = *reinterpret_cast<uintptr_t*>(addr + sizeof(CB6Code) + ins->displ);
+        auto oa = *reinterpret_cast<std::uintptr_t*>(addr + sizeof(CB6Code) + ins->displ);
+
+        if constexpr (std::is_same_v<T, std::uintptr_t>) {
+            out = oa;
+        }
+        else {
+            out = reinterpret_cast<T>(oa);
+        }
 
         return true;
     }
 
+
     template <typename T>
-    bool Call5(uintptr_t addr, uintptr_t dst, T& orig)
+    bool Call5(BranchTrampoline &a_trampoline, std::uintptr_t addr, std::uintptr_t dst, T& orig)
     {
-        uintptr_t o;
+        std::uintptr_t o;
+
         if (!GetDst5<0xE8>(addr, o)) {
             return false;
         }
 
-        orig = reinterpret_cast<T>(o);
+        if constexpr (std::is_same_v<T, std::uintptr_t>) {
+            orig = o;
+        }
+        else {
+            orig = reinterpret_cast<T>(o);
+        }
 
-        g_branchTrampoline.Write5Call(addr, dst);
+        a_trampoline.Write5Call(addr, dst);
 
         return true;
     }
 
     template <typename T>
-    bool Jmp5(uintptr_t addr, uintptr_t dst, T& orig)
+    bool Jmp5(BranchTrampoline& a_trampoline, std::uintptr_t addr, std::uintptr_t dst, T& orig)
     {
-        uintptr_t o;
+        std::uintptr_t o;
+
         if (!GetDst5<0xE9>(addr, o)) {
             return false;
         }
 
-        orig = reinterpret_cast<T>(o);
+        if constexpr (std::is_same_v<T, std::uintptr_t>) {
+            orig = o;
+        }
+        else {
+            orig = reinterpret_cast<T>(o);
+        }
 
-        g_branchTrampoline.Write5Branch(addr, dst);
+        a_trampoline.Write5Branch(addr, dst);
 
         return true;
     }
 
     template <typename T>
-    bool Call6(uintptr_t addr, uintptr_t dst, T& orig)
+    bool Call6(BranchTrampoline& a_trampoline, std::uintptr_t addr, std::uintptr_t dst, T& orig)
     {
-        uintptr_t o;
+        std::uintptr_t o;
+
         if (!GetDst6<0x15>(addr, o)) {
             return false;
         }
 
-        orig = reinterpret_cast<T>(o);
+        if constexpr (std::is_same_v<T, std::uintptr_t>) {
+            orig = o;
+        }
+        else {
+            orig = reinterpret_cast<T>(o);
+        }
 
-        g_branchTrampoline.Write6Call(addr, dst);
+        a_trampoline.Write6Call(addr, dst);
 
         return true;
     }
 
     template <typename T>
-    bool Jmp6(uintptr_t addr, uintptr_t dst, T& orig)
+    bool Jmp6(BranchTrampoline& a_trampoline, std::uintptr_t addr, std::uintptr_t dst, T& orig)
     {
-        uintptr_t o;
+        std::uintptr_t o;
+
         if (!GetDst6<0x25>(addr, o)) {
             return false;
         }
 
-        orig = reinterpret_cast<T>(o);
+        if constexpr (std::is_same_v<T, std::uintptr_t>) {
+            orig = o;
+        }
+        else {
+            orig = reinterpret_cast<T>(o);
+        }
 
-        g_branchTrampoline.Write6Branch(addr, dst);
+        a_trampoline.Write6Branch(addr, dst);
 
         return true;
     }
-
-    size_t GetAllocGranularity();
-    size_t GetAlignedTrampolineSize(size_t maxSize);
-
-    size_t InitBranchTrampoline(const SKSEInterface* skse, SKSETrampolineInterface* a_trampolineInterface, size_t a_size);
-    size_t InitLocalTrampoline(const SKSEInterface* skse, SKSETrampolineInterface* a_trampolineInterface, size_t a_size);
 }

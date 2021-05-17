@@ -6,6 +6,12 @@ namespace Patching
 	void safe_memset(uintptr_t addr, int val, size_t len);
 	bool validate_mem(uintptr_t addr, const void* data, size_t len);
 
+	template <std::size_t _Size>
+	bool validate_mem(uintptr_t addr, const std::uint8_t(&a_data)[_Size])
+	{
+		return validate_mem(addr, reinterpret_cast<const void*>(a_data), _Size);
+	}
+
 	template <typename T>
 	SKMP_FORCEINLINE void safe_write(uintptr_t addr, T val)
 	{

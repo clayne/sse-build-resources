@@ -8,12 +8,20 @@ namespace JITASM
 		: public Xbyak::CodeGenerator
 	{
 	public:
-		JITASM(size_t maxSize = Xbyak::DEFAULT_MAX_CODE_SIZE);
+		JITASM(BranchTrampoline& a_trampoline, std::size_t maxSize = Xbyak::DEFAULT_MAX_CODE_SIZE);
 
 		void done();
-		uintptr_t get();
+		std::uintptr_t get();
+
+		template <class T>
+		T get()
+		{
+			done();
+			return reinterpret_cast<T>(getCode());
+		}
 
 	private:
 		bool _endedAlloc;
+		BranchTrampoline& _m_trampoline;
 	};
 }

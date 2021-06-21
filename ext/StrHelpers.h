@@ -52,7 +52,7 @@ namespace StrHelpers
     }
 
     SKMP_FORCEINLINE void
-        SplitString(const std::wstring& s, wchar_t delim, stl::vector<std::wstring>& elems)
+        SplitString(const std::wstring& s, wchar_t delim, std::vector<std::wstring>& elems)
     {
         std::wistringstream ss(s);
         std::wstring item;
@@ -64,9 +64,9 @@ namespace StrHelpers
 
     template <typename T>
     SKMP_FORCEINLINE void
-        SplitString(const std::wstring& s, wchar_t delim, stl::vector<T>& elems)
+        SplitString(const std::wstring& s, wchar_t delim, std::vector<T>& elems)
     {
-        stl::vector<std::wstring> tmp;
+        std::vector<std::wstring> tmp;
         SplitString(s, delim, tmp);
 
         if (tmp.size())
@@ -83,7 +83,7 @@ namespace StrHelpers
     }
 
     SKMP_FORCEINLINE void
-        SplitString(const std::string& s, char delim, stl::vector<std::string>& elems)
+        SplitString(const std::string& s, char delim, std::vector<std::string>& elems)
     {
         std::istringstream ss(s);
         std::string item;
@@ -95,9 +95,9 @@ namespace StrHelpers
 
     template <typename T>
     SKMP_FORCEINLINE void
-        SplitString(const std::string& s, char delim, stl::vector<T>& elems, bool a_skipEmpty = false)
+        SplitString(const std::string& s, char delim, std::vector<T>& elems, bool a_skipEmpty = false)
     {
-        stl::vector<std::string> tmp;
+        std::vector<std::string> tmp;
         SplitString(s, delim, tmp);
 
         if (!tmp.empty())

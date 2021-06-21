@@ -9,6 +9,8 @@
 #pragma comment(lib, "version.lib")
 #pragma comment(lib, "Shlwapi.lib")
 
+#include <tsl/sparse_map.h>
+
 class VersionDb
 {
 public:
@@ -16,7 +18,7 @@ public:
     ~VersionDb() { }
 
 private:
-    using map_type = std::map<unsigned long long, unsigned long long>;
+    using map_type = tsl::sparse_map<unsigned long long, unsigned long long>;
 
     map_type _data;
     //std::map<unsigned long long, unsigned long long> _rdata;
@@ -182,6 +184,8 @@ public:
     bool Load(int major, int minor, int revision, int build)
     {
         Clear();
+
+        _data.reserve(800000);
 
         char fileName[256];
         _snprintf_s(fileName, 256, "Data\\SKSE\\Plugins\\version-%d-%d-%d-%d.bin", major, minor, revision, build);

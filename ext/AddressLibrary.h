@@ -29,9 +29,13 @@ public:
     SKMP_FORCEINLINE static bool HasBadQuery() {
         return m_Instance.hasBadQuery;
     }
+    
+    SKMP_FORCEINLINE static std::size_t Size() {
+        return m_Instance.db->GetOffsetMap().size();
+    }
 
     template <typename T>
-    SKMP_FORCEINLINE static T Addr(unsigned long long id)
+    static T Addr(unsigned long long id)
     {
         auto r = reinterpret_cast<T>(m_Instance.db->FindAddressById(id));
         if (!r) {
@@ -40,7 +44,7 @@ public:
         return r;
     }
 
-    SKMP_FORCEINLINE static uintptr_t Addr(unsigned long long id, ptrdiff_t offset)
+    SKMP_NOINLINE static uintptr_t Addr(unsigned long long id, ptrdiff_t offset)
     {
         void* addr = m_Instance.db->FindAddressById(id);
         if (addr == NULL) {
@@ -51,12 +55,12 @@ public:
     }
 
     template <typename T>
-    SKMP_FORCEINLINE static T Addr(unsigned long long id, ptrdiff_t offset)
+    static T Addr(unsigned long long id, ptrdiff_t offset)
     {
         return reinterpret_cast<T>(Addr(id, offset));
     }
 
-    SKMP_FORCEINLINE static bool Offset(unsigned long long id, uintptr_t& result)
+    SKMP_NOINLINE static bool Offset(unsigned long long id, uintptr_t& result)
     {
         unsigned long long r;
         if (!m_Instance.db->FindOffsetById(id, r)) {
@@ -67,7 +71,7 @@ public:
         return true;
     }
 
-    SKMP_FORCEINLINE static uintptr_t Offset(unsigned long long id)
+    SKMP_NOINLINE static uintptr_t Offset(unsigned long long id)
     {
         unsigned long long r;
         if (!m_Instance.db->FindOffsetById(id, r)) {
@@ -86,16 +90,16 @@ public:
         Address(Address&) = delete;
         Address& operator=(Address&) = delete;
 
-        SKMP_FORCEINLINE Address(unsigned long long a_id) :
+        Address(unsigned long long a_id) :
             m_offset(IAL::Addr<BlockConversionType*>(a_id))
         {
         }
         
-        SKMP_FORCEINLINE Address(unsigned long long a_id, ptrdiff_t a_offset) :
+        Address(unsigned long long a_id, ptrdiff_t a_offset) :
             m_offset(IAL::Addr<BlockConversionType*>(a_id, a_offset))
         {
         }
-
+                
         SKMP_FORCEINLINE operator T()
         {
             return reinterpret_cast <T>(m_offset);
@@ -114,7 +118,7 @@ public:
 
 private:
     IAL();
-    ~IAL() noexcept;
+    virtual ~IAL() noexcept;
 
     bool isLoaded;
     bool hasBadQuery;

@@ -349,4 +349,5 @@ namespace hash
 }
 
 #define STD_SPECIALIZE_HASH(T) namespace std { template<> struct hash<T> { std::size_t operator()(T const& a_in) const noexcept { return ::hash::fnv1::_compute_hash_fnv1a(a_in); } };}
+#define STD_SPECIALIZE_HASH_M(T, m) namespace std { template<> struct hash<T> { std::size_t operator()(T const& a_in) const noexcept { return ::hash::fnv1::_compute_hash_fnv1a(a_in ## . ## m); } };}
 #define STD_SPECIALIZE_HASH_FWD(T,v) namespace std { template<> struct hash<T> { std::size_t operator()(T const& a_in) const noexcept { return hash<decltype(a_in ## . ## v)>()(a_in ## . ## v); } };}

@@ -99,7 +99,7 @@ protected:
         return m_queue.empty();
     }
 
-    stl::queue<element_type> m_queue;
+    std::queue<element_type> m_queue;
     mutable FastSpinMutex m_lock;
 };
 

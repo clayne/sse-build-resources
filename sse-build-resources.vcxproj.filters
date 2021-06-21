@@ -258,6 +258,15 @@
     <ClInclude Include="ext\ISettingCollection.h">
       <Filter>ext</Filter>
     </ClInclude>
+    <ClInclude Include="ext\VFT.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\GameCommon.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\Iteration.h">
+      <Filter>ext</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ext\AddressLibrary.cpp">
@@ -465,6 +474,9 @@
       <Filter>ext</Filter>
     </ClCompile>
     <ClCompile Include="ext\StrHelpers.cpp">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\GameCommon.cpp">
       <Filter>ext</Filter>
     </ClCompile>
   </ItemGroup>

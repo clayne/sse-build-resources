@@ -2,14 +2,18 @@
 
 #include <functional>
 
+#ifndef _SKMP_DISABLE_BOOST_SERIALIZATION
 #include <boost/serialization/access.hpp>
+#endif
 
 template <class T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
 struct IntegralWrapper
 {
     using held_type = T;
 
+#ifndef _SKMP_DISABLE_BOOST_SERIALIZATION
     friend class boost::serialization::access;
+#endif
 
     IntegralWrapper()
         : m_item(T(0))
@@ -30,22 +34,6 @@ struct IntegralWrapper
         return m_item;
     }
 
-    /*T* operator&() {
-        return &m_item;
-    }
-    
-    const T* operator&() const {
-        return &m_item;
-    }
-
-    T& operator*() {
-        return m_item;
-    }
-    
-    const T& operator*() const {
-        return m_item;
-    }*/
-
     T& operator*() {
         return m_item;
     }
@@ -60,11 +48,13 @@ protected:
 
 private:
 
+#ifndef _SKMP_DISABLE_BOOST_SERIALIZATION
     template<class Archive>
     void serialize(Archive& ar, const unsigned int) {
         ar& m_item;
     }
 
+#endif
 };
 
 /*template <class T>

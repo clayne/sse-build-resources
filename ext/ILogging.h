@@ -61,7 +61,7 @@ public:
         Debug("[Patch] [%s] OK", a_id);
     }
 
-    typedef stl::iunordered_map<std::string, IDebugLog::LogLevel> logLevelMap_t;
+    typedef stl::iunordered_map<std::string, IDebugLog::LogLevel, std::allocator<std::pair<const std::string, IDebugLog::LogLevel>>> logLevelMap_t;
     static logLevelMap_t m_logLevelMap;
 
     static IDebugLog::LogLevel TranslateLogLevel(const std::string& a_level);

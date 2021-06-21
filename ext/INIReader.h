@@ -198,7 +198,10 @@ public:
 protected:
     int _error;
     bool _init;
-    stl::iunordered_map<std::string, stl::iunordered_map<std::string, std::string>> _values;
+
+    using storage_type = stl::iunordered_map<std::string, std::string, std::allocator<std::pair<const std::string, std::string>>>;
+
+    stl::iunordered_map<std::string, storage_type, std::allocator<std::pair<const std::string, storage_type>>> _values;
     //stl::iunordered_set<std::string> _sections;
     static int ValueHandler(void* user, const char* section, const char* name,
         const char* value);

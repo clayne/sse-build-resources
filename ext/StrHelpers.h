@@ -95,7 +95,7 @@ namespace StrHelpers
 
     template <typename T>
     SKMP_FORCEINLINE void
-        SplitString(const std::string& s, char delim, std::vector<T>& elems, bool a_skipEmpty = false)
+        SplitString(const std::string& s, char delim, std::vector<T>& elems, bool a_skipEmpty = false, bool a_hex = false)
     {
         std::vector<std::string> tmp;
         SplitString(s, delim, tmp);
@@ -108,6 +108,10 @@ namespace StrHelpers
             {
                 if (a_skipEmpty && e.empty()) {
                     continue;
+                }
+
+                if (a_hex) {
+                    oss << std::hex;
                 }
 
                 oss << e;

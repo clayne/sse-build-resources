@@ -5,6 +5,8 @@
 namespace Game
 {
     void AIProcessVisitActors(const std::function<void(Actor*)>& a_func);
+    char GetActorSex(Actor* a_actor);
+    TESRace* GetActorRace(Actor* a_actor);
 
     // https://github.com/Ryan-rsm-McKenzie/CommonLibSSE/blob/master/include/RE/AI/ProcessLists.h
     class ProcessLists

@@ -30,6 +30,33 @@ namespace Game
         }
     }
 
+    char GetActorSex(Actor* a_actor)
+    {
+        if (auto actorBase = a_actor->baseForm; actorBase) {
+            if (auto npc = RTTI<TESNPC>()(actorBase); npc) {
+                return npc->GetSex();
+            }
+        }
+
+        return 0;
+    }
+
+    TESRace* GetActorRace(Actor* a_actor)
+    {
+        auto race = a_actor->race;
+
+        if (!race) {
+            if (auto actorBase = a_actor->baseForm; actorBase) {
+                if (auto npc = RTTI<TESNPC>()(actorBase); npc) {
+                    race = npc->race.race;
+                }
+            }
+        }
+
+        return race;
+    }
+
+
     static auto s_processLists = IAL::Addr<ProcessLists**>(514167);
 
     ProcessLists* ProcessLists::GetSingleton()

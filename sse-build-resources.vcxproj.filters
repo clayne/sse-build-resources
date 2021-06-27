@@ -267,6 +267,15 @@
     <ClInclude Include="ext\Iteration.h">
       <Filter>ext</Filter>
     </ClInclude>
+    <ClInclude Include="ext\Model.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\Stream.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\ITaskPool.h">
+      <Filter>ext</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ext\AddressLibrary.cpp">
@@ -477,6 +486,15 @@
       <Filter>ext</Filter>
     </ClCompile>
     <ClCompile Include="ext\GameCommon.cpp">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\Model.cpp">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\Stream.cpp">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\ITaskPool.cpp">
       <Filter>ext</Filter>
     </ClCompile>
   </ItemGroup>

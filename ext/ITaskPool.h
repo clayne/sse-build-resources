@@ -3,6 +3,8 @@
 #include "ITasks.h"
 #include "AddressLibrary.h"
 
+#include "Threads.h"
+
 namespace Game
 {
     class BSMain;
@@ -42,7 +44,6 @@ private:
     TaskQueue m_queue;
 
     typedef void(*mainLoopUpdate_t)(Game::BSMain*);
-
     mainLoopUpdate_t mainLoopUpdate_o;
 
     inline static auto m_hookTargetAddr = IAL::Addr(35551, 0x11f);

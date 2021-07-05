@@ -167,7 +167,13 @@ public:
 
     // Get an integer (long) value from INI file, returning default_value if
     // not found or not a valid integer (decimal "1234", "-1234", or hex "0x4d2").
-    long Get(const std::string& section, const std::string& name, long default_value) const;
+    std::int64_t Get(const std::string& section, const std::string& name, std::int64_t default_value) const;
+
+    template <typename T, typename = std::enable_if_t<!std::is_same_v<T, bool> && (std::is_integral_v<T> || std::is_enum_v<T>) && std::is_convertible_v<T, std::int64_t>>>
+    std::int64_t Get(const std::string& section, const std::string& name, std::int64_t default_value) const
+    {
+        return static_cast<T>(Get(section, name, static_cast<std::int64_t>(default_value)));
+    }
 
     // Get a real (floating point double) value from INI file, returning
     // default_value if not found or not a valid floating point value
@@ -187,13 +193,19 @@ public:
 
 
     const char* ParseValue(const std::string* a_in, const char* default_value) const;
-    long ParseValue(const std::string* a_in, long default_value) const;
+    std::int64_t ParseValue(const std::string* a_in, std::int64_t default_value) const;
     double ParseValue(const std::string* a_in, double default_value) const;
     float ParseValue(const std::string* a_in, float default_value) const;
     bool ParseValue(const std::string* a_in, bool default_value) const;
 
 
     bool Exists(const std::string& section, const std::string& name) const;
+
+    void RemoveSection(const std::string &section);
+
+    inline auto& GetSections() const {
+        return _values;
+    }
 
 protected:
     int _error;

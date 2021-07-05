@@ -4,7 +4,7 @@ void FastSpinMutex::lock() noexcept
 {
     while (!try_lock())
     {
-        auto start = __rdtsc();
+        /*auto start = __rdtsc();
 
         do
         {
@@ -15,7 +15,13 @@ void FastSpinMutex::lock() noexcept
                 return;
             }
 
-        } while ((__rdtsc() - start) < MAX_SPIN_CYCLES);
+        } while ((__rdtsc() - start) < MAX_SPIN_CYCLES);*/
+
+        _mm_pause();
+
+        if (try_lock()) {
+            return;
+        }
 
         SwitchToThread();
     }

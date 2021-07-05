@@ -276,6 +276,15 @@
     <ClInclude Include="ext\ITaskPool.h">
       <Filter>ext</Filter>
     </ClInclude>
+    <ClInclude Include="ext\TaskQueue.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\workerpool.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\IPluginInfo.h">
+      <Filter>ext</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ext\AddressLibrary.cpp">
@@ -495,6 +504,15 @@
       <Filter>ext</Filter>
     </ClCompile>
     <ClCompile Include="ext\ITaskPool.cpp">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\TaskQueue.cpp">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\workerpool.cpp">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\IPluginInfo.cpp">
       <Filter>ext</Filter>
     </ClCompile>
   </ItemGroup>

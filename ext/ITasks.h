@@ -39,6 +39,18 @@ private:
     func_t m_func;
 };
 
+class TaskDelegateStatic
+    : public TaskDelegate
+{
+public:
+    virtual void Dispose() override {};
+};
+
+class TaskDelegateFixed
+{
+public:
+    virtual void Run() = 0;
+};
 
 template <class N>
 class TaskQueueBase

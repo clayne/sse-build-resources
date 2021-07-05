@@ -125,7 +125,7 @@ class BackLog
         char* m_data;
     };
 
-    using storage_type = stl::vector<LogString>;
+    using storage_type = std::vector<LogString>;
     using iterator = typename storage_type::iterator;
     using const_iterator = typename storage_type::const_iterator;
 

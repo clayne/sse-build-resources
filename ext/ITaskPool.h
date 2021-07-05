@@ -16,12 +16,16 @@ public:
 
     ITaskPool() = default;
 
-    static bool Install(BranchTrampoline& a_trampoline);
+    static void Install(
+        BranchTrampoline& a_branchTrampoline,
+        BranchTrampoline& a_localTrampoline);
+
+    static bool ValidateMemory();
 
     static void ITaskPool::QueueActorTask(
         TESObjectREFR* a_actor,
-        std::function<void(Actor*)> a_func);
-
+        std::function<void(Actor*, Game::ObjectRefHandle)> a_func);
+    
     SKMP_FORCEINLINE static void AddTask(TaskFunctor::func_t a_func)
     {
         m_Instance.m_queue.AddTask(std::move(a_func));
@@ -39,14 +43,14 @@ public:
 
 private:
 
-    static void ITaskPool::MainLoopUpdate_Hook(Game::BSMain* a_main);
+    static void ITaskPool::MainLoopUpdate_Hook();
 
     TaskQueue m_queue;
 
     typedef void(*mainLoopUpdate_t)(Game::BSMain*);
     mainLoopUpdate_t mainLoopUpdate_o;
 
-    inline static auto m_hookTargetAddr = IAL::Addr(35551, 0x11f);
+    inline static auto m_hookTargetAddr = IAL::Addr(35565, 0x759);
 
     static ITaskPool m_Instance;
 };

@@ -17,6 +17,8 @@ virtual const char* LogPrefixFatal() const noexcept { return "<FATAL> ["  x  "] 
 #define SIMD_ALIGNMENT 16
 #endif
 
+#define SKMP_ALLOC_ALIGN SIMD_ALIGNMENT
+
 #define SKMP_ALIGN_AUTO __declspec(align(SIMD_ALIGNMENT))
 
 
@@ -124,6 +126,10 @@ public:
     [[nodiscard]] SKMP_FORCEINLINE const T& Get() const noexcept {
         return m_item;
     }
+    
+    [[nodiscard]] SKMP_FORCEINLINE T& Get() noexcept {
+        return m_item;
+    }
 
     [[nodiscard]] SKMP_FORCEINLINE const T& operator*() const noexcept {
         return m_item;
@@ -154,6 +160,7 @@ public:
     }
 
 private:
+
     T m_item;
     bool m_isSelected;
 };

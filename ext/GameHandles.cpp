@@ -138,15 +138,25 @@ namespace Game
 
 }
 
-// ActorHandle
+// ObjectRefHandle
 namespace Game
 {
+    /*bool ObjectRefHandle::LookupREFR(NiPointer<TESObjectREFR>& a_out)
+    {
+        if (!IsValid())
+            return false;
+
+        LookupREFRByHandle(*this, a_out);
+
+        return a_out != nullptr;
+    }*/
+    
     bool ObjectRefHandle::LookupREFR(NiPointer<TESObjectREFR>& a_out) const
     {
         if (!IsValid())
             return false;
 
-        LookupREFRByHandle(m_item, a_out);
+        LookupREFRObjectByHandle(*this, a_out);
 
         return a_out != nullptr;
     }

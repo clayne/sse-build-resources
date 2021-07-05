@@ -234,7 +234,7 @@ const char* INIReader::Get(const std::string& section, const std::string& name, 
     return ParseValue(Get(section, name), default_value);
 }
 
-long INIReader::Get(const std::string& section, const std::string& name, long default_value) const
+std::int64_t INIReader::Get(const std::string& section, const std::string& name, std::int64_t default_value) const
 {
     return ParseValue(Get(section, name), default_value);
 }
@@ -262,7 +262,7 @@ const char* INIReader::ParseValue(const std::string* a_in, const char* default_v
     return a_in->c_str();
 }
 
-long INIReader::ParseValue(const std::string* a_in, long default_value) const
+std::int64_t INIReader::ParseValue(const std::string* a_in, std::int64_t default_value) const
 {
     if (!a_in)
         return default_value;
@@ -270,7 +270,7 @@ long INIReader::ParseValue(const std::string* a_in, long default_value) const
     const char* value = a_in->c_str();
     char* end;
     // This parses "1234" (decimal) and also "0x4D2" (hex)
-    long n = strtol(value, &end, 0);
+    long n = strtoll(value, &end, 0);
     return end > value ? n : default_value;
 }
 
@@ -322,6 +322,11 @@ bool INIReader::Exists(const std::string& section, const std::string& name) cons
         return false;
 
     return true;
+}
+
+void INIReader::RemoveSection(const std::string& section)
+{
+    _values.erase(section);
 }
 
 int INIReader::ValueHandler(void* user, const char* section, const char* name,

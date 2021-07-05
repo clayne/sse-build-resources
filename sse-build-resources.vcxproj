@@ -82,6 +82,7 @@
     <ClInclude Include="ext\IMisc.h" />
     <ClInclude Include="ext\INIReader.h" />
     <ClInclude Include="ext\IOS.h" />
+    <ClInclude Include="ext\IPluginInfo.h" />
     <ClInclude Include="ext\IRandom.h" />
     <ClInclude Include="ext\ISettingCollection.h" />
     <ClInclude Include="ext\ISKSE.h" />
@@ -100,9 +101,11 @@
     <ClInclude Include="ext\STLCommon.h" />
     <ClInclude Include="ext\Stream.h" />
     <ClInclude Include="ext\StrHelpers.h" />
+    <ClInclude Include="ext\TaskQueue.h" />
     <ClInclude Include="ext\Threads.h" />
     <ClInclude Include="ext\versiondb.h" />
     <ClInclude Include="ext\VFT.h" />
+    <ClInclude Include="ext\workerpool.h" />
     <ClInclude Include="skse64\skse64\skse64\BSModelDB.h" />
     <ClInclude Include="skse64\skse64\skse64\GameAPI.h" />
     <ClInclude Include="skse64\skse64\skse64\GameBSExtraData.h" />
@@ -168,6 +171,7 @@
     <ClCompile Include="ext\ILogging.cpp" />
     <ClCompile Include="ext\INIReader.cpp" />
     <ClCompile Include="ext\IOS.cpp" />
+    <ClCompile Include="ext\IPluginInfo.cpp" />
     <ClCompile Include="ext\ISKSE.cpp" />
     <ClCompile Include="ext\ITaskPool.cpp" />
     <ClCompile Include="ext\ITasks.cpp" />
@@ -179,7 +183,9 @@
     <ClCompile Include="ext\RTTI.cpp" />
     <ClCompile Include="ext\Stream.cpp" />
     <ClCompile Include="ext\StrHelpers.cpp" />
+    <ClCompile Include="ext\TaskQueue.cpp" />
     <ClCompile Include="ext\Threads.cpp" />
+    <ClCompile Include="ext\workerpool.cpp" />
     <ClCompile Include="skse64\skse64\skse64\BSModelDB.cpp" />
     <ClCompile Include="skse64\skse64\skse64\GameAPI.cpp" />
     <ClCompile Include="skse64\skse64\skse64\GameBSExtraData.cpp" />

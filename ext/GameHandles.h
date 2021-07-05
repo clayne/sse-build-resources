@@ -92,6 +92,7 @@ namespace Game
         using IntegralWrapper<UInt32>::IntegralWrapper;
         using IntegralWrapper<UInt32>::operator=;
 
+        //[[nodiscard]] bool LookupREFR(NiPointer<TESObjectREFR>& a_out);
         [[nodiscard]] bool LookupREFR(NiPointer<TESObjectREFR>& a_out) const;
         [[nodiscard]] bool IsValid() const;
     };

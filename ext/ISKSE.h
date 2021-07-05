@@ -180,9 +180,6 @@ bool ISKSEBase<_InterfaceFlags, _TrampolineBranch, _TrampolineLocal>::Initialize
         {
             base = iface->AllocateFromLocalPool(m_pluginHandle, a_size);
         }
-        else {
-            ASSERT(false);
-        }
 
         if (base != nullptr)
         {

@@ -15,7 +15,7 @@ namespace Game
 {
     struct FormID;
 
-    struct ObjectHandle :
+    struct VMHandle :
         IntegralWrapper<UInt64>
     {
         static inline constexpr UInt64 HANDLE_UPPER_MASK = 0xFFFFFFFF00000000ui64;
@@ -36,35 +36,36 @@ namespace Game
 
         [[nodiscard]] bool IsValid() const;
         [[nodiscard]] bool IsTemporary() const;
-        [[nodiscard]] ObjectHandle StripLower() const;
+        [[nodiscard]] VMHandle StripLower() const;
 
         [[nodiscard]] FormID GetFormID() const;
         [[nodiscard]] bool GetPluginIndex(UInt32& a_out) const;
         [[nodiscard]] bool GetPluginPartialIndex(UInt32& a_out) const;
     };
 
-    static_assert(sizeof(ObjectHandle) == sizeof(UInt64));
+    static_assert(sizeof(VMHandle) == sizeof(UInt64));
 
-    class ObjectHandleRef
+    class VMHandleRef
     {
     public:
 
-        ObjectHandleRef() = delete;
+        VMHandleRef() = delete;
 
-        explicit ObjectHandleRef(ObjectHandle a_handle);
+        explicit VMHandleRef(VMHandle a_handle);
 
-        SKMP_FORCEINLINE ~ObjectHandleRef() {
+        SKMP_FORCEINLINE ~VMHandleRef() {
             release();
         }
 
         void release();
+        void invalidate();
 
-        [[nodiscard]] SKMP_FORCEINLINE ObjectHandle get() const {
+        [[nodiscard]] SKMP_FORCEINLINE VMHandle get() const {
             return m_handle;
         }
 
     private:
-        ObjectHandle m_handle;
+        VMHandle m_handle;
     };
 
     struct FormID :
@@ -81,6 +82,9 @@ namespace Game
 
         template <class T, class form_type = stl::strip_type<T>>
         [[nodiscard]] form_type* Lookup() const;
+
+        template <class T, class form_type = stl::strip_type<T>>
+        [[nodiscard]] form_type* As() const;
 
     };
 
@@ -101,7 +105,7 @@ namespace Game
 
 }
 
-STD_SPECIALIZE_HASH(::Game::ObjectHandle);
+STD_SPECIALIZE_HASH(::Game::VMHandle);
 STD_SPECIALIZE_HASH(::Game::FormID);
 STD_SPECIALIZE_HASH(::Game::ObjectRefHandle);
 
@@ -110,7 +114,7 @@ STD_SPECIALIZE_HASH(::Game::ObjectRefHandle);
 namespace Game
 {
     template <class T, class form_type>
-    form_type* ObjectHandle::Resolve() const
+    form_type* VMHandle::Resolve() const
     {
         auto policy = (*g_skyrimVM)->GetClassRegistry()->GetHandlePolicy();
 
@@ -122,13 +126,13 @@ namespace Game
     }
 
     template <class T, class form_type>
-    bool ObjectHandle::Get(T* a_ptr)
+    bool VMHandle::Get(T* a_ptr)
     {
         return Get(form_type::kTypeID, a_ptr);
     }
 
     template <class T, class form_type>
-    bool ObjectHandle::Get(NiPointer<T>& a_niptr)
+    bool VMHandle::Get(NiPointer<T>& a_niptr)
     {
         return Get(form_type::kTypeID, a_niptr.get());
     }
@@ -144,6 +148,18 @@ namespace Game
 
         if (form) {
             return RTTI<form_type>::Cast(form);
+        }
+
+        return nullptr;
+    }
+    
+    template <class T, class form_type>
+    form_type* FormID::As() const
+    {
+        auto form = Lookup();
+
+        if (form) {
+            return form->As<form_type>();
         }
 
         return nullptr;

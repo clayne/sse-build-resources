@@ -7,11 +7,11 @@
 #include "GameHandles.h"
 #include "RTTI.h"
 
-// ObjectHandle
+// VMHandle
 namespace Game
 {
 
-    bool ObjectHandle::Get(UInt32 a_type, void* a_ptr)
+    bool VMHandle::Get(UInt32 a_type, void* a_ptr)
     {
         auto policy = (*g_skyrimVM)->GetClassRegistry()->GetHandlePolicy();
         m_item = policy->Create(a_type, a_ptr);
@@ -19,32 +19,32 @@ namespace Game
         return (m_item != policy->GetInvalidHandle());
     }
 
-    ObjectHandle ObjectHandle::StripLower() const
+    VMHandle VMHandle::StripLower() const
     {
         return (m_item & HANDLE_UPPER_MASK);
     }
 
-    FormID ObjectHandle::GetFormID() const
+    FormID VMHandle::GetFormID() const
     {
         return static_cast<FormID::held_type>(m_item & HANDLE_LOWER_MASK);
     }
 
-    bool ObjectHandle::IsTemporary() const
+    bool VMHandle::IsTemporary() const
     {
         return GetFormID().IsTemporary();
     }
 
-    bool ObjectHandle::GetPluginIndex(UInt32& a_out) const
+    bool VMHandle::GetPluginIndex(UInt32& a_out) const
     {
         return GetFormID().GetPluginIndex(a_out);
     }
 
-    bool ObjectHandle::GetPluginPartialIndex(UInt32& a_out) const
+    bool VMHandle::GetPluginPartialIndex(UInt32& a_out) const
     {
         return GetFormID().GetPluginPartialIndex(a_out);
     }
 
-    bool ObjectHandle::IsValid() const
+    bool VMHandle::IsValid() const
     {
         auto policy = (*g_skyrimVM)->GetClassRegistry()->GetHandlePolicy();
 
@@ -53,14 +53,14 @@ namespace Game
 
 }
 
-// ObjectHandleRef
+// VMHandleRef
 namespace Game
 {
-    ObjectHandleRef::ObjectHandleRef(ObjectHandle a_handle) :
+    VMHandleRef::VMHandleRef(VMHandle a_handle) :
         m_handle(a_handle)
     {
         auto policy = (*g_skyrimVM)->GetClassRegistry()->GetHandlePolicy();
-        ObjectHandle invalidHandle = policy->GetInvalidHandle();
+        VMHandle invalidHandle = policy->GetInvalidHandle();
 
         if (a_handle != invalidHandle)
         {
@@ -68,16 +68,22 @@ namespace Game
         }
     }
 
-    void ObjectHandleRef::release()
+    void VMHandleRef::release()
     {
         auto policy = (*g_skyrimVM)->GetClassRegistry()->GetHandlePolicy();
-        ObjectHandle invalidHandle = policy->GetInvalidHandle();
+        VMHandle invalidHandle = policy->GetInvalidHandle();
 
         if (m_handle != invalidHandle)
         {
             policy->Release(m_handle);
             m_handle = invalidHandle;
         }
+    }
+
+    void VMHandleRef::invalidate()
+    {
+        auto policy = (*g_skyrimVM)->GetClassRegistry()->GetHandlePolicy();
+        m_handle = policy->GetInvalidHandle();
     }
 }
 

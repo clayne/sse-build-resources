@@ -89,7 +89,7 @@ public:
     }
 
     template <typename = is_pointer<element_type>, typename = is_base_type<TaskFunctor>>
-    void AddTask(TaskFunctor::func_t&& a_func)
+    void AddTask(TaskFunctor::func_t a_func)
     {
         IScopedLock _(m_lock);
         m_queue.emplace(new TaskFunctor(std::move(a_func)));

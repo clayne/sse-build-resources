@@ -7,24 +7,16 @@
 IAL IAL::m_Instance;
 
 IAL::IAL() :
-    hasBadQuery(false)
+    m_hasBadQuery(false)
 {
     PerfCounter pc;
 
-    tLoadStart = pc.Query();
-    db = new VersionDb();
-    isLoaded = db->Load();
-    tLoadEnd = pc.Query();
-}
-
-IAL::~IAL() noexcept
-{
-    if (db != nullptr)
-        delete db;
+    m_tLoadStart = pc.Query();
+    m_isLoaded = m_database.Load();
+    m_tLoadEnd = pc.Query();
 }
 
 void IAL::Release()
 {
-    delete m_Instance.db;
-    m_Instance.db = nullptr;
+    m_Instance.m_database.Clear();
 }

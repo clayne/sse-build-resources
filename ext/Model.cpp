@@ -2,6 +2,7 @@
 #include "Model.h"
 
 #include <skse64/GameStreams.h>
+#include <skse64/NiRenderer.h>
 
 namespace Util
 {
@@ -55,10 +56,41 @@ namespace Util
             if (!stream->m_rootObjects.m_data) {
                 return false;
             }
-
+            
             m_stream = std::move(stream);
 
             return true;
         }
+
+        bool ModelLoader::LoadObject(
+            const char* a_model,
+            NiPointer<NiNode>& a_out)
+        {
+            if (!Load(a_model)) {
+                return false;
+            }
+
+            auto& stream = GetStream();
+
+            for (auto e : stream->m_rootObjects)
+            {
+                if (!e) {
+                    continue;
+                }
+
+                auto object = ni_cast(e, NiNode);
+                if (object)
+                {
+                    (*g_shaderResourceManager)->ConvertLegacy(object, false);
+
+                    a_out = object;
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
     }
 }

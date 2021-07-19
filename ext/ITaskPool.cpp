@@ -4,6 +4,7 @@
 #include <ext/Patching.h>
 
 #include <skse64/GameReferences.h>
+#include <skse64/FormTraits.h>
 
 ITaskPool ITaskPool::m_Instance;
 
@@ -70,6 +71,10 @@ bool ITaskPool::ValidateMemory()
 void ITaskPool::MainLoopUpdate_Hook()
 {
     m_Instance.m_queue.ProcessTasks();
+
+    for (auto const& cmd : m_Instance.m_tasks_fixed) {
+        cmd->Run();
+    }
 }
 
 static bool IsREFRValid(TESObjectREFR* a_refr)
@@ -85,13 +90,13 @@ static bool IsREFRValid(TESObjectREFR* a_refr)
 
 void ITaskPool::QueueActorTask(
     TESObjectREFR* a_actor,
-    std::function<void(Actor*, Game::ObjectRefHandle)> a_func)
+    func_t a_func)
 {
     if (!IsREFRValid(a_actor)) {
         return;
     }
 
-    if (a_actor->formType != Actor::kTypeID) {
+    if (!a_actor->IsActor()) {
         return;
     }
 
@@ -111,10 +116,11 @@ void ITaskPool::QueueActorTask(
             return;
         }
 
-        if (ref->formType != Actor::kTypeID) {
+        auto actor = ref->As<Actor>();
+        if (!actor) {
             return;
         }
 
-        func(static_cast<Actor*>(ref.get()), handle);
+        func(actor, handle);
     });
 }

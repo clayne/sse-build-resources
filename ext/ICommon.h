@@ -120,7 +120,11 @@ public:
     }
 
     SKMP_FORCEINLINE void Clear() noexcept {
-        m_isSelected = false;
+        Mark(false);
+    }
+
+    SKMP_FORCEINLINE void Mark(bool a_switch) {
+        m_isSelected = a_switch;
     }
 
     [[nodiscard]] SKMP_FORCEINLINE const T& Get() const noexcept {
@@ -153,10 +157,6 @@ public:
 
     [[nodiscard]] SKMP_FORCEINLINE explicit operator bool() const noexcept {
         return m_isSelected;
-    }
-
-    SKMP_FORCEINLINE void Mark(bool a_switch) {
-        m_isSelected = a_switch;
     }
 
 private:

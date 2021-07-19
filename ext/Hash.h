@@ -150,6 +150,11 @@ namespace hash
         }
     };
 
+    __forceinline char toupper(char a_char)
+    {
+        return (a_char > 0x60 && a_char < 0x7B) ? a_char - 0x20 : a_char;
+    }
+
     namespace fnv1
     {
         // 64 bit

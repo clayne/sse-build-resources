@@ -3,6 +3,7 @@
 #include "Stream.h"
 
 #include <skse64/GameReferences.h>
+#include <skse64/NiNodes.h>
 
 namespace Util
 {
@@ -21,6 +22,9 @@ namespace Util
             ModelLoader() = default;
 
             bool Load(const char* a_path);
+            bool LoadObject(
+                const char* a_model,
+                NiPointer<NiNode>& a_out);
 
             SKMP_FORCEINLINE auto &GetStream() const {
                 return m_stream;

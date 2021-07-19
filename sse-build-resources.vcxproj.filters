@@ -285,6 +285,15 @@
     <ClInclude Include="ext\IPluginInfo.h">
       <Filter>ext</Filter>
     </ClInclude>
+    <ClInclude Include="ext\Node.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="skse64\skse64\skse64\GameAudio.h">
+      <Filter>skse64</Filter>
+    </ClInclude>
+    <ClInclude Include="skse64\skse64\skse64\FormTraits.h">
+      <Filter>skse64</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ext\AddressLibrary.cpp">
@@ -514,6 +523,12 @@
     </ClCompile>
     <ClCompile Include="ext\IPluginInfo.cpp">
       <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\Node.cpp">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="skse64\skse64\skse64\GameAudio.cpp">
+      <Filter>skse64</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

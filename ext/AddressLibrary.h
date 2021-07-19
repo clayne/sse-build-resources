@@ -3,6 +3,8 @@
 #include "PerfCounter.h"
 #include "versiondb.h"
 
+#include <memory>
+
 class IAL
 {
 public:
@@ -10,75 +12,75 @@ public:
 
     static void Release();
     static bool IsLoaded() {
-        return m_Instance.isLoaded;
+        return m_Instance.m_isLoaded;
     }
 
-    SKMP_FORCEINLINE static float GetLoadTime() {
+    inline static float GetLoadTime() {
         return IPerfCounter::delta(
-            m_Instance.tLoadStart, m_Instance.tLoadEnd);
+            m_Instance.m_tLoadStart, m_Instance.m_tLoadEnd);
     }
 
-    SKMP_FORCEINLINE static long long GetLoadStart() {
-        return m_Instance.tLoadStart;
+    inline static long long GetLoadStart() {
+        return m_Instance.m_tLoadStart;
     }
 
-    SKMP_FORCEINLINE static long long GetLoadEnd() {
-        return m_Instance.tLoadEnd;
+    inline static long long GetLoadEnd() {
+        return m_Instance.m_tLoadEnd;
     }
 
-    SKMP_FORCEINLINE static bool HasBadQuery() {
-        return m_Instance.hasBadQuery;
+    inline static bool HasBadQuery() {
+        return m_Instance.m_hasBadQuery;
     }
-    
-    SKMP_FORCEINLINE static std::size_t Size() {
-        return m_Instance.db->GetOffsetMap().size();
+
+    inline static std::size_t Size() {
+        return m_Instance.m_database.GetOffsetMap().size();
     }
 
     template <typename T>
     static T Addr(unsigned long long id)
     {
-        auto r = reinterpret_cast<T>(m_Instance.db->FindAddressById(id));
+        auto r = reinterpret_cast<T>(m_Instance.m_database.FindAddressById(id));
         if (!r) {
-            m_Instance.hasBadQuery = true;
+            m_Instance.m_hasBadQuery = true;
         }
         return r;
     }
 
-    SKMP_NOINLINE static uintptr_t Addr(unsigned long long id, ptrdiff_t offset)
+    inline static uintptr_t Addr(unsigned long long id, ptrdiff_t offset)
     {
-        void* addr = m_Instance.db->FindAddressById(id);
-        if (addr == NULL) {
-            m_Instance.hasBadQuery = true;
+        void* addr = m_Instance.m_database.FindAddressById(id);
+        if (addr == nullptr) {
+            m_Instance.m_hasBadQuery = true;
             return uintptr_t(0);
         }
         return reinterpret_cast<uintptr_t>(addr) + offset;
     }
 
     template <typename T>
-    static T Addr(unsigned long long id, ptrdiff_t offset)
+    inline static T Addr(unsigned long long id, std::ptrdiff_t offset)
     {
         return reinterpret_cast<T>(Addr(id, offset));
     }
 
-    SKMP_NOINLINE static bool Offset(unsigned long long id, uintptr_t& result)
+    inline static bool Offset(unsigned long long id, std::uintptr_t& result)
     {
         unsigned long long r;
-        if (!m_Instance.db->FindOffsetById(id, r)) {
-            m_Instance.hasBadQuery = true;
+        if (!m_Instance.m_database.FindOffsetById(id, r)) {
+            m_Instance.m_hasBadQuery = true;
             return false;
         }
-        result = static_cast<uintptr_t>(r);
+        result = static_cast<std::uintptr_t>(r);
         return true;
     }
 
-    SKMP_NOINLINE static uintptr_t Offset(unsigned long long id)
+    inline static uintptr_t Offset(unsigned long long id)
     {
         unsigned long long r;
-        if (!m_Instance.db->FindOffsetById(id, r)) {
-            m_Instance.hasBadQuery = true;
-            return uintptr_t(0);
+        if (!m_Instance.m_database.FindOffsetById(id, r)) {
+            m_Instance.m_hasBadQuery = true;
+            return std::uintptr_t(0);
         }
-        return static_cast<uintptr_t>(r);
+        return static_cast<std::uintptr_t>(r);
     }
 
 
@@ -94,18 +96,18 @@ public:
             m_offset(IAL::Addr<BlockConversionType*>(a_id))
         {
         }
-        
-        Address(unsigned long long a_id, ptrdiff_t a_offset) :
+
+        Address(unsigned long long a_id, std::ptrdiff_t a_offset) :
             m_offset(IAL::Addr<BlockConversionType*>(a_id, a_offset))
         {
         }
-                
-        SKMP_FORCEINLINE operator T()
+
+        inline operator T() const
         {
-            return reinterpret_cast <T>(m_offset);
+            return reinterpret_cast<T>(const_cast<BlockConversionType*>(m_offset));
         }
 
-        SKMP_FORCEINLINE std::uintptr_t GetUIntPtr() const
+        inline std::uintptr_t GetUIntPtr() const
         {
             return reinterpret_cast<std::uintptr_t>(m_offset);
         }
@@ -118,13 +120,14 @@ public:
 
 private:
     IAL();
-    virtual ~IAL() noexcept;
+    ~IAL() = default;
 
-    bool isLoaded;
-    bool hasBadQuery;
-    long long tLoadStart, tLoadEnd;
+    bool m_isLoaded;
+    bool m_hasBadQuery;
+    long long m_tLoadStart;
+    long long m_tLoadEnd;
 
-    VersionDb *db;
+    VersionDb m_database;
 
     static IAL m_Instance;
 };

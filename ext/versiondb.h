@@ -1,6 +1,5 @@
 #pragma once
 
-#include <map>
 #include <fstream>
 #include <stdio.h>
 #include <Windows.h>
@@ -15,7 +14,7 @@ class VersionDb
 {
 public:
     VersionDb() { Clear(); }
-    ~VersionDb() { }
+    ~VersionDb() = default;
 
 private:
     using map_type = tsl::sparse_map<unsigned long long, unsigned long long>;
@@ -25,7 +24,7 @@ private:
     int _ver[4];
     std::string _verStr;
     //std::string _moduleName;
-    unsigned long long _base;
+    unsigned long long _base = 0;
 
     template <typename T>
     static T read(std::ifstream& file)
@@ -83,27 +82,6 @@ public:
         }
         return false;
     }
-
-    /*
-    bool FindIdByAddress(void* ptr, unsigned long long& result) const
-    {
-        unsigned long long b = _base;
-        if (b == 0)
-            return false;
-
-        unsigned long long addr = FromPointer(ptr);
-        return FindIdByOffset(addr - b, result);
-    }
-
-    bool FindIdByOffset(unsigned long long offset, unsigned long long& result) const
-    {
-        auto itr = _rdata.find(offset);
-        if (itr == _rdata.end())
-            return false;
-
-        result = itr->second;
-        return true;
-    }*/
 
     bool GetExecutableVersion(int& major, int& minor, int& revision, int& build) const
     {
@@ -164,10 +142,8 @@ public:
 
     void Clear()
     {
-        _data.swap(decltype(_data)());
-        //_rdata.clear();
+        _data.clear();
         for (int i = 0; i < 4; i++) _ver[i] = 0;
-        //_moduleName = std::string();
         _base = 0;
     }
 
@@ -216,11 +192,6 @@ public:
         if (tnLen > 0)
         {
             file.seekg(tnLen, file.cur);
-            /*char* tnbuf = (char*)malloc(tnLen + 1);
-            file.read(tnbuf, tnLen);
-            tnbuf[tnLen] = '\0';
-            _moduleName = tnbuf;
-            free(tnbuf);*/
         }
 
         {
@@ -282,7 +253,6 @@ public:
                 q2 *= (unsigned long long)ptrSize;
 
             _data[q1] = q2;
-            //_rdata[q2] = q1;
 
             poffset = q2;
             pvid = q1;

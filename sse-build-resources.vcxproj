@@ -93,6 +93,7 @@
     <ClInclude Include="ext\Math.h" />
     <ClInclude Include="ext\Mem.h" />
     <ClInclude Include="ext\Model.h" />
+    <ClInclude Include="ext\Node.h" />
     <ClInclude Include="ext\Patching.h" />
     <ClInclude Include="ext\PerfCounter.h" />
     <ClInclude Include="ext\PW.h" />
@@ -107,7 +108,9 @@
     <ClInclude Include="ext\VFT.h" />
     <ClInclude Include="ext\workerpool.h" />
     <ClInclude Include="skse64\skse64\skse64\BSModelDB.h" />
+    <ClInclude Include="skse64\skse64\skse64\FormTraits.h" />
     <ClInclude Include="skse64\skse64\skse64\GameAPI.h" />
+    <ClInclude Include="skse64\skse64\skse64\GameAudio.h" />
     <ClInclude Include="skse64\skse64\skse64\GameBSExtraData.h" />
     <ClInclude Include="skse64\skse64\skse64\GameCamera.h" />
     <ClInclude Include="skse64\skse64\skse64\GameData.h" />
@@ -178,6 +181,7 @@
     <ClCompile Include="ext\JITASM.cpp" />
     <ClCompile Include="ext\Mem.cpp" />
     <ClCompile Include="ext\Model.cpp" />
+    <ClCompile Include="ext\Node.cpp" />
     <ClCompile Include="ext\Patching.cpp" />
     <ClCompile Include="ext\PerfCounter.cpp" />
     <ClCompile Include="ext\RTTI.cpp" />
@@ -188,6 +192,7 @@
     <ClCompile Include="ext\workerpool.cpp" />
     <ClCompile Include="skse64\skse64\skse64\BSModelDB.cpp" />
     <ClCompile Include="skse64\skse64\skse64\GameAPI.cpp" />
+    <ClCompile Include="skse64\skse64\skse64\GameAudio.cpp" />
     <ClCompile Include="skse64\skse64\skse64\GameBSExtraData.cpp" />
     <ClCompile Include="skse64\skse64\skse64\GameCamera.cpp" />
     <ClCompile Include="skse64\skse64\skse64\GameData.cpp" />
@@ -500,6 +505,8 @@
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='ReleaseAVX2 MT|x64'">
     <VcpkgEnabled>true</VcpkgEnabled>
+    <VcpkgTriplet>x64-windows-avx2-static</VcpkgTriplet>
+    <VcpkgConfiguration>Release</VcpkgConfiguration>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dep-AVX|x64'" Label="Vcpkg">
     <VcpkgEnabled>true</VcpkgEnabled>
@@ -753,7 +760,8 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <IntelJCCErratum>true</IntelJCCErratum>
       <StringPooling>true</StringPooling>
-      <DebugInformationFormat>None</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalOptions>/permissive %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

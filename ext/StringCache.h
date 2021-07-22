@@ -26,10 +26,12 @@ namespace stl
 namespace string_cache
 {
     class key_ref_wrapper;
+    class data_storage;
 
     class __declspec(novtable) key_base
     {
         friend class key_ref_wrapper;
+        friend class data_storage;
 
     public:
 
@@ -64,14 +66,6 @@ namespace string_cache
             return m_value;
         }
 
-#if !defined(SKMP_STRING_CACHE_PERSIST)
-
-        [[nodiscard]] inline auto use_count() const noexcept {
-            return m_refcount.load(std::memory_order_acquire);
-        }
-
-#endif
-
         friend inline bool operator==(
             const key_base& a_lhs,
             const key_base& a_rhs)
@@ -90,17 +84,22 @@ namespace string_cache
         const std::string m_value;
 
 #if !defined(SKMP_STRING_CACHE_PERSIST)
-    private:
 
-        inline long inc_refcount() const noexcept {
-            return m_refcount.fetch_add(1, std::memory_order_relaxed);
+        [[nodiscard]] inline auto use_count() const noexcept {
+            return m_refcount.load(std::memory_order_acquire);
         }
 
-        inline long dec_refcount() const noexcept {
+        inline void inc_refcount() const noexcept {
+            m_refcount.fetch_add(1, std::memory_order_relaxed);
+        }
+
+        inline auto dec_refcount() const noexcept {
             return m_refcount.fetch_sub(1, std::memory_order_acq_rel);
         }
 
-        mutable std::atomic_long m_refcount{ 0l };
+    private:
+
+        mutable std::atomic<std::uint32_t> m_refcount{ 0 };
 #endif
 
     };
@@ -136,111 +135,6 @@ namespace string_cache
 
     };
 
-
-#if !defined(SKMP_STRING_CACHE_PERSIST)
-    class key_ref_wrapper
-    {
-        friend class stl::fixed_string;
-
-    public:
-
-        key_ref_wrapper()
-            :
-            m_ref(nullptr)
-        {
-        }
-
-        ~key_ref_wrapper() noexcept
-        {
-            reset();
-        }
-
-        explicit key_ref_wrapper(const key_base* a_ref) noexcept
-            :
-            m_ref(a_ref)
-        {
-            if (a_ref) {
-                a_ref->inc_refcount();
-            }
-        }
-
-        key_ref_wrapper& operator=(const key_base* a_ref) noexcept
-        {
-            _copy_assign(a_ref);
-            return *this;
-        }
-
-        explicit key_ref_wrapper(const key_ref_wrapper& a_rhs) noexcept
-            :
-            m_ref(a_rhs.m_ref)
-        {
-            if (m_ref) {
-                m_ref->inc_refcount();
-            }
-        }
-
-        explicit key_ref_wrapper(key_ref_wrapper&& a_rhs) noexcept
-            :
-            m_ref(a_rhs.m_ref)
-        {
-            if (m_ref) {
-                m_ref->inc_refcount();
-            }
-        }
-
-        key_ref_wrapper& operator=(const key_ref_wrapper& a_rhs) noexcept
-        {
-            _copy_assign(a_rhs.m_ref);
-            return *this;
-        }
-
-        key_ref_wrapper& operator=(key_ref_wrapper&& a_rhs) noexcept
-        {
-            _copy_assign(a_rhs.m_ref);
-            return *this;
-        }
-
-        inline auto operator->() const noexcept {
-            return m_ref;
-        }
-
-        inline auto& operator*() const noexcept {
-            return *m_ref;
-        }
-
-        inline auto get() const noexcept
-        {
-            return m_ref;
-        }
-
-    private:
-
-        const key_base* m_ref;
-
-        inline void reset() noexcept
-        {
-            if (m_ref) {
-                m_ref->dec_refcount();
-                m_ref = nullptr;
-            }
-        }
-
-        inline void _copy_assign(const key_base* a_ref) noexcept
-        {
-            auto c = m_ref;
-
-            m_ref = a_ref;
-
-            if (a_ref) {
-                a_ref->inc_refcount();
-            }
-
-            if (c) {
-                c->dec_refcount();
-            }
-        }
-    };
-#endif
 }
 
 namespace std
@@ -260,6 +154,7 @@ namespace string_cache
     class data_storage
     {
         friend class stl::fixed_string;
+        friend class key_ref_wrapper;
 
         using value_type = icase_key;
 
@@ -296,17 +191,11 @@ namespace string_cache
 
     private:
 
-        static const value_type& create(
-            const std::string& a_string);
-
-        static const value_type& create(
-            std::string&& a_string);
-
-        static const value_type& create(
+        static const value_type& insert(
             std::size_t hash,
             const std::string& a_string);
 
-        static const value_type& create(
+        static const value_type& insert(
             std::size_t hash,
             std::string&& a_string);
 
@@ -322,12 +211,65 @@ namespace string_cache
             return m_Instance.m_data;
         }
 
-        FastSpinMutex m_lock;
+
+#if !defined(SKMP_STRING_CACHE_PERSIST)
+
+        inline static void release(
+            const key_base* a_ref) noexcept
+        {
+            try
+            {
+                auto& data = get_data();
+
+                auto it = data.find(a_ref->hash());
+                if (it != data.end()) {
+                    data.erase(it);
+                }
+            }
+            catch (const std::exception& e)
+            {
+                HALT(e.what());
+            }
+        }
+
+        template <bool _Lock>
+        static void try_release(
+            const key_base* a_ref)
+        {
+            if (!a_ref) {
+                return;
+            }
+
+            if (a_ref == get_empty()) {
+                return;
+            }
+
+            if (a_ref->dec_refcount() > 1) {
+                return;
+            }
+
+            if constexpr (_Lock)
+            {
+                IScopedLock lock(get_lock());
+
+                if (a_ref->use_count() == 0) {
+                    release(a_ref);
+                }
+            }
+            else {
+                release(a_ref);
+            }
+        }
+
+#endif
+
+
+        FastSpinLock m_lock;
 
         const icase_key* m_icase_empty;
 
         // according to spec references/pointers are only invalidated when deleted
-        std::unordered_set<value_type> m_data;
+        std::unordered_map<std::size_t, value_type> m_data;
 
         static data_storage m_Instance;
 
@@ -345,10 +287,44 @@ namespace stl
     public:
 
         fixed_string();
+        ~fixed_string()
+        {
+            string_cache::data_storage::try_release<true>(m_ref);
+        }
 
-#if !defined(SKMP_STRING_CACHE_PERSIST)
-        ~fixed_string() noexcept;
-#endif
+        fixed_string(const fixed_string& a_rhs)
+            :
+            m_ref(a_rhs.m_ref)
+        {
+            acquire(m_ref);
+        }
+
+        fixed_string(fixed_string&& a_rhs)
+            :
+            m_ref(a_rhs.m_ref)
+        {
+            a_rhs.m_ref = nullptr;
+        }
+
+        fixed_string& operator=(const fixed_string& a_rhs)
+        {
+            copy_assign<true>(a_rhs.m_ref);
+            return *this;
+        }
+
+        fixed_string& operator=(fixed_string&& a_rhs)
+        {
+            if (this != std::addressof(a_rhs))
+            {
+                auto old = m_ref;
+
+                m_ref = a_rhs.m_ref;
+                a_rhs.m_ref = nullptr;
+
+                string_cache::data_storage::try_release<true>(old);
+            }
+            return *this;
+        }
 
         fixed_string(const std::string& a_value);
         fixed_string(std::string&& a_value);
@@ -393,12 +369,7 @@ namespace stl
         }
 
         [[nodiscard]] inline auto ref() const noexcept {
-            return
-#if !defined(SKMP_STRING_CACHE_PERSIST)
-                m_ref.get();
-#else
-                m_ref;
-#endif
+            return m_ref;
         }
 
         [[nodiscard]] friend inline bool operator==(
@@ -418,15 +389,29 @@ namespace stl
 
     private:
 
-#if !defined(SKMP_STRING_CACHE_PERSIST)
-        string_cache::key_ref_wrapper m_ref;
-#else
-        const string_cache::key_base* m_ref;
-#endif
-
         void set(const std::string& a_value);
         void set(std::string&& a_value);
         void set(const char* a_value);
+
+        template <bool _Lock>
+        inline void copy_assign(const string_cache::key_base* a_ref) noexcept
+        {
+            auto old = m_ref;
+
+            m_ref = a_ref;
+
+            acquire(a_ref);
+            string_cache::data_storage::try_release<_Lock>(old);
+        }
+
+        static inline void acquire(const string_cache::key_base* a_ref)  noexcept
+        {
+            if (a_ref && a_ref != string_cache::data_storage::get_empty()) {
+                a_ref->inc_refcount();
+            }
+        }
+
+        const string_cache::key_base* m_ref{ nullptr };
 
         template<class Archive>
         void save(Archive& ar, const unsigned int version) const
@@ -446,6 +431,7 @@ namespace stl
         BOOST_SERIALIZATION_SPLIT_MEMBER()
     };
 
+    static_assert(sizeof(fixed_string) == 0x8);
 }
 
 namespace std

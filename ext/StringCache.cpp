@@ -13,49 +13,37 @@ namespace string_cache
     {
         m_data.reserve(SKMP_STRING_CACHE_INITIAL_SIZE);
 
-        auto& it = m_data.emplace(std::string()).first;
+        auto empty = std::string();
 
-        m_icase_empty = std::addressof(*it);
+        auto hash = value_type::compute_hash(empty);
+
+        auto& e = m_data.try_emplace(hash, std::move(empty)).first->second;
+
+        m_icase_empty = std::addressof(e);
     }
 
-    auto data_storage::create(
-        const std::string& a_string)
-        ->
-        const value_type&
-    {
-        return *m_Instance.m_data.emplace(
-            a_string).first;
-    }
-
-    auto data_storage::create(
-        std::string&& a_string)
-        ->
-        const value_type&
-    {
-        return *m_Instance.m_data.emplace(
-            std::move(a_string)).first;
-    }
-
-    auto data_storage::create(
+    auto data_storage::insert(
         std::size_t hash,
         const std::string& a_string)
         ->
         const value_type&
     {
-        return *m_Instance.m_data.emplace(
+        return m_Instance.m_data.try_emplace(
             hash,
-            a_string).first;
+            hash,
+            a_string).first->second;
     }
 
-    auto data_storage::create(
+    auto data_storage::insert(
         std::size_t hash,
         std::string&& a_string)
         ->
         const value_type&
     {
-        return *m_Instance.m_data.emplace(
+        return m_Instance.m_data.try_emplace(
             hash,
-            std::move(a_string)).first;
+            hash,
+            std::move(a_string)).first->second;
     }
 
     auto data_storage::get_stats() noexcept
@@ -82,17 +70,14 @@ namespace string_cache
 
         for (auto& entry : data)
         {
-
-            //sizeof(std::atomic<int32_t>)
-
             result.key_data_usage += sizeof(stl::strip_type<decltype(entry)>);
-            result.string_usage += entry.m_value.capacity() + sizeof(decltype(entry.m_value));
+            result.string_usage += entry.second.m_value.capacity() + sizeof(decltype(entry.second.m_value));
 
 #if !defined(SKMP_STRING_CACHE_PERSIST)
-            result.total_fixed_count += entry.use_count();
-            result.total_fixed_size += entry.use_count() * sizeof(stl::fixed_string);
+            result.total_fixed_count += entry.second.use_count();
+            result.total_fixed_size += entry.second.use_count() * sizeof(stl::fixed_string);
 
-            result.estimated_uncached_usage += (entry.m_value.capacity() + sizeof(decltype(entry.m_value))) * entry.use_count();
+            result.estimated_uncached_usage += (entry.second.m_value.capacity() + sizeof(decltype(entry.second.m_value))) * entry.second.use_count();
 #endif
 
         }
@@ -135,48 +120,6 @@ namespace stl
         m_ref(string_cache::data_storage::get_empty())
     {
     }
-
-#if !defined(SKMP_STRING_CACHE_PERSIST)
-    fixed_string::~fixed_string() noexcept
-    {
-        using namespace string_cache;
-
-        if (auto r = m_ref.get(); r == nullptr || r == data_storage::get_empty()) {
-            return;
-        }
-
-        IScopedLock lock(data_storage::get_lock());
-
-        if (m_ref->use_count() == 1)
-        {
-            try
-            {
-                auto& key = static_cast<const icase_key&>(*m_ref);
-
-                m_ref.reset();
-
-                auto& data = data_storage::get_data();
-
-                auto it = data.find(key);
-                if (it != data.end())
-                {
-                    if (it->use_count() == 0)
-                    { // no instance of fixed_string references this, delete it
-                        data.erase(it);
-                    }
-                }
-            }
-            catch (const std::exception& e)
-            {
-                HALT(e.what());
-            }
-        }
-        else
-        {
-            m_ref.reset();
-        }
-    }
-#endif
 
     fixed_string::fixed_string(const std::string& a_value)
     {
@@ -230,9 +173,9 @@ namespace stl
 
         IScopedLock lock(data_storage::get_lock());
 
-        auto& value = data_storage::create(hash, a_value);
+        auto& value = data_storage::insert(hash, a_value);
 
-        m_ref = std::addressof(value);
+        copy_assign<false>(std::addressof(value));
     }
 
     void fixed_string::set(std::string&& a_value)
@@ -243,9 +186,9 @@ namespace stl
 
         IScopedLock lock(data_storage::get_lock());
 
-        auto& value = data_storage::create(hash, std::move(a_value));
+        auto& value = data_storage::insert(hash, std::move(a_value));
 
-        m_ref = std::addressof(value);
+        copy_assign<false>(std::addressof(value));
     }
 
     void fixed_string::set(const char* a_value)

@@ -16,13 +16,13 @@ namespace Game
     struct FormID;
 
     struct VMHandle :
-        IntegralWrapper<UInt64>
+        IntegralWrapper<std::uint64_t>
     {
-        static inline constexpr UInt64 HANDLE_UPPER_MASK = 0xFFFFFFFF00000000ui64;
-        static inline constexpr UInt64 HANDLE_LOWER_MASK = 0x00000000FFFFFFFFui64;
+        static inline constexpr std::uint64_t HANDLE_UPPER_MASK = 0xFFFFFFFF00000000ui64;
+        static inline constexpr std::uint64_t HANDLE_LOWER_MASK = 0x00000000FFFFFFFFui64;
 
-        using IntegralWrapper<UInt64>::IntegralWrapper;
-        using IntegralWrapper<UInt64>::operator=;
+        using IntegralWrapper<std::uint64_t>::IntegralWrapper;
+        using IntegralWrapper<std::uint64_t>::operator=;
 
         template <class T, class form_type = stl::strip_type<T>>
         [[nodiscard]] form_type* Resolve() const;
@@ -32,18 +32,18 @@ namespace Game
         template <class T, class form_type = stl::strip_type<T>>
         [[nodiscard]] bool Get(NiPointer<T>& a_ptr);
 
-        [[nodiscard]] bool Get(UInt32 a_type, void* a_ptr);
+        [[nodiscard]] bool Get(std::uint32_t a_type, void* a_ptr);
 
         [[nodiscard]] bool IsValid() const;
         [[nodiscard]] bool IsTemporary() const;
         [[nodiscard]] VMHandle StripLower() const;
 
         [[nodiscard]] FormID GetFormID() const;
-        [[nodiscard]] bool GetPluginIndex(UInt32& a_out) const;
-        [[nodiscard]] bool GetPluginPartialIndex(UInt32& a_out) const;
+        [[nodiscard]] bool GetPluginIndex(std::uint32_t& a_out) const;
+        [[nodiscard]] bool GetPluginPartialIndex(std::uint32_t& a_out) const;
     };
 
-    static_assert(sizeof(VMHandle) == sizeof(UInt64));
+    static_assert(sizeof(VMHandle) == sizeof(std::uint64_t));
 
     class VMHandleRef
     {
@@ -69,14 +69,14 @@ namespace Game
     };
 
     struct FormID :
-        IntegralWrapper<UInt32>
+        IntegralWrapper<std::uint32_t>
     {
-        using IntegralWrapper<UInt32>::IntegralWrapper;
-        using IntegralWrapper<UInt32>::operator=;
+        using IntegralWrapper<std::uint32_t>::IntegralWrapper;
+        using IntegralWrapper<std::uint32_t>::operator=;
 
         [[nodiscard]] bool IsTemporary() const;
-        [[nodiscard]] bool GetPluginIndex(UInt32& a_out) const;
-        [[nodiscard]] bool GetPluginPartialIndex(UInt32& a_out) const;
+        [[nodiscard]] bool GetPluginIndex(std::uint32_t& a_out) const;
+        [[nodiscard]] bool GetPluginPartialIndex(std::uint32_t& a_out) const;
         [[nodiscard]] bool GetReference(NiPointer<TESObjectREFR>& a_out) const;
         [[nodiscard]] TESForm* Lookup() const;
 
@@ -88,20 +88,20 @@ namespace Game
 
     };
 
-    static_assert(sizeof(FormID) == sizeof(UInt32));
+    static_assert(sizeof(FormID) == sizeof(std::uint32_t));
 
     struct ObjectRefHandle :
-        IntegralWrapper<UInt32>
+        IntegralWrapper<std::uint32_t>
     {
-        using IntegralWrapper<UInt32>::IntegralWrapper;
-        using IntegralWrapper<UInt32>::operator=;
+        using IntegralWrapper<std::uint32_t>::IntegralWrapper;
+        using IntegralWrapper<std::uint32_t>::operator=;
 
         //[[nodiscard]] bool LookupREFR(NiPointer<TESObjectREFR>& a_out);
         [[nodiscard]] bool LookupREFR(NiPointer<TESObjectREFR>& a_out) const;
         [[nodiscard]] bool IsValid() const;
     };
 
-    static_assert(sizeof(ObjectRefHandle) == sizeof(UInt32));
+    static_assert(sizeof(ObjectRefHandle) == sizeof(std::uint32_t));
 
 }
 
@@ -122,7 +122,7 @@ namespace Game
             return nullptr;
         }
 
-        return static_cast<form_type*>(policy->Resolve(static_cast<UInt32>(form_type::kTypeID), *this));
+        return static_cast<form_type*>(policy->Resolve(static_cast<std::uint32_t>(form_type::kTypeID), *this));
     }
 
     template <class T, class form_type>

@@ -93,9 +93,9 @@ protected:
     virtual void OnLogOpen() = 0;
     virtual const char* GetLogPath() const = 0;
     virtual const char* GetPluginName() const = 0;
-    virtual UInt32 GetPluginVersion() const = 0;
-    virtual bool CheckRuntimeVersion(UInt32 a_version) const = 0;
-    virtual bool CheckInterfaceVersion(UInt32 a_interfaceID, UInt32 a_interfaceVersion, UInt32 a_compiledInterfaceVersion) const;
+    virtual std::uint32_t GetPluginVersion() const = 0;
+    virtual bool CheckRuntimeVersion(std::uint32_t a_version) const = 0;
+    virtual bool CheckInterfaceVersion(std::uint32_t a_interfaceID, std::uint32_t a_interfaceVersion, std::uint32_t a_compiledInterfaceVersion) const;
 
 private:
     template <class T, class interface_type = stl::strip_type<T>>
@@ -116,7 +116,7 @@ private:
 };
 
 template <SKSEInterfaceFlags _InterfaceFlags, std::size_t _TrampolineBranch, std::size_t _TrampolineLocal>
-bool ISKSEBase<_InterfaceFlags, _TrampolineBranch, _TrampolineLocal>::CheckInterfaceVersion(UInt32 a_interfaceID, UInt32 a_interfaceVersion, UInt32 a_compiledInterfaceVersion) const
+bool ISKSEBase<_InterfaceFlags, _TrampolineBranch, _TrampolineLocal>::CheckInterfaceVersion(std::uint32_t a_interfaceID, std::uint32_t a_interfaceVersion, std::uint32_t a_compiledInterfaceVersion) const
 {
     return a_interfaceVersion >= a_compiledInterfaceVersion;
 }

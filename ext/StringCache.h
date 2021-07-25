@@ -17,6 +17,7 @@
 //#include <tsl/sparse_set.h>
 
 #include "STLCommon.h"
+#include "Threads.h"
 
 namespace stl
 {
@@ -80,8 +81,8 @@ namespace string_cache
             return _stricmp(lhs_data.c_str(), rhs_data.c_str()) == 0;
         }
 
-        const std::size_t m_hash;
-        const std::string m_value;
+        std::size_t m_hash;
+        std::string m_value;
 
 #if !defined(SKMP_STRING_CACHE_PERSIST)
 
@@ -109,7 +110,7 @@ namespace string_cache
     {
     public:
 
-        icase_key(
+        /*icase_key(
             const std::string& a_value) noexcept
             :
             key_base(
@@ -127,7 +128,7 @@ namespace string_cache
                 std::move(a_value)
             )
         {
-        }
+        }*/
 
         using key_base::key_base;
 
@@ -142,9 +143,9 @@ namespace std
     template<>
     struct hash<string_cache::icase_key>
     {
-        auto operator()(string_cache::icase_key const& arg) const
+        auto operator()(string_cache::icase_key const& a_arg) const
         {
-            return arg.hash();
+            return a_arg.hash();
         }
     };
 }
@@ -185,7 +186,7 @@ namespace string_cache
 
         [[nodiscard]] static stats_t get_stats() noexcept;
 
-        /*SKMP_FORCEINLINE static auto& get_rqueue() {
+        /*inline static auto& get_rqueue() {
             return m_Instance.m_rqueue;
         }*/
 
@@ -214,14 +215,14 @@ namespace string_cache
 
 #if !defined(SKMP_STRING_CACHE_PERSIST)
 
-        inline static void release(
-            const key_base* a_ref) noexcept
+        static void release(
+            const value_type* a_ref) noexcept
         {
             try
             {
                 auto& data = get_data();
 
-                auto it = data.find(a_ref->hash());
+                auto it = data.find(*a_ref);
                 if (it != data.end()) {
                     data.erase(it);
                 }
@@ -230,11 +231,15 @@ namespace string_cache
             {
                 HALT(e.what());
             }
+            catch (...)
+            {
+                HALT(__FUNCTION__ ": exception occured");
+            }
         }
 
         template <bool _Lock>
         static void try_release(
-            const key_base* a_ref)
+            const value_type* a_ref) noexcept
         {
             if (!a_ref) {
                 return;
@@ -263,16 +268,13 @@ namespace string_cache
 
 #endif
 
-
-        FastSpinLock m_lock;
+        FastSpinMutex m_lock;
 
         const icase_key* m_icase_empty;
 
-        // according to spec references/pointers are only invalidated when deleted
-        std::unordered_map<std::size_t, value_type> m_data;
+        std::unordered_set<value_type> m_data;
 
         static data_storage m_Instance;
-
     };
 }
 
@@ -287,10 +289,7 @@ namespace stl
     public:
 
         fixed_string();
-        ~fixed_string()
-        {
-            string_cache::data_storage::try_release<true>(m_ref);
-        }
+        ~fixed_string();
 
         fixed_string(const fixed_string& a_rhs)
             :
@@ -329,12 +328,10 @@ namespace stl
         fixed_string(const std::string& a_value);
         fixed_string(std::string&& a_value);
         fixed_string(const char* a_value);
-        fixed_string(const BSFixedString& a_value);
 
         fixed_string& operator=(const std::string& a_value);
         fixed_string& operator=(std::string&& a_value);
         fixed_string& operator=(const char* a_value);
-        fixed_string& operator=(const BSFixedString& a_value);
 
         [[nodiscard]] inline operator const std::string& () const noexcept {
             return m_ref->m_value;
@@ -394,7 +391,7 @@ namespace stl
         void set(const char* a_value);
 
         template <bool _Lock>
-        inline void copy_assign(const string_cache::key_base* a_ref) noexcept
+        inline void copy_assign(const string_cache::icase_key* a_ref) noexcept
         {
             auto old = m_ref;
 
@@ -404,14 +401,14 @@ namespace stl
             string_cache::data_storage::try_release<_Lock>(old);
         }
 
-        static inline void acquire(const string_cache::key_base* a_ref)  noexcept
+        static inline void acquire(const string_cache::icase_key* a_ref)  noexcept
         {
             if (a_ref && a_ref != string_cache::data_storage::get_empty()) {
                 a_ref->inc_refcount();
             }
         }
 
-        const string_cache::key_base* m_ref{ nullptr };
+        const string_cache::icase_key* m_ref{ nullptr };
 
         template<class Archive>
         void save(Archive& ar, const unsigned int version) const

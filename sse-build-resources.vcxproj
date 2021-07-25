@@ -82,10 +82,10 @@
     <ClInclude Include="ext\IMisc.h" />
     <ClInclude Include="ext\INIReader.h" />
     <ClInclude Include="ext\IOS.h" />
-    <ClInclude Include="ext\IPluginInfo.h" />
     <ClInclude Include="ext\IRandom.h" />
     <ClInclude Include="ext\ISettingCollection.h" />
     <ClInclude Include="ext\ISKSE.h" />
+    <ClInclude Include="ext\ISKSESerialization.h" />
     <ClInclude Include="ext\ITaskPool.h" />
     <ClInclude Include="ext\ITasks.h" />
     <ClInclude Include="ext\Iteration.h" />
@@ -98,6 +98,7 @@
     <ClInclude Include="ext\PerfCounter.h" />
     <ClInclude Include="ext\PW.h" />
     <ClInclude Include="ext\RTTI.h" />
+    <ClInclude Include="ext\Serialization.h" />
     <ClInclude Include="ext\STL.h" />
     <ClInclude Include="ext\STLCommon.h" />
     <ClInclude Include="ext\Stream.h" />
@@ -174,8 +175,8 @@
     <ClCompile Include="ext\ILogging.cpp" />
     <ClCompile Include="ext\INIReader.cpp" />
     <ClCompile Include="ext\IOS.cpp" />
-    <ClCompile Include="ext\IPluginInfo.cpp" />
     <ClCompile Include="ext\ISKSE.cpp" />
+    <ClCompile Include="ext\ISKSESerialization.cpp" />
     <ClCompile Include="ext\ITaskPool.cpp" />
     <ClCompile Include="ext\ITasks.cpp" />
     <ClCompile Include="ext\JITASM.cpp" />
@@ -185,6 +186,7 @@
     <ClCompile Include="ext\Patching.cpp" />
     <ClCompile Include="ext\PerfCounter.cpp" />
     <ClCompile Include="ext\RTTI.cpp" />
+    <ClCompile Include="ext\Serialization.cpp" />
     <ClCompile Include="ext\Stream.cpp" />
     <ClCompile Include="ext\StrHelpers.cpp" />
     <ClCompile Include="ext\TaskQueue.cpp" />

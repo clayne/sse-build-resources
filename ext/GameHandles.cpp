@@ -11,7 +11,7 @@
 namespace Game
 {
 
-    bool VMHandle::Get(UInt32 a_type, void* a_ptr)
+    bool VMHandle::Get(std::uint32_t a_type, void* a_ptr)
     {
         auto policy = (*g_skyrimVM)->GetClassRegistry()->GetHandlePolicy();
         m_item = policy->Create(a_type, a_ptr);
@@ -34,12 +34,12 @@ namespace Game
         return GetFormID().IsTemporary();
     }
 
-    bool VMHandle::GetPluginIndex(UInt32& a_out) const
+    bool VMHandle::GetPluginIndex(std::uint32_t& a_out) const
     {
         return GetFormID().GetPluginIndex(a_out);
     }
 
-    bool VMHandle::GetPluginPartialIndex(UInt32& a_out) const
+    bool VMHandle::GetPluginPartialIndex(std::uint32_t& a_out) const
     {
         return GetFormID().GetPluginPartialIndex(a_out);
     }
@@ -95,9 +95,9 @@ namespace Game
         return ((m_item & 0xFF000000) >> 24) == 0xFF;
     }
 
-    bool FormID::GetPluginIndex(UInt32& a_out) const
+    bool FormID::GetPluginIndex(std::uint32_t& a_out) const
     {
-        UInt32 modID = (m_item & 0xFF000000) >> 24;
+        std::uint32_t modID = (m_item & 0xFF000000) >> 24;
 
         if (modID == 0xFF)
             return false;
@@ -107,9 +107,9 @@ namespace Game
         return true;
     }
 
-    bool FormID::GetPluginPartialIndex(UInt32& a_out) const
+    bool FormID::GetPluginPartialIndex(std::uint32_t& a_out) const
     {
-        UInt32 modID = (m_item & 0xFF000000) >> 24;
+        std::uint32_t modID = (m_item & 0xFF000000) >> 24;
 
         if (modID == 0xFF)
             return false;
@@ -147,16 +147,6 @@ namespace Game
 // ObjectRefHandle
 namespace Game
 {
-    /*bool ObjectRefHandle::LookupREFR(NiPointer<TESObjectREFR>& a_out)
-    {
-        if (!IsValid())
-            return false;
-
-        LookupREFRByHandle(*this, a_out);
-
-        return a_out != nullptr;
-    }*/
-    
     bool ObjectRefHandle::LookupREFR(NiPointer<TESObjectREFR>& a_out) const
     {
         if (!IsValid())

@@ -4,6 +4,7 @@
 #pragma init_seg(lib)
 
 #include "StringCache.h"
+#include "Hash.h"
 
 namespace string_cache
 {
@@ -15,9 +16,7 @@ namespace string_cache
 
         auto empty = std::string();
 
-        auto hash = value_type::compute_hash(empty);
-
-        auto& e = m_data.try_emplace(hash, std::move(empty)).first->second;
+        auto& e = *m_data.emplace(value_type::compute_hash(empty), std::move(empty)).first;
 
         m_icase_empty = std::addressof(e);
     }
@@ -28,10 +27,7 @@ namespace string_cache
         ->
         const value_type&
     {
-        return m_Instance.m_data.try_emplace(
-            hash,
-            hash,
-            a_string).first->second;
+        return *m_Instance.m_data.emplace(hash, a_string).first;
     }
 
     auto data_storage::insert(
@@ -40,10 +36,7 @@ namespace string_cache
         ->
         const value_type&
     {
-        return m_Instance.m_data.try_emplace(
-            hash,
-            hash,
-            std::move(a_string)).first->second;
+        return *m_Instance.m_data.emplace(hash, std::move(a_string)).first;
     }
 
     auto data_storage::get_stats() noexcept
@@ -71,13 +64,13 @@ namespace string_cache
         for (auto& entry : data)
         {
             result.key_data_usage += sizeof(stl::strip_type<decltype(entry)>);
-            result.string_usage += entry.second.m_value.capacity() + sizeof(decltype(entry.second.m_value));
+            result.string_usage += entry.m_value.capacity() + sizeof(decltype(entry.m_value));
 
 #if !defined(SKMP_STRING_CACHE_PERSIST)
-            result.total_fixed_count += entry.second.use_count();
-            result.total_fixed_size += entry.second.use_count() * sizeof(stl::fixed_string);
+            result.total_fixed_count += entry.use_count();
+            result.total_fixed_size += entry.use_count() * sizeof(stl::fixed_string);
 
-            result.estimated_uncached_usage += (entry.second.m_value.capacity() + sizeof(decltype(entry.second.m_value))) * entry.second.use_count();
+            result.estimated_uncached_usage += (entry.m_value.capacity() + sizeof(decltype(entry.m_value))) * entry.use_count();
 #endif
 
         }
@@ -121,6 +114,11 @@ namespace stl
     {
     }
 
+    fixed_string::~fixed_string()
+    {
+        string_cache::data_storage::try_release<true>(m_ref);
+    }
+
     fixed_string::fixed_string(const std::string& a_value)
     {
         set(a_value);
@@ -134,11 +132,6 @@ namespace stl
     fixed_string::fixed_string(const char* a_value)
     {
         set(a_value);
-    }
-
-    fixed_string::fixed_string(const BSFixedString& a_value)
-    {
-        set(a_value.c_str());
     }
 
     fixed_string& fixed_string::operator=(const std::string& a_value)
@@ -156,12 +149,6 @@ namespace stl
     fixed_string& fixed_string::operator=(const char* a_value)
     {
         set(a_value);
-        return *this;
-    }
-
-    fixed_string& fixed_string::operator=(const BSFixedString& a_value)
-    {
-        set(a_value.c_str());
         return *this;
     }
 

@@ -36,7 +36,7 @@ bool IPluginInfo::Populate()
     return (m_populated = true);
 }
 
-const pluginInfo_t* IPluginInfo::Lookup(const std::string& a_modName) const
+const pluginInfo_t* IPluginInfo::Lookup(const pluginInfoString_t& a_modName) const
 {
     auto it = m_pluginNameMap.find(a_modName);
     if (it != m_pluginNameMap.end()) {
@@ -45,7 +45,7 @@ const pluginInfo_t* IPluginInfo::Lookup(const std::string& a_modName) const
     return nullptr;
 }
 
-const pluginInfo_t* IPluginInfo::Lookup(UInt32 const a_modID) const
+const pluginInfo_t* IPluginInfo::Lookup(std::uint32_t const a_modID) const
 {
     auto it = m_pluginIndexMap.find(a_modID);
     if (it != m_pluginIndexMap.end()) {
@@ -54,7 +54,7 @@ const pluginInfo_t* IPluginInfo::Lookup(UInt32 const a_modID) const
     return nullptr;
 }
 
-bool IPluginInfo::ResolveFormID(const std::string& a_modName, Game::FormID a_lower, Game::FormID& a_out) const
+bool IPluginInfo::ResolveFormID(const pluginInfoString_t& a_modName, Game::FormID a_lower, Game::FormID& a_out) const
 {
     auto pluginInfo = Lookup(a_modName);
     if (!pluginInfo) {
@@ -62,6 +62,18 @@ bool IPluginInfo::ResolveFormID(const std::string& a_modName, Game::FormID a_low
     }
 
     a_out = pluginInfo->GetFormID(a_lower);
+
+    return true;
+}
+
+bool IPluginInfo::ResolveFormID(const formPair_t& a_pair, Game::FormID& a_out) const
+{
+    auto pluginInfo = Lookup(a_pair.first);
+    if (!pluginInfo) {
+        return false;
+    }
+
+    a_out = pluginInfo->GetFormID(a_pair.second);
 
     return true;
 }

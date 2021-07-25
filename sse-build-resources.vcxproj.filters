@@ -282,9 +282,6 @@
     <ClInclude Include="ext\workerpool.h">
       <Filter>ext</Filter>
     </ClInclude>
-    <ClInclude Include="ext\IPluginInfo.h">
-      <Filter>ext</Filter>
-    </ClInclude>
     <ClInclude Include="ext\Node.h">
       <Filter>ext</Filter>
     </ClInclude>
@@ -293,6 +290,12 @@
     </ClInclude>
     <ClInclude Include="skse64\skse64\skse64\FormTraits.h">
       <Filter>skse64</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\Serialization.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\ISKSESerialization.h">
+      <Filter>ext</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -521,14 +524,17 @@
     <ClCompile Include="ext\workerpool.cpp">
       <Filter>ext</Filter>
     </ClCompile>
-    <ClCompile Include="ext\IPluginInfo.cpp">
-      <Filter>ext</Filter>
-    </ClCompile>
     <ClCompile Include="ext\Node.cpp">
       <Filter>ext</Filter>
     </ClCompile>
     <ClCompile Include="skse64\skse64\skse64\GameAudio.cpp">
       <Filter>skse64</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\Serialization.cpp">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\ISKSESerialization.cpp">
+      <Filter>ext</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

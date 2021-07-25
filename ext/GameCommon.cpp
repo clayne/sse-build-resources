@@ -1,5 +1,7 @@
 #include "GameCommon.h"
 
+#include <skse64/FormTraits.h>
+
 namespace Game
 {
     void AIProcessVisitActors(const std::function<void(Actor*)>& a_func)
@@ -13,17 +15,13 @@ namespace Game
         if (pl == nullptr)
             return;
 
-        for (UInt32 i = 0; i < pl->highActorHandles.count; i++)
+        for (auto handle : pl->highActorHandles)
         {
             NiPointer<TESObjectREFR> ref;
-
-            if (!pl->highActorHandles[i].LookupREFR(ref))
+            if (!handle.LookupREFR(ref))
                 continue;
 
-            if (ref->formType != Actor::kTypeID)
-                continue;
-
-            auto actor = static_cast<Actor*>(ref.get());
+            auto actor = ref->As<Actor>();
 
             if (actor)
                 a_func(actor);
@@ -33,7 +31,7 @@ namespace Game
     char GetActorSex(Actor* a_actor)
     {
         if (auto actorBase = a_actor->baseForm; actorBase) {
-            if (auto npc = RTTI<TESNPC>()(actorBase); npc) {
+            if (auto npc = actorBase->As<TESNPC>(); npc) {
                 return npc->GetSex();
             }
         }
@@ -48,7 +46,7 @@ namespace Game
         if (!race) 
         {
             if (auto actorBase = a_actor->baseForm; actorBase) {
-                if (auto npc = RTTI<TESNPC>()(actorBase); npc) {
+                if (auto npc = actorBase->As<TESNPC>(); npc) {
                     race = npc->race.race;
                 }
             }

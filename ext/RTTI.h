@@ -65,6 +65,7 @@ public:
     }
 };
 
+#include <limits>
 
 namespace RTTI_IID
 {
@@ -3348,5 +3349,5 @@ namespace RTTI_IID
     inline static constexpr std::uint32_t BSSocket = 3276;
     inline static constexpr std::uint32_t BSSocketServer = 3277;
 
-    inline static constexpr std::uint32_t NONE = UINT32_MAX;
+    inline static constexpr std::uint32_t NONE = std::numeric_limits<std::uint32_t>::max();
 }

@@ -11,9 +11,9 @@ class FastSpinMutex
 public:
     FastSpinMutex() noexcept = default;
 
-    [[nodiscard]] SKMP_FORCEINLINE bool try_lock() noexcept;
+    [[nodiscard]] inline bool try_lock() noexcept;
     void lock() noexcept;
-    SKMP_FORCEINLINE void unlock() noexcept;
+    inline void unlock() noexcept;
 
 private:
 
@@ -33,11 +33,11 @@ void FastSpinMutex::unlock() noexcept
 class WCriticalSection
 {
 public:
-    SKMP_FORCEINLINE WCriticalSection() noexcept {
+    inline WCriticalSection() noexcept {
         InitializeCriticalSection(&m_cs);
     }
 
-    SKMP_FORCEINLINE ~WCriticalSection() noexcept {
+    inline ~WCriticalSection() noexcept {
         DeleteCriticalSection(&m_cs);
     }
 
@@ -46,23 +46,23 @@ public:
     WCriticalSection& operator=(const WCriticalSection&) = delete;
     WCriticalSection& operator=(WCriticalSection&&) = delete;
 
-    SKMP_FORCEINLINE void lock();
-    SKMP_FORCEINLINE void unlock();
-    SKMP_FORCEINLINE bool try_lock();
+    inline void lock();
+    inline void unlock();
+    inline bool try_lock();
 
 private:
     CRITICAL_SECTION m_cs;
 };
 
-SKMP_FORCEINLINE void WCriticalSection::lock() {
+void WCriticalSection::lock() {
     EnterCriticalSection(&m_cs);
 }
 
-SKMP_FORCEINLINE void WCriticalSection::unlock() {
+void WCriticalSection::unlock() {
     LeaveCriticalSection(&m_cs);
 }
 
-SKMP_FORCEINLINE bool WCriticalSection::try_lock() {
+bool WCriticalSection::try_lock() {
     return TryEnterCriticalSection(&m_cs) == TRUE;
 }
 
@@ -79,13 +79,13 @@ public:
     IScopedLock& operator=(const IScopedLock&) = delete;
     IScopedLock& operator=(IScopedLock&&) = delete;
 
-    SKMP_FORCEINLINE IScopedLock(T& a_mutex) noexcept :
+    inline IScopedLock(T& a_mutex) noexcept :
         m_mutex(a_mutex)
     {
         a_mutex.lock();
     }
 
-    SKMP_FORCEINLINE ~IScopedLock() noexcept
+    inline ~IScopedLock() noexcept
     {
         m_mutex.unlock();
     }

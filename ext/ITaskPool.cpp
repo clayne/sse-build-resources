@@ -96,28 +96,24 @@ void ITaskPool::QueueActorTask(
         return;
     }
 
-    if (!a_actor->IsActor()) {
+    auto actor = a_actor->As<Actor>();
+    if (!actor) {
         return;
     }
 
-    auto handle = a_actor->GetHandle();
+    auto handle = actor->GetHandle();
     if (!handle.IsValid()) {
         return;
     }
 
     m_Instance.m_queue.AddTask([handle, func = std::move(a_func)]()
     {
-        NiPointer<TESObjectREFR> ref;
-        if (!handle.LookupREFR(ref)) {
+        NiPointer<Actor> actor;
+        if (!handle.Lookup(actor)) {
             return;
         }
 
-        if (!IsREFRValid(ref)) {
-            return;
-        }
-
-        auto actor = ref->As<Actor>();
-        if (!actor) {
+        if (!IsREFRValid(actor)) {
             return;
         }
 

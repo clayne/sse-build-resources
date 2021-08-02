@@ -12,7 +12,7 @@ namespace Game
 
 class ITaskPool
 {
-    using func_t = std::function<void(Actor*, Game::ObjectRefHandle)>;
+    using func_t = std::function<void(Actor*, Game::ActorHandle)>;
 
 public:
 

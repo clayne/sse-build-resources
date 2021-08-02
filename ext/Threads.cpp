@@ -1,6 +1,6 @@
 #include "Threads.h"
 
-void FastSpinMutex::lock() noexcept
+void FastSpinLock::lock() noexcept
 {
     while (!try_lock())
     {

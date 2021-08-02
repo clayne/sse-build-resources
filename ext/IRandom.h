@@ -87,5 +87,5 @@ public:
     }
 
 private:
-    FastSpinMutex m_lock;
+    FastSpinLock m_lock;
 };

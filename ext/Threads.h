@@ -4,12 +4,12 @@
 #include <atomic>
 
 // non-reentrant
-class FastSpinMutex
+class FastSpinLock
 {
     static inline constexpr std::uint64_t MAX_SPIN_CYCLES = 10000ULL;
 
 public:
-    FastSpinMutex() noexcept = default;
+    FastSpinLock() noexcept = default;
 
     [[nodiscard]] inline bool try_lock() noexcept;
     void lock() noexcept;
@@ -20,12 +20,12 @@ private:
     std::atomic_flag m_lock = ATOMIC_FLAG_INIT;
 };
 
-bool FastSpinMutex::try_lock() noexcept
+bool FastSpinLock::try_lock() noexcept
 {
     return m_lock.test_and_set(std::memory_order_acquire) == false;
 }
 
-void FastSpinMutex::unlock() noexcept
+void FastSpinLock::unlock() noexcept
 {
     m_lock.clear(std::memory_order_release);
 }
@@ -67,7 +67,7 @@ bool WCriticalSection::try_lock() {
 }
 
 
-template <class T, class = std::enable_if_t<stl::is_any_base_of_v<T, FastSpinMutex, WCriticalSection>, void>>
+template <class T, class = std::enable_if_t<stl::is_any_base_of_v<T, FastSpinLock, WCriticalSection>, void>>
 class IScopedLock
 {
 public:

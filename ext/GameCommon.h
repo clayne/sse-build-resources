@@ -35,11 +35,11 @@ namespace Game
         uint64_t                                movementSyncSema;                              // 020
         uint32_t                                unk028;                                        // 028
         uint32_t                                pad02C;                                        // 02C
-        tArray<ObjectRefHandle>                 highActorHandles;                              // 030
-        tArray<ObjectRefHandle>                 lowActorHandles;                               // 048
-        tArray<ObjectRefHandle>                 middleHighActorHandles;                        // 060
-        tArray<ObjectRefHandle>                 middleLowActorHandles;                         // 078
-        tArray<ObjectRefHandle>* allProcesses[4];                                              // 090
+        tArray<ActorHandle>                     highActorHandles;                              // 030
+        tArray<ActorHandle>                     lowActorHandles;                               // 048
+        tArray<ActorHandle>                     middleHighActorHandles;                        // 060
+        tArray<ActorHandle>                     middleLowActorHandles;                         // 078
+        tArray<ActorHandle>*                    allProcesses[4];                               // 090
 
     private:
 

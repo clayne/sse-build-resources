@@ -112,7 +112,7 @@ protected:
     }
 
     std::queue<element_type> m_queue;
-    mutable FastSpinMutex m_lock;
+    mutable FastSpinLock m_lock;
 };
 
 class TaskQueue :

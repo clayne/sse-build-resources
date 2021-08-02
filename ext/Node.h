@@ -8,12 +8,16 @@ namespace Util
 {
     namespace Node
     {
-        NiNode* FindNode(
+        [[nodiscard]] NiNode* FindNode(
             NiNode* a_root,
             const BSFixedString& a_name);
 
-        struct NiRootNodes
+        [[nodiscard]] NiAVObject* FindChild(NiNode* a_node, const BSFixedString& a_name);
+        [[nodiscard]] NiNode* FindChildNode(NiNode* a_node, const BSFixedString& a_name);
+
+        class NiRootNodes
         {
+        public:
             NiRootNodes(TESObjectREFR* const a_ref, bool a_no1p = false);
 
             [[nodiscard]] bool MatchesAny(NiNode* const a_node);

@@ -143,23 +143,3 @@ namespace Game
     }
 
 }
-
-// ObjectRefHandle
-namespace Game
-{
-    bool ObjectRefHandle::LookupREFR(NiPointer<TESObjectREFR>& a_out) const
-    {
-        if (!IsValid())
-            return false;
-
-        LookupREFRObjectByHandle(*this, a_out);
-
-        return a_out != nullptr;
-    }
-
-    bool ObjectRefHandle::IsValid() const
-    {
-        return (m_item != *g_invalidRefHandle);
-    }
-
-}

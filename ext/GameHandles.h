@@ -5,10 +5,13 @@
 #include "Hash.h"
 #include "RTTI.h"
 #include "STLCommon.h"
+#include "AddressLibrary.h"
 
 #include <skse64/NiTypes.h>
 
 class TESObjectREFR;
+class Actor;
+class Projectile;
 class TESForm;
 
 namespace Game
@@ -90,24 +93,58 @@ namespace Game
 
     static_assert(sizeof(FormID) == sizeof(std::uint32_t));
 
-    struct ObjectRefHandle :
+    template <class T>
+    struct BSPointerHandle :
         IntegralWrapper<std::uint32_t>
     {
+    public:
+
         using IntegralWrapper<std::uint32_t>::IntegralWrapper;
         using IntegralWrapper<std::uint32_t>::operator=;
 
-        //[[nodiscard]] bool LookupREFR(NiPointer<TESObjectREFR>& a_out);
-        [[nodiscard]] bool LookupREFR(NiPointer<TESObjectREFR>& a_out) const;
+        [[nodiscard]] bool Lookup(NiPointer<T>& a_out) const;
         [[nodiscard]] bool IsValid() const;
+
+    private:
+
+        static inline auto m_invalidHandle = IAL::Address<std::uint32_t*>(514164);
     };
 
+    using ObjectRefHandle = BSPointerHandle<TESObjectREFR>;
+    using ActorHandle = BSPointerHandle<Actor>;
+    using ProjectileHandle = BSPointerHandle<Projectile>;
+
     static_assert(sizeof(ObjectRefHandle) == sizeof(std::uint32_t));
+    static_assert(sizeof(ActorHandle) == sizeof(std::uint32_t));
+    static_assert(sizeof(ProjectileHandle) == sizeof(std::uint32_t));
+
+
+    template <class T>
+    class BSPointerHandleInterface
+    {
+    public:
+
+        using handle_type = BSPointerHandle<T>;
+
+    private:
+
+        using funcLookupByHandle_t = bool (*)(const handle_type&, NiPointer<T>&);
+        using funcGetHandle_t = handle_type(*)(T*);
+
+    public:
+
+        static inline const auto Lookup = IAL::Address<funcLookupByHandle_t>(12204);
+        static inline const auto GetHandle = IAL::Address<funcGetHandle_t>(15967);
+
+    };
 
 }
 
 STD_SPECIALIZE_HASH(::Game::VMHandle);
 STD_SPECIALIZE_HASH(::Game::FormID);
-STD_SPECIALIZE_HASH(::Game::ObjectRefHandle);
+STD_SPECIALIZE_HASH(::Game::ObjectRefHandle)
+STD_SPECIALIZE_HASH(::Game::ActorHandle)
+STD_SPECIALIZE_HASH(::Game::ProjectileHandle)
 
 #include <skse64/PapyrusVM.h>
 
@@ -165,4 +202,21 @@ namespace Game
         return nullptr;
     }
 
+}
+
+namespace Game
+{
+    template <class T>
+    bool BSPointerHandle<T>::Lookup(NiPointer<T>& a_out) const
+    {
+        BSPointerHandleInterface<T>::Lookup(*this, a_out);
+
+        return a_out != nullptr;
+    }
+
+    template <class T>
+    bool BSPointerHandle<T>::IsValid() const
+    {
+        return (m_item != *m_invalidHandle);
+    }
 }

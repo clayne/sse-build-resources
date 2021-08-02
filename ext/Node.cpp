@@ -17,6 +17,45 @@ namespace Util
             return object->GetAsNiNode();
         }
 
+        NiAVObject* FindChild(
+            NiNode* a_node,
+            const BSFixedString& a_name)
+        {
+            for (auto object : a_node->m_children)
+            {
+                if (!object) {
+                    continue;
+                }
+
+                if (object->m_name == a_name.data) {
+                    return object;
+                }
+            }
+
+            return nullptr;
+        }
+
+        NiNode* FindChildNode(
+            NiNode* a_node,
+            const BSFixedString& a_name)
+        {
+            for (auto object : a_node->m_children)
+            {
+                if (!object) {
+                    continue;
+                }
+
+                if (object->m_name == a_name.data)
+                {
+                    if (auto node = object->GetAsNiNode(); node) {
+                        return node;
+                    }
+                }
+            }
+
+            return nullptr;
+        }
+
         NiRootNodes::NiRootNodes(
             TESObjectREFR* const a_ref,
             bool a_no1p)
@@ -36,17 +75,15 @@ namespace Util
 
         void NiRootNodes::GetNPCRoots(const BSFixedString& a_npcroot)
         {
-            for (std::size_t i = 0; i < std::size(m_nodes); i++)
+            for (auto& root : m_nodes)
             {
-                auto& root = m_nodes[i];
-
                 if (!root) {
                     continue;
                 }
 
                 auto n = FindNode(root, a_npcroot);
                 if (n) {
-                    m_nodes[i] = n;
+                    root = n;
                 }
             }
         }

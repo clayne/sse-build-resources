@@ -8,9 +8,9 @@
 
 namespace string_cache
 {
-    data_storage data_storage::m_Instance;
+    data_pool data_pool::m_Instance;
 
-    data_storage::data_storage()
+    data_pool::data_pool()
     {
         m_data.reserve(SKMP_STRING_CACHE_INITIAL_SIZE);
 
@@ -21,25 +21,71 @@ namespace string_cache
         m_icase_empty = std::addressof(e);
     }
 
-    auto data_storage::insert(
-        std::size_t hash,
+    auto data_pool::insert(
+        std::size_t a_hash,
         const std::string& a_string)
         ->
         const value_type&
     {
-        return *m_Instance.m_data.emplace(hash, a_string).first;
+        return *m_Instance.m_data.emplace(a_hash, a_string).first;
     }
 
-    auto data_storage::insert(
-        std::size_t hash,
+    auto data_pool::insert(
+        std::size_t a_hash,
         std::string&& a_string)
         ->
         const value_type&
     {
-        return *m_Instance.m_data.emplace(hash, std::move(a_string)).first;
+        return *m_Instance.m_data.emplace(a_hash, std::move(a_string)).first;
     }
 
-    auto data_storage::get_stats() noexcept
+#if !defined(SKMP_STRING_CACHE_PERSIST)
+    void data_pool::release(
+        const value_type* a_ref) noexcept
+    {
+        try
+        {
+            if (!get_data().erase(*a_ref)) {
+                throw std::runtime_error("FIXME: orphaned value");
+            }
+        }
+        catch (const std::exception& e)
+        {
+            HALT(e.what());
+        }
+    }
+
+    template <bool _Lock>
+    void data_pool::try_release(
+        const value_type* a_ref) noexcept
+    {
+        if (!a_ref) {
+            return;
+        }
+
+        if (a_ref == get_empty()) {
+            return;
+        }
+
+        if (a_ref->dec_refcount() != 1) {
+            return;
+        }
+
+        if constexpr (_Lock)
+        {
+            IScopedLock lock(get_lock());
+
+            if (a_ref->use_count() == 0) {
+                release(a_ref);
+            }
+        }
+        else {
+            release(a_ref);
+        }
+    }
+#endif
+
+    auto data_pool::get_stats() noexcept
         ->
         stats_t
     {
@@ -47,7 +93,7 @@ namespace string_cache
 
         stats_t result;
 
-        auto& data = m_Instance.m_data;
+        auto& data = get_data();
 
         result.count = data.size();
 
@@ -67,10 +113,13 @@ namespace string_cache
             result.string_usage += entry.m_value.capacity() + sizeof(decltype(entry.m_value));
 
 #if !defined(SKMP_STRING_CACHE_PERSIST)
-            result.total_fixed_count += entry.use_count();
-            result.total_fixed_size += entry.use_count() * sizeof(stl::fixed_string);
 
-            result.estimated_uncached_usage += (entry.m_value.capacity() + sizeof(decltype(entry.m_value))) * entry.use_count();
+            auto c = entry.use_count();
+
+            result.total_fixed_count += c;
+            result.total_fixed_size += c * sizeof(stl::fixed_string);
+
+            result.estimated_uncached_usage += (entry.m_value.capacity() + sizeof(decltype(entry.m_value))) * c;
 #endif
 
         }
@@ -99,7 +148,7 @@ namespace string_cache
 
         for (auto e : a_value)
         {
-            hash ^= static_cast<std::size_t>(::hash::toupper(e));
+            hash ^= static_cast<std::size_t>(std::toupper(e));
             hash *= fnv_prime;
         }
 
@@ -109,15 +158,21 @@ namespace string_cache
 
 namespace stl
 {
+    using namespace string_cache;
+
     fixed_string::fixed_string() :
-        m_ref(string_cache::data_storage::get_empty())
+        m_ref(data_pool::get_empty())
     {
     }
 
+#if !defined(SKMP_STRING_CACHE_PERSIST)
+
     fixed_string::~fixed_string()
     {
-        string_cache::data_storage::try_release<true>(m_ref);
+        data_pool::try_release<true>(m_ref);
     }
+
+#endif
 
     fixed_string::fixed_string(const std::string& a_value)
     {
@@ -154,35 +209,39 @@ namespace stl
 
     void fixed_string::set(const std::string& a_value)
     {
-        using namespace string_cache;
-
         auto hash = icase_key::compute_hash(a_value);
 
-        IScopedLock lock(data_storage::get_lock());
+        IScopedLock lock(data_pool::get_lock());
 
-        auto& value = data_storage::insert(hash, a_value);
+        auto& value = data_pool::insert(hash, a_value);
 
+#if !defined(SKMP_STRING_CACHE_PERSIST)
         copy_assign<false>(std::addressof(value));
+#else
+        m_ref = std::addressof(value);
+#endif
     }
 
     void fixed_string::set(std::string&& a_value)
     {
-        using namespace string_cache;
-
         auto hash = icase_key::compute_hash(a_value);
 
-        IScopedLock lock(data_storage::get_lock());
+        IScopedLock lock(data_pool::get_lock());
 
-        auto& value = data_storage::insert(hash, std::move(a_value));
+        auto& value = data_pool::insert(hash, std::move(a_value));
 
+#if !defined(SKMP_STRING_CACHE_PERSIST)
         copy_assign<false>(std::addressof(value));
+#else
+        m_ref = std::addressof(value);
+#endif
     }
 
     void fixed_string::set(const char* a_value)
     {
         if (a_value == nullptr)
         {
-            m_ref = string_cache::data_storage::get_empty();
+            m_ref = string_cache::data_pool::get_empty();
         }
         else
         {

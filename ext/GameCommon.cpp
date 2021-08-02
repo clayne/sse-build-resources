@@ -17,14 +17,11 @@ namespace Game
 
         for (auto handle : pl->highActorHandles)
         {
-            NiPointer<TESObjectREFR> ref;
-            if (!handle.LookupREFR(ref))
+            NiPointer<Actor> actor;
+            if (!handle.Lookup(actor))
                 continue;
 
-            auto actor = ref->As<Actor>();
-
-            if (actor)
-                a_func(actor);
+            a_func(actor);
         }
     }
 
@@ -43,7 +40,7 @@ namespace Game
     {
         auto race = a_actor->race;
 
-        if (!race) 
+        if (!race)
         {
             if (auto actorBase = a_actor->baseForm; actorBase) {
                 if (auto npc = actorBase->As<TESNPC>(); npc) {

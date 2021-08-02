@@ -8,35 +8,26 @@
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/version.hpp>
 
-#include <json/json.h>
-
 #include <string>
 #include <memory>
 #include <unordered_set>
 
-//#include <tsl/sparse_set.h>
-
 #include "STLCommon.h"
 #include "Threads.h"
 
-namespace stl
-{
-    class fixed_string;
-};
-
 namespace string_cache
 {
-    class key_ref_wrapper;
-    class data_storage;
+    class data_pool;
 
-    class __declspec(novtable) key_base
+    class icase_key
     {
-        friend class key_ref_wrapper;
-        friend class data_storage;
+        friend class data_pool;
 
     public:
 
-        key_base(
+        icase_key() = delete;
+
+        icase_key(
             std::size_t a_hash,
             const std::string& a_value)
             :
@@ -45,7 +36,7 @@ namespace string_cache
         {
         }
 
-        key_base(
+        icase_key(
             std::size_t a_hash,
             std::string&& a_value)
             :
@@ -54,23 +45,27 @@ namespace string_cache
         {
         }
 
-        key_base(const key_base&) = delete;
-        key_base(key_base&&) = delete;
-        key_base& operator=(const key_base&) = delete;
-        key_base& operator=(key_base&&) = delete;
+        icase_key(const icase_key&) = delete;
+        icase_key(icase_key&&) = delete;
+        icase_key& operator=(const icase_key&) = delete;
+        icase_key& operator=(icase_key&&) = delete;
 
-        [[nodiscard]] inline auto hash() const noexcept {
+        [[nodiscard]] inline constexpr auto hash() const noexcept {
             return m_hash;
         }
 
-        [[nodiscard]] inline const auto& value() const noexcept {
+        [[nodiscard]] inline constexpr const auto& value() const noexcept {
             return m_value;
         }
 
-        friend inline bool operator==(
-            const key_base& a_lhs,
-            const key_base& a_rhs)
+        [[nodiscard]] friend inline bool operator==(
+            const icase_key& a_lhs,
+            const icase_key& a_rhs) noexcept
         {
+            if (a_lhs.hash() != a_rhs.hash()) {
+                return false;
+            }
+
             auto& lhs_data = a_lhs.value();
             auto& rhs_data = a_rhs.value();
 
@@ -81,10 +76,12 @@ namespace string_cache
             return _stricmp(lhs_data.c_str(), rhs_data.c_str()) == 0;
         }
 
-        std::size_t m_hash;
-        std::string m_value;
+        const std::size_t m_hash;
+        const std::string m_value;
 
 #if !defined(SKMP_STRING_CACHE_PERSIST)
+
+        static std::size_t compute_hash(const std::string& a_value) noexcept;
 
         [[nodiscard]] inline auto use_count() const noexcept {
             return m_refcount.load(std::memory_order_acquire);
@@ -94,45 +91,16 @@ namespace string_cache
             m_refcount.fetch_add(1, std::memory_order_relaxed);
         }
 
-        inline auto dec_refcount() const noexcept {
+        [[nodiscard]] inline auto dec_refcount() const noexcept {
             return m_refcount.fetch_sub(1, std::memory_order_acq_rel);
         }
 
     private:
 
-        mutable std::atomic<std::uint32_t> m_refcount{ 0 };
+        mutable std::atomic<std::uint64_t> m_refcount{ 0 };
+
+        static_assert(decltype(m_refcount)::is_always_lock_free);
 #endif
-
-    };
-
-    class icase_key :
-        public key_base
-    {
-    public:
-
-        /*icase_key(
-            const std::string& a_value) noexcept
-            :
-            key_base(
-                compute_hash(a_value),
-                a_value
-            )
-        {
-        }
-
-        icase_key(
-            std::string&& a_value) noexcept
-            :
-            key_base(
-                compute_hash(a_value),
-                std::move(a_value)
-            )
-        {
-        }*/
-
-        using key_base::key_base;
-
-        static std::size_t compute_hash(const std::string& a_value) noexcept;
 
     };
 
@@ -143,19 +111,23 @@ namespace std
     template<>
     struct hash<string_cache::icase_key>
     {
-        auto operator()(string_cache::icase_key const& a_arg) const
+        [[nodiscard]] inline auto operator()(string_cache::icase_key const& a_arg) const noexcept
         {
             return a_arg.hash();
         }
     };
 }
 
+namespace stl
+{
+    class fixed_string;
+};
+
 namespace string_cache
 {
-    class data_storage
+    class data_pool
     {
         friend class stl::fixed_string;
-        friend class key_ref_wrapper;
 
         using value_type = icase_key;
 
@@ -178,7 +150,7 @@ namespace string_cache
         };
 
     public:
-        data_storage();
+        data_pool();
 
         [[nodiscard]] inline static auto size() noexcept {
             return m_Instance.m_data.size();
@@ -193,11 +165,11 @@ namespace string_cache
     private:
 
         static const value_type& insert(
-            std::size_t hash,
+            std::size_t a_hash,
             const std::string& a_string);
 
         static const value_type& insert(
-            std::size_t hash,
+            std::size_t a_hash,
             std::string&& a_string);
 
         [[nodiscard]] inline static auto& get_lock() noexcept {
@@ -216,65 +188,21 @@ namespace string_cache
 #if !defined(SKMP_STRING_CACHE_PERSIST)
 
         static void release(
-            const value_type* a_ref) noexcept
-        {
-            try
-            {
-                auto& data = get_data();
-
-                auto it = data.find(*a_ref);
-                if (it != data.end()) {
-                    data.erase(it);
-                }
-            }
-            catch (const std::exception& e)
-            {
-                HALT(e.what());
-            }
-            catch (...)
-            {
-                HALT(__FUNCTION__ ": exception occured");
-            }
-        }
+            const value_type* a_ref) noexcept;
 
         template <bool _Lock>
         static void try_release(
-            const value_type* a_ref) noexcept
-        {
-            if (!a_ref) {
-                return;
-            }
-
-            if (a_ref == get_empty()) {
-                return;
-            }
-
-            if (a_ref->dec_refcount() > 1) {
-                return;
-            }
-
-            if constexpr (_Lock)
-            {
-                IScopedLock lock(get_lock());
-
-                if (a_ref->use_count() == 0) {
-                    release(a_ref);
-                }
-            }
-            else {
-                release(a_ref);
-            }
-        }
+            const value_type* a_ref) noexcept;
 
 #endif
 
-        FastSpinMutex m_lock;
+        FastSpinLock m_lock;
 
         const icase_key* m_icase_empty;
 
         std::unordered_set<value_type> m_data;
 
-        static data_storage m_Instance;
+        static data_pool m_Instance;
     };
 }
 
@@ -289,6 +217,8 @@ namespace stl
     public:
 
         fixed_string();
+
+#if !defined(SKMP_STRING_CACHE_PERSIST)
         ~fixed_string();
 
         fixed_string(const fixed_string& a_rhs)
@@ -307,7 +237,9 @@ namespace stl
 
         fixed_string& operator=(const fixed_string& a_rhs)
         {
-            copy_assign<true>(a_rhs.m_ref);
+            if (this != std::addressof(a_rhs)) {
+                copy_assign<true>(a_rhs.m_ref);
+            }
             return *this;
         }
 
@@ -320,10 +252,11 @@ namespace stl
                 m_ref = a_rhs.m_ref;
                 a_rhs.m_ref = nullptr;
 
-                string_cache::data_storage::try_release<true>(old);
+                string_cache::data_pool::try_release<true>(old);
             }
             return *this;
         }
+#endif
 
         fixed_string(const std::string& a_value);
         fixed_string(std::string&& a_value);
@@ -333,45 +266,43 @@ namespace stl
         fixed_string& operator=(std::string&& a_value);
         fixed_string& operator=(const char* a_value);
 
-        [[nodiscard]] inline operator const std::string& () const noexcept {
+        [[nodiscard]] inline constexpr operator const auto& () const noexcept {
             return m_ref->m_value;
         }
 
-        [[nodiscard]] inline operator Json::Value() const noexcept {
-            return m_ref->m_value;
-        }
-
-        [[nodiscard]] inline auto hash() const noexcept {
+        [[nodiscard]] inline constexpr auto hash() const noexcept {
             return m_ref->m_hash;
         }
 
-        [[nodiscard]] inline const auto& get() const noexcept {
+        [[nodiscard]] inline constexpr const auto& get() const noexcept {
             return m_ref->m_value;
         }
 
-        [[nodiscard]] inline auto data() const noexcept {
+        [[nodiscard]] inline constexpr auto data() const noexcept {
             return m_ref->m_value.data();
         }
 
-        [[nodiscard]] inline auto c_str() const noexcept {
+        [[nodiscard]] inline constexpr auto c_str() const noexcept {
             return m_ref->m_value.c_str();
         }
 
-        [[nodiscard]] inline auto size() const noexcept {
+        [[nodiscard]] inline constexpr auto size() const noexcept {
             return m_ref->m_value.size();
         }
 
-        [[nodiscard]] inline auto empty() const noexcept {
+        [[nodiscard]] inline constexpr auto empty() const noexcept {
             return m_ref->m_value.empty();
         }
 
-        [[nodiscard]] inline auto ref() const noexcept {
+    private:
+
+        [[nodiscard]] inline constexpr auto ref() const noexcept {
             return m_ref;
         }
 
-        [[nodiscard]] friend inline bool operator==(
+        [[nodiscard]] friend inline constexpr bool operator==(
             const fixed_string& a_lhs,
-            const fixed_string& a_rhs)
+            const fixed_string& a_rhs) noexcept
         {
             return a_lhs.ref() == a_rhs.ref();
         }
@@ -379,36 +310,38 @@ namespace stl
         // sucks for maps but I mainly want them sorted alphabetically
         [[nodiscard]] friend inline bool operator<(
             const fixed_string& a_lhs,
-            const fixed_string& a_rhs)
+            const fixed_string& a_rhs) noexcept
         {
             return _stricmp(a_lhs.c_str(), a_rhs.c_str()) < 0;
         }
-
-    private:
 
         void set(const std::string& a_value);
         void set(std::string&& a_value);
         void set(const char* a_value);
 
+#if !defined(SKMP_STRING_CACHE_PERSIST)
         template <bool _Lock>
         inline void copy_assign(const string_cache::icase_key* a_ref) noexcept
         {
             auto old = m_ref;
 
             m_ref = a_ref;
-
             acquire(a_ref);
-            string_cache::data_storage::try_release<_Lock>(old);
+
+            string_cache::data_pool::try_release<_Lock>(old);
         }
 
-        static inline void acquire(const string_cache::icase_key* a_ref)  noexcept
+        static inline void acquire(const string_cache::icase_key* a_ref) noexcept
         {
-            if (a_ref && a_ref != string_cache::data_storage::get_empty()) {
+            if (a_ref && a_ref != string_cache::data_pool::get_empty()) {
                 a_ref->inc_refcount();
             }
         }
+#endif
 
         const string_cache::icase_key* m_ref{ nullptr };
+
+    private:
 
         template<class Archive>
         void save(Archive& ar, const unsigned int version) const
@@ -436,8 +369,8 @@ namespace std
     template<>
     struct hash<stl::fixed_string>
     {
-        auto operator()(stl::fixed_string const& arg) const {
-            return arg.hash();
+        [[nodiscard]] inline auto operator()(stl::fixed_string const& a_arg) const noexcept {
+            return a_arg.hash();
         }
     };
 }

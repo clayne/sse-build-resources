@@ -16,8 +16,9 @@ void ITaskPool::Install(
     {
         Assembly(
             BranchTrampoline& a_localTrampoline,
-            std::uintptr_t a_targetAddr, 
-            bool a_chain)
+            std::uintptr_t a_targetAddr,
+            bool a_chain,
+            bool a_budget)
             :
             JITASM(a_localTrampoline)
         {
@@ -26,22 +27,25 @@ void ITaskPool::Install(
 
             call(ptr[rip + callLabel]);
 
-            if (!a_chain) {
+            if (!a_chain)
+            {
                 db(reinterpret_cast<Xbyak::uint8*>(a_targetAddr), 0x5);
             }
 
             jmp(ptr[rip + retnLabel]);
 
             L(retnLabel);
-            if (a_chain) {
+            if (a_chain)
+            {
                 dq(a_targetAddr);
             }
-            else {
+            else
+            {
                 dq(a_targetAddr + 0x5);
             }
 
             L(callLabel);
-            dq(std::uintptr_t(MainLoopUpdate_Hook));
+            dq(std::uintptr_t(a_budget ? MainLoopUpdate_Hook_Budget : MainLoopUpdate_Hook));
         }
     };
 
@@ -49,12 +53,12 @@ void ITaskPool::Install(
 
     std::uintptr_t jmpAddr;
     bool chain = Hook::GetDst5<0xE9>(addr, jmpAddr);
-    if (!chain) 
+    if (!chain)
     {
         jmpAddr = addr;
     }
 
-    Assembly code(a_localTrampoline, jmpAddr, chain);
+    Assembly code(a_localTrampoline, jmpAddr, chain, m_Instance.m_budget > 0);
     a_branchTrampoline.Write5Branch(addr, code.get());
 }
 
@@ -63,7 +67,7 @@ bool ITaskPool::ValidateMemory()
     constexpr std::uint8_t mem1[]{ 0x48, 0x8B, 0x5C, 0x24, 0x40, 0x48, 0x83, 0xC4, 0x30 };
     constexpr std::uint8_t mem2[]{ 0xE9 };
 
-    return 
+    return
         Patching::validate_mem(m_hookTargetAddr, mem1) ||
         Patching::validate_mem(m_hookTargetAddr, mem2);
 }
@@ -71,8 +75,21 @@ bool ITaskPool::ValidateMemory()
 void ITaskPool::MainLoopUpdate_Hook()
 {
     m_Instance.m_queue.ProcessTasks();
+    //m_Instance.m_queueSecondary.ProcessTasks();
 
-    for (auto const& cmd : m_Instance.m_tasks_fixed) {
+    for (auto const& cmd : m_Instance.m_tasks_fixed)
+    {
+        cmd->Run();
+    }
+}
+
+void ITaskPool::MainLoopUpdate_Hook_Budget()
+{
+    m_Instance.m_queue.ProcessTasks(m_Instance.m_budget);
+    //m_Instance.m_queueSecondary.ProcessTasks(m_Instance.m_budget);
+
+    for (auto const& cmd : m_Instance.m_tasks_fixed)
+    {
         cmd->Run();
     }
 }
@@ -80,6 +97,7 @@ void ITaskPool::MainLoopUpdate_Hook()
 static bool IsREFRValid(TESObjectREFR* a_refr)
 {
     if (a_refr == nullptr ||
+        a_refr->formID == 0 ||
         a_refr->loadedState == nullptr ||
         (a_refr->flags & TESForm::kFlagIsDeleted) == TESForm::kFlagIsDeleted)
     {
@@ -92,31 +110,74 @@ void ITaskPool::QueueActorTask(
     TESObjectREFR* a_actor,
     func_t a_func)
 {
-    if (!IsREFRValid(a_actor)) {
+    if (!IsREFRValid(a_actor))
+    {
         return;
     }
 
     auto actor = a_actor->As<Actor>();
-    if (!actor) {
+    if (!actor)
+    {
         return;
     }
 
     auto handle = actor->GetHandle();
-    if (!handle.IsValid()) {
+    if (!handle || !handle.IsValid())
+    {
         return;
     }
 
     m_Instance.m_queue.AddTask([handle, func = std::move(a_func)]()
     {
         NiPointer<Actor> actor;
-        if (!handle.Lookup(actor)) {
+        if (!handle.Lookup(actor))
+        {
             return;
         }
 
-        if (!IsREFRValid(actor)) {
+        if (!IsREFRValid(actor))
+        {
             return;
         }
 
         func(actor, handle);
     });
 }
+
+/*void ITaskPool::QueueActorTaskSecondary(
+    TESObjectREFR* a_actor,
+    func_t a_func)
+{
+    if (!IsREFRValid(a_actor))
+    {
+        return;
+    }
+
+    auto actor = a_actor->As<Actor>();
+    if (!actor)
+    {
+        return;
+    }
+
+    auto handle = actor->GetHandle();
+    if (!handle || !handle.IsValid())
+    {
+        return;
+    }
+
+    m_Instance.m_queueSecondary.AddTask([handle, func = std::move(a_func)]()
+    {
+        NiPointer<Actor> actor;
+        if (!handle.Lookup(actor))
+        {
+            return;
+        }
+
+        if (!IsREFRValid(actor))
+        {
+            return;
+        }
+
+        func(actor, handle);
+    });
+}*/

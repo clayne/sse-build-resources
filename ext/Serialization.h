@@ -1,10 +1,28 @@
 #pragma once
 
+#include "ICommon.h"
+
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/version.hpp>
 #include <boost/iostreams/concepts.hpp>
 #include <boost/archive/binary_oarchive.hpp> 
 #include <boost/archive/binary_iarchive.hpp> 
 
 #include <string>
+#include <iostream>
+
+
+#define BOOST_CLASS_TEMPLATE_VERSION(Template, Type, Version) \
+namespace boost {                                           \
+  namespace serialization {                                 \
+    template<Template>                                      \
+    struct version<Type> {                                  \
+      static constexpr unsigned int value = Version;        \
+    };                                                      \
+    template<Template>                                      \
+    constexpr unsigned int version<Type>::value;            \
+  }                                                         \
+}
 
 struct SKSESerializationInterface;
 
@@ -31,8 +49,6 @@ class ISerializationBase :
 {
 public:
 
-    ISerializationBase();
-
     bool WriteRecord(
         SKSESerializationInterface* a_intfc,
         std::uint32_t a_type,
@@ -55,3 +71,32 @@ private:
         boost::archive::binary_iarchive& a_in
     ) = 0;
 };
+
+template <class T>
+class SerializedSOWrapper :
+    public SetObjectWrapper<T>
+{
+    friend class boost::serialization::access;
+
+public:
+
+    enum Serialization : unsigned int
+    {
+        DataVersion1 = 1
+    };
+
+    using SetObjectWrapper<T>::SetObjectWrapper;
+
+private:
+
+    template<class Archive>
+    void serialize(Archive& ar, const unsigned int version)
+    {
+        ar& m_set;
+        if (m_set) {
+            ar& m_item;
+        }
+    }
+};
+
+BOOST_CLASS_TEMPLATE_VERSION(class T, SerializedSOWrapper<T>, SerializedSOWrapper<T>::Serialization::DataVersion1);

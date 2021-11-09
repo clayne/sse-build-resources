@@ -26,5 +26,24 @@ namespace Util
 
             NiPointer<NiNode> m_nodes[2];
         };
+
+        template <class Tp>
+        void Traverse(NiAVObject* parent, Tp a_func)
+        {
+            a_func(parent);
+
+            auto node = parent->GetAsNiNode();
+            if (!node)
+                return;
+
+            for (auto object : node->m_children)
+            {
+                if (object)
+                {
+                    Traverse(object, a_func);
+                }
+            }
+        }
+
     }
 }

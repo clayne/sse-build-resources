@@ -28,17 +28,16 @@ struct pluginInfo_t
         std::uint8_t a_modIndex,
         std::uint16_t a_lightIndex,
         const char* a_name)
-        :
-        fileFlags(a_fileFlags),
-        modIndex(a_modIndex),
-        lightIndex(a_lightIndex),
-        name(a_name)
+        : fileFlags(a_fileFlags)
+        , modIndex(a_modIndex)
+        , lightIndex(a_lightIndex)
+        , name(a_name)
     {
         isLight = (a_fileFlags & ModInfo::kFileFlags_Light) == ModInfo::kFileFlags_Light;
         partialIndex = !isLight ? a_modIndex : (std::uint32_t(0xFE000) | a_lightIndex);
     }
 
-    [[nodiscard]] inline bool IsFormInMod(std::uint32_t a_formID) const
+    [[nodiscard]] inline constexpr bool IsFormInMod(std::uint32_t a_formID) const
     {
         std::uint32_t modID = (a_formID & 0xFF000000) >> 24;
 
@@ -51,20 +50,19 @@ struct pluginInfo_t
         return false;
     }
 
-    [[nodiscard]] inline std::uint32_t GetPartialIndex() const
+    [[nodiscard]] inline constexpr std::uint32_t GetPartialIndex() const
     {
         return partialIndex;
     }
 
-    [[nodiscard]] inline bool IsLight() const {
+    [[nodiscard]] inline constexpr bool IsLight() const
+    {
         return isLight;
     }
 
     [[nodiscard]] inline Game::FormID GetFormID(Game::FormID a_formIDLower) const
     {
-        return !isLight ?
-            modIndex << 24 | (a_formIDLower & 0xFFFFFF) :
-            0xFE000000 | (lightIndex << 12) | (a_formIDLower & 0xFFF);
+        return !isLight ? modIndex << 24 | (a_formIDLower & 0xFFFFFF) : 0xFE000000 | (lightIndex << 12) | (a_formIDLower & 0xFFF);
     }
 
     [[nodiscard]] inline Game::FormID GetFormIDLower(Game::FormID a_formID) const
@@ -83,27 +81,29 @@ class IPluginInfo
 {
 
 public:
-
     using formPair_t = std::pair<pluginInfoString_t, Game::FormID>;
-
 
     IPluginInfo();
 
     bool Populate();
 
-    [[nodiscard]] inline bool IsPopulated() const {
+    [[nodiscard]] inline bool IsPopulated() const
+    {
         return m_populated;
     }
 
-    [[nodiscard]] inline const auto& GetIndexMap() const {
+    [[nodiscard]] inline const auto& GetIndexMap() const
+    {
         return m_pluginIndexMap;
     }
 
-    [[nodiscard]] inline const auto& GetLookupRef() const {
+    [[nodiscard]] inline const auto& GetLookupRef() const
+    {
         return m_pluginNameMap;
     }
 
-    [[nodiscard]] inline bool Empty() const {
+    [[nodiscard]] inline bool Empty() const
+    {
         return m_pluginNameMap.empty();
     }
 
@@ -119,12 +119,12 @@ public:
     template <class T, class form_type = stl::strip_type<T>>
     [[nodiscard]] form_type* LookupForm(const formPair_t& a_form) const;
 
-    [[nodiscard]] inline auto Size() const {
+    [[nodiscard]] inline auto Size() const
+    {
         return m_pluginIndexMap.size();
     }
 
 private:
-
     bool m_populated;
 
     std::map<std::uint32_t, pluginInfo_t> m_pluginIndexMap;
@@ -145,7 +145,8 @@ template <class T, class form_type>
 form_type* IPluginInfo::LookupForm(const formPair_t& a_form) const
 {
     auto mi = Lookup(a_form.first);
-    if (mi) {
+    if (mi)
+    {
         return mi->GetFormID(a_form.second).Lookup<form_type>();
     }
 

@@ -121,5 +121,11 @@ class TaskQueue :
 public:
 
     void ProcessTasks();
+    void ProcessTasks(long long a_budget);
     void ClearTasks();
+
+    auto Size() const noexcept
+    {
+        return m_queue.size();
+    }
 };

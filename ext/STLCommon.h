@@ -25,4 +25,8 @@ namespace stl
     template <class _Ty, class... _Types>
     inline constexpr bool is_any_base_of_v =
         std::disjunction_v<std::is_base_of<_Types, _Ty>...>;
+
+    template <class _Ty, class... _Types>
+    inline constexpr bool is_any_same_v =
+        std::disjunction_v<std::is_same<_Types, _Ty>...>;
 }

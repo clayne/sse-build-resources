@@ -21,9 +21,9 @@ virtual const char* LogPrefixFatal() const noexcept { return "<FATAL> ["  x  "] 
 
 #define SKMP_ALIGN_AUTO __declspec(align(SIMD_ALIGNMENT))
 
-
 #include <string>
 #include <exception>
+#include <xstddef>
 
 namespace except
 {
@@ -31,29 +31,30 @@ namespace except
     {
     public:
 
-        SKMP_FORCEINLINE descriptor() :
+        descriptor() :
             m_desc(std::exception().what())
         {
         }
 
-        SKMP_FORCEINLINE descriptor(std::exception const& a_rhs)
+        descriptor(std::exception const& a_rhs)
         {
             m_desc = a_rhs.what();
         }
 
-        SKMP_FORCEINLINE descriptor& operator=(std::exception const& a_rhs)
+        descriptor& operator=(std::exception const& a_rhs)
         {
             m_desc = a_rhs.what();
             return *this;
         }
 
-        SKMP_FORCEINLINE descriptor& operator=(const char* a_desc)
+        descriptor& operator=(const char* a_desc)
         {
             m_desc = a_desc;
             return *this;
         }
 
-        SKMP_FORCEINLINE const char* what() const noexcept {
+        inline const char* what() const noexcept
+        {
             return m_desc.c_str();
         }
 
@@ -63,106 +64,167 @@ namespace except
 }
 
 template <class T>
-class SelectedItem
+class SetObjectWrapper
 {
 public:
-    SKMP_FORCEINLINE SelectedItem() :
-        m_isSelected(false)
+
+    using held_type = T;
+
+    SetObjectWrapper() = default;
+
+    explicit SetObjectWrapper(const SetObjectWrapper<T>& a_rhs)
+        :
+        m_set(a_rhs.m_set),
+        m_item(a_rhs.m_item)
     {
     }
 
-    SKMP_FORCEINLINE SelectedItem(const T& a_rhs) :
-        m_isSelected(true),
+    SetObjectWrapper(const T& a_rhs)
+        :
+        m_set(true),
         m_item(a_rhs)
     {
     }
 
-    SKMP_FORCEINLINE SelectedItem(T&& a_rhs) :
-        m_isSelected(true),
-        m_item(a_rhs)
+    explicit SetObjectWrapper(SetObjectWrapper<T>&& a_rhs)
+        :
+        m_set(a_rhs.m_set),
+        m_item(std::move(a_rhs.m_item))
     {
     }
 
-    virtual ~SelectedItem() noexcept = default;
+    SetObjectWrapper(T&& a_rhs)
+        :
+        m_set(true),
+        m_item(std::move(a_rhs))
+    {
+    }
 
-    SKMP_FORCEINLINE void Set(const T& a_rhs) {
-        m_isSelected = true;
+    /* template <class... Args>
+     SetObjectWrapper(Args&&... a_args)
+         :
+         m_set(true),
+         m_item{ std::forward<Args>(a_args)... }
+     {
+     }*/
+
+    template <class... Args>
+    void emplace(Args&&... a_args)
+    {
+        m_set = true;
+        m_item = { std::forward<Args>(a_args)... };
+    }
+
+    /*void Set(const T& a_rhs)
+    {
+        m_set = true;
         m_item = a_rhs;
     }
 
-    SKMP_FORCEINLINE void Set(T&& a_rhs) {
-        m_isSelected = true;
+    void Set(T&& a_rhs)
+    {
+        m_set = true;
         m_item = std::move(a_rhs);
+    }*/
+
+    SetObjectWrapper<T>& operator=(const SetObjectWrapper<T>& a_rhs)
+    {
+        m_item = a_rhs.m_item;
+        m_set = a_rhs.m_set;
+        return *this;
     }
 
-    SKMP_FORCEINLINE SelectedItem<T>& operator=(const T& a_rhs) {
+    SetObjectWrapper<T>& operator=(const T& a_rhs)
+    {
         m_item = a_rhs;
-        m_isSelected = true;
+        m_set = true;
         return *this;
     }
 
-    SKMP_FORCEINLINE SelectedItem<T>& operator=(T&& a_rhs) {
+    SetObjectWrapper<T>& operator=(SetObjectWrapper<T>&& a_rhs)
+    {
+        m_item = std::move(a_rhs.m_item);
+        m_set = a_rhs.m_set;
+        return *this;
+    }
+
+    SetObjectWrapper<T>& operator=(T&& a_rhs)
+    {
         m_item = std::move(a_rhs);
-        m_isSelected = true;
+        m_set = true;
         return *this;
     }
 
-    SKMP_FORCEINLINE bool operator==(const T& a_rhs) const {
-        return m_isSelected && m_item == a_rhs;
+    inline constexpr bool operator==(const T& a_rhs) const noexcept
+    {
+        return m_set && m_item == a_rhs;
     }
 
-    SKMP_FORCEINLINE bool operator!=(const T& a_rhs) const {
-        return !m_isSelected || m_item != a_rhs;
+    inline constexpr bool operator!=(const T& a_rhs) const noexcept
+    {
+        return !m_set || m_item != a_rhs;
     }
 
-    SKMP_FORCEINLINE bool operator==(const SelectedItem<T>& a_rhs) const {
-        return m_isSelected && m_item == a_rhs.m_item;
+    inline void clear() noexcept
+    {
+        m_set = false;
     }
 
-    SKMP_FORCEINLINE void Clear() noexcept {
-        Mark(false);
+    inline void reset() noexcept
+    {
+        m_set = false;
+        m_item = T{};
     }
 
-    SKMP_FORCEINLINE void Mark(bool a_switch) {
-        m_isSelected = a_switch;
+    inline void mark(bool a_switch) noexcept
+    {
+        m_set = a_switch;
     }
 
-    [[nodiscard]] SKMP_FORCEINLINE const T& Get() const noexcept {
-        return m_item;
-    }
-    
-    [[nodiscard]] SKMP_FORCEINLINE T& Get() noexcept {
-        return m_item;
-    }
-
-    [[nodiscard]] SKMP_FORCEINLINE const T& operator*() const noexcept {
-        return m_item;
-    }
-
-    [[nodiscard]] SKMP_FORCEINLINE T& operator*() noexcept {
+    [[nodiscard]] inline constexpr const T& get() const noexcept
+    {
         return m_item;
     }
 
-    [[nodiscard]] SKMP_FORCEINLINE const T* operator->() const noexcept {
+    [[nodiscard]] inline constexpr T& get() noexcept
+    {
+        return m_item;
+    }
+
+    [[nodiscard]] inline constexpr const T& operator*() const noexcept
+    {
+        return m_item;
+    }
+
+    [[nodiscard]] inline constexpr T& operator*() noexcept
+    {
+        return m_item;
+    }
+
+    [[nodiscard]] inline constexpr const T* operator->() const noexcept
+    {
         return std::addressof(m_item);
     }
 
-    [[nodiscard]] SKMP_FORCEINLINE T* operator->() noexcept {
+    [[nodiscard]] inline constexpr T* operator->() noexcept
+    {
         return std::addressof(m_item);
     }
 
-    [[nodiscard]] SKMP_FORCEINLINE bool Has() const noexcept {
-        return m_isSelected;
+    [[nodiscard]] inline constexpr bool has() const noexcept
+    {
+        return m_set;
     }
 
-    [[nodiscard]] SKMP_FORCEINLINE explicit operator bool() const noexcept {
-        return m_isSelected;
+    [[nodiscard]] inline constexpr explicit operator bool() const noexcept
+    {
+        return m_set;
     }
 
-private:
+protected:
 
-    T m_item;
-    bool m_isSelected;
+    T m_item{};
+    bool m_set{ false };
 };
 
 #include "STLCommon.h"

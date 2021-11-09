@@ -25,7 +25,7 @@ struct IntegralWrapper
     {
     }
 
-    IntegralWrapper<T>& operator=(const T a_rhs) {
+    IntegralWrapper& operator=(const T a_rhs) {
         m_item = a_rhs;
         return *this;
     }

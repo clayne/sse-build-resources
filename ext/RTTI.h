@@ -2537,7 +2537,7 @@ namespace RTTI_IID
     inline static constexpr std::uint32_t BSPortalGraph = 2464;
     inline static constexpr std::uint32_t BSPortalGraphEntry = 2465;
     inline static constexpr std::uint32_t BSOcclusionShape = 2466;
-    inline static constexpr std::uint32_t MessageHandler = 2467;
+    inline static constexpr std::uint32_t SKSE_MessageHandler = 2467;
     inline static constexpr std::uint32_t BSRangeNode = 2468;
     inline static constexpr std::uint32_t BSBlastNode = 2469;
     inline static constexpr std::uint32_t BSDebrisNode = 2470;

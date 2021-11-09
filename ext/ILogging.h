@@ -12,43 +12,43 @@ public:
     template<typename... Args>
     void Debug(const char* a_fmt, Args... a_args) const
     {
-        if (gLog.CheckLogLevel(IDebugLog::LogLevel::Debug))
-            gLog.Write(a_fmt, LogPrefix(), std::forward<Args>(a_args)...);
+        if (gLog.CheckLogLevel(LogLevel::Debug))
+            gLog.Write(LogLevel::Debug, a_fmt, LogPrefix(), std::forward<Args>(a_args)...);
     }
 
     template<typename... Args>
     void Message(const char* a_fmt, Args... a_args) const
     {
-        if (gLog.CheckLogLevel(IDebugLog::LogLevel::Message))
-            gLog.Write(a_fmt, LogPrefix(), std::forward<Args>(a_args)...);
+        if (gLog.CheckLogLevel(LogLevel::Message))
+            gLog.Write(LogLevel::Message, a_fmt, LogPrefix(), std::forward<Args>(a_args)...);
     }
-    
+
     template<typename... Args>
     void VMessage(const char* a_fmt, Args... a_args) const
     {
-        if (gLog.CheckLogLevel(IDebugLog::LogLevel::Verbose))
-            gLog.Write(a_fmt, LogPrefix(), std::forward<Args>(a_args)...);
+        if (gLog.CheckLogLevel(LogLevel::Verbose))
+            gLog.Write(LogLevel::Verbose, a_fmt, LogPrefix(), std::forward<Args>(a_args)...);
     }
 
     template<typename... Args>
     void Warning(const char* a_fmt, Args... a_args) const
     {
-        if (gLog.CheckLogLevel(IDebugLog::LogLevel::Warning))
-            gLog.Write(a_fmt, LogPrefixWarning(), std::forward<Args>(a_args)...);
+        if (gLog.CheckLogLevel(LogLevel::Warning))
+            gLog.Write(LogLevel::Warning, a_fmt, LogPrefixWarning(), std::forward<Args>(a_args)...);
     }
 
     template<typename... Args>
     void Error(const char* a_fmt, Args... a_args) const
     {
-        if (gLog.CheckLogLevel(IDebugLog::LogLevel::Error))
-            gLog.Write(a_fmt, LogPrefixError(), std::forward<Args>(a_args)...);
+        if (gLog.CheckLogLevel(LogLevel::Error))
+            gLog.Write(LogLevel::Error, a_fmt, LogPrefixError(), std::forward<Args>(a_args)...);
     }
 
     template<typename... Args>
     void FatalError(const char* a_fmt, Args... a_args) const
     {
-        if (gLog.CheckLogLevel(IDebugLog::LogLevel::FatalError))
-            gLog.Write(a_fmt, LogPrefixFatal(), std::forward<Args>(a_args)...);
+        if (gLog.CheckLogLevel(LogLevel::FatalError))
+            gLog.Write(LogLevel::FatalError, a_fmt, LogPrefixFatal(), std::forward<Args>(a_args)...);
     }
 
     SKMP_FORCEINLINE void LogPatchBegin(const char* a_id) const
@@ -61,71 +61,62 @@ public:
         Debug("[Patch] [%s] OK", a_id);
     }
 
-    typedef stl::iunordered_map<std::string, IDebugLog::LogLevel, std::allocator<std::pair<const std::string, IDebugLog::LogLevel>>> logLevelMap_t;
-    static logLevelMap_t m_logLevelMap;
+    using logLevelMap_t = stl::iunordered_map<std::string, LogLevel>;
 
-    static IDebugLog::LogLevel TranslateLogLevel(const std::string& a_level);
+    static const logLevelMap_t m_logLevelMap;
+
+    static LogLevel TranslateLogLevel(const std::string& a_level);
+    static const char* GetLogLevelString(LogLevel a_level);
+
+    inline static constexpr const auto& GetLogLevels() noexcept
+    {
+        return m_logLevelMap;
+    }
 
     FN_NAMEPROC("ILog")
 private:
 
 };
 
-
 class BackLog
 {
-    class LogString
+    class Entry
     {
     public:
-        using size_type = std::size_t;
+        using size_type = std::uint32_t;
 
-        LogString() = delete;
-        ~LogString() noexcept
+        Entry() = delete;
+
+        explicit Entry(const LoggerMessageEvent& a_event);
+
+        Entry(const Entry&) = delete;
+        explicit Entry(Entry&&) = default;
+
+        Entry& operator=(const Entry&) = delete;
+        Entry& operator=(Entry&&) = default;
+
+        inline constexpr const char* data() const noexcept
         {
-            if (m_data) {
-                _mm_free(m_data);
-            }
+            return m_data.data();
         }
 
-        explicit LogString(const LoggerMessageEvent& a_event) noexcept;
-
-        LogString(const LogString&) = delete;
-
-        explicit LogString(LogString&& a_rhs) noexcept :
-            m_data(nullptr)
+        inline constexpr operator const auto& () const noexcept
         {
-            __move(std::move(a_rhs));
-        };
-
-        LogString& operator=(const LogString&) = delete;
-
-        LogString& operator=(LogString&& a_rhs) noexcept
-        {
-            this->~LogString();
-            __move(std::move(a_rhs));
-            return *this;
-        };
-
-        SKMP_FORCEINLINE const char* c_str() const noexcept {
             return m_data;
         }
 
-        SKMP_FORCEINLINE const char* data() const noexcept {
-            return m_data;
+        inline constexpr auto level() const noexcept
+        {
+            return m_level;
         }
 
     private:
 
-        SKMP_FORCEINLINE void __move(LogString&& a_rhs)
-        {
-            m_data = a_rhs.m_data;
-            a_rhs.m_data = nullptr;
-        }
-
-        char* m_data;
+        std::string m_data;
+        LogLevel m_level;
     };
 
-    using storage_type = std::vector<LogString>;
+    using storage_type = std::list<Entry>;
     using iterator = typename storage_type::iterator;
     using const_iterator = typename storage_type::const_iterator;
 
@@ -133,34 +124,49 @@ public:
 
     using size_type = storage_type::size_type;
 
-    SKMP_FORCEINLINE BackLog(std::size_t a_limit) :
+    inline BackLog(std::size_t a_limit = 0) :
         m_limit(a_limit)
     {
-        m_data.reserve(std::min<size_type>(a_limit, 1000));
     }
 
-    [[nodiscard]] SKMP_FORCEINLINE const_iterator begin() const noexcept {
+    [[nodiscard]] inline const_iterator begin() const noexcept
+    {
         return m_data.begin();
     }
 
-    [[nodiscard]] SKMP_FORCEINLINE const_iterator end() const noexcept {
+    [[nodiscard]] inline const_iterator end() const noexcept
+    {
         return m_data.end();
     }
 
-    SKMP_FORCEINLINE void Lock() const noexcept {
+    inline void Lock() const noexcept
+    {
         m_lock.lock();
     }
 
-    SKMP_FORCEINLINE void Unlock() const noexcept {
+    inline void Unlock() const noexcept
+    {
         m_lock.unlock();
     }
 
-    [[nodiscard]] SKMP_FORCEINLINE auto& GetLock() const noexcept {
+    [[nodiscard]] inline auto& GetLock() const noexcept
+    {
         return m_lock;
+    }
+
+    [[nodiscard]] inline auto GetLimit() const noexcept
+    {
+        return m_limit;
+    }
+
+    [[nodiscard]] inline auto Size() const noexcept
+    {
+        return m_data.size();
     }
 
     void Add(const LoggerMessageEvent& a_event);
     void SetLimit(size_type a_limit);
+    void Clear();
 
 private:
     mutable WCriticalSection m_lock;

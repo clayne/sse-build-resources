@@ -51,7 +51,7 @@ namespace Util
 
             Stream::NiStreamWrapper stream;
 
-            stream->LoadStream(&binaryStream);
+            stream->LoadStream(std::addressof(binaryStream));
 
             if (!stream->m_rootObjects.m_data) {
                 return false;
@@ -83,7 +83,7 @@ namespace Util
                 {
                     (*g_shaderResourceManager)->ConvertLegacy(object, false);
 
-                    a_out = object;
+                    a_out.reset(object);
 
                     return true;
                 }

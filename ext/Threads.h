@@ -2,6 +2,7 @@
 
 #include <immintrin.h>
 #include <atomic>
+#include <mutex>
 
 // non-reentrant
 class FastSpinLock
@@ -67,7 +68,7 @@ bool WCriticalSection::try_lock() {
 }
 
 
-template <class T, class = std::enable_if_t<stl::is_any_base_of_v<T, FastSpinLock, WCriticalSection>, void>>
+template <class T, class = std::enable_if_t<stl::is_any_base_of_v<T, FastSpinLock, WCriticalSection, std::mutex, std::recursive_mutex>, void>>
 class IScopedLock
 {
 public:

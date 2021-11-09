@@ -297,6 +297,27 @@
     <ClInclude Include="ext\ISKSESerialization.h">
       <Filter>ext</Filter>
     </ClInclude>
+    <ClInclude Include="ext\Vector.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\SKSEMessaging.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\Checksum.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\Set.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\Map.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\Events.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\BSTSmartPointer.h">
+      <Filter>ext</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ext\AddressLibrary.cpp">
@@ -534,6 +555,9 @@
       <Filter>ext</Filter>
     </ClCompile>
     <ClCompile Include="ext\ISKSESerialization.cpp">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\Checksum.cpp">
       <Filter>ext</Filter>
     </ClCompile>
   </ItemGroup>

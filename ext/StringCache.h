@@ -4,12 +4,12 @@
 
 #if defined(SKMP_STRING_CACHE_INITIAL_SIZE)
 
-#include <boost/serialization/string.hpp> 
 #include <boost/serialization/split_member.hpp>
+#include <boost/serialization/string.hpp>
 #include <boost/serialization/version.hpp>
 
-#include <string>
 #include <memory>
+#include <string>
 #include <unordered_set>
 
 #include "STLCommon.h"
@@ -25,23 +25,23 @@ namespace string_cache
 
     public:
 
+        using atomic_type = std::atomic<std::uint64_t>;
+
         icase_key() = delete;
 
         icase_key(
             std::size_t a_hash,
             const std::string& a_value)
-            :
-            m_hash(a_hash),
-            m_value(a_value)
+            : m_hash(a_hash)
+            , m_value(a_value)
         {
         }
 
         icase_key(
             std::size_t a_hash,
             std::string&& a_value)
-            :
-            m_hash(a_hash),
-            m_value(std::move(a_value))
+            : m_hash(a_hash)
+            , m_value(std::move(a_value))
         {
         }
 
@@ -50,11 +50,13 @@ namespace string_cache
         icase_key& operator=(const icase_key&) = delete;
         icase_key& operator=(icase_key&&) = delete;
 
-        [[nodiscard]] inline constexpr auto hash() const noexcept {
+        [[nodiscard]] inline constexpr auto hash() const noexcept
+        {
             return m_hash;
         }
 
-        [[nodiscard]] inline constexpr const auto& value() const noexcept {
+        [[nodiscard]] inline constexpr const auto& value() const noexcept
+        {
             return m_value;
         }
 
@@ -62,14 +64,16 @@ namespace string_cache
             const icase_key& a_lhs,
             const icase_key& a_rhs) noexcept
         {
-            if (a_lhs.hash() != a_rhs.hash()) {
+            if (a_lhs.hash() != a_rhs.hash())
+            {
                 return false;
             }
 
             auto& lhs_data = a_lhs.value();
             auto& rhs_data = a_rhs.value();
 
-            if (lhs_data.size() != rhs_data.size()) {
+            if (lhs_data.size() != rhs_data.size())
+            {
                 return false;
             }
 
@@ -83,32 +87,33 @@ namespace string_cache
 
         static std::size_t compute_hash(const std::string& a_value) noexcept;
 
-        [[nodiscard]] inline auto use_count() const noexcept {
+        [[nodiscard]] inline auto use_count() const noexcept
+        {
             return m_refcount.load(std::memory_order_acquire);
         }
 
-        inline void inc_refcount() const noexcept {
+        inline void inc_refcount() const noexcept
+        {
             m_refcount.fetch_add(1, std::memory_order_relaxed);
         }
 
-        [[nodiscard]] inline auto dec_refcount() const noexcept {
+        [[nodiscard]] inline auto dec_refcount() const noexcept
+        {
             return m_refcount.fetch_sub(1, std::memory_order_acq_rel);
         }
 
     private:
+        mutable atomic_type m_refcount{ 0 };
 
-        mutable std::atomic<std::uint64_t> m_refcount{ 0 };
-
-        static_assert(decltype(m_refcount)::is_always_lock_free);
+        static_assert(atomic_type::is_always_lock_free);
 #endif
-
     };
 
 }
 
 namespace std
 {
-    template<>
+    template <>
     struct hash<string_cache::icase_key>
     {
         [[nodiscard]] inline auto operator()(string_cache::icase_key const& a_arg) const noexcept
@@ -152,18 +157,18 @@ namespace string_cache
     public:
         data_pool();
 
-        [[nodiscard]] inline static auto size() noexcept {
+        [[nodiscard]] inline static auto size() noexcept
+        {
             return m_Instance.m_data.size();
         }
 
         [[nodiscard]] static stats_t get_stats() noexcept;
 
         /*inline static auto& get_rqueue() {
-            return m_Instance.m_rqueue;
-        }*/
+                return m_Instance.m_rqueue;
+            }*/
 
     private:
-
         static const value_type& insert(
             std::size_t a_hash,
             const std::string& a_string);
@@ -172,18 +177,20 @@ namespace string_cache
             std::size_t a_hash,
             std::string&& a_string);
 
-        [[nodiscard]] inline static auto& get_lock() noexcept {
+        [[nodiscard]] inline constexpr static auto& get_lock() noexcept
+        {
             return m_Instance.m_lock;
         }
 
-        [[nodiscard]] inline static auto get_empty() noexcept {
+        [[nodiscard]] inline constexpr static auto get_empty() noexcept
+        {
             return m_Instance.m_icase_empty;
         }
 
-        [[nodiscard]] inline static auto& get_data() noexcept {
+        [[nodiscard]] inline constexpr static auto& get_data() noexcept
+        {
             return m_Instance.m_data;
         }
-
 
 #if !defined(SKMP_STRING_CACHE_PERSIST)
 
@@ -215,30 +222,43 @@ namespace stl
         friend class boost::serialization::access;
 
     public:
+        inline fixed_string::fixed_string() noexcept
+            : m_ref(string_cache::data_pool::get_empty())
+        {
+        }
 
-        fixed_string();
+        inline fixed_string::fixed_string(std::nullptr_t) noexcept
+            : m_ref(string_cache::data_pool::get_empty())
+        {
+        }
 
 #if !defined(SKMP_STRING_CACHE_PERSIST)
-        ~fixed_string();
+
+        fixed_string::~fixed_string()
+        {
+            try_release<true>();
+            m_ref = string_cache::data_pool::get_empty();
+        }
 
         fixed_string(const fixed_string& a_rhs)
-            :
-            m_ref(a_rhs.m_ref)
+            : m_ref(a_rhs.m_ref)
         {
-            acquire(m_ref);
+            try_acquire();
         }
 
         fixed_string(fixed_string&& a_rhs)
-            :
-            m_ref(a_rhs.m_ref)
+            : m_ref(a_rhs.m_ref)
         {
-            a_rhs.m_ref = nullptr;
+            a_rhs.m_ref = string_cache::data_pool::get_empty();
         }
 
         fixed_string& operator=(const fixed_string& a_rhs)
         {
-            if (this != std::addressof(a_rhs)) {
-                copy_assign<true>(a_rhs.m_ref);
+            if (this != std::addressof(a_rhs))
+            {
+                try_release<true>();
+                m_ref = a_rhs.m_ref;
+                try_acquire();
             }
             return *this;
         }
@@ -247,12 +267,9 @@ namespace stl
         {
             if (this != std::addressof(a_rhs))
             {
-                auto old = m_ref;
-
+                try_release<true>();
                 m_ref = a_rhs.m_ref;
-                a_rhs.m_ref = nullptr;
-
-                string_cache::data_pool::try_release<true>(old);
+                a_rhs.m_ref = string_cache::data_pool::get_empty();
             }
             return *this;
         }
@@ -266,37 +283,63 @@ namespace stl
         fixed_string& operator=(std::string&& a_value);
         fixed_string& operator=(const char* a_value);
 
-        [[nodiscard]] inline constexpr operator const auto& () const noexcept {
+        [[nodiscard]] inline constexpr operator const auto& () const noexcept
+        {
             return m_ref->m_value;
         }
 
-        [[nodiscard]] inline constexpr auto hash() const noexcept {
+        [[nodiscard]] inline constexpr const auto& operator*() const noexcept
+        {
+            return m_ref->m_value;
+        }
+
+        [[nodiscard]] inline constexpr auto hash() const noexcept
+        {
             return m_ref->m_hash;
         }
 
-        [[nodiscard]] inline constexpr const auto& get() const noexcept {
+        [[nodiscard]] inline constexpr const auto& get() const noexcept
+        {
             return m_ref->m_value;
         }
 
-        [[nodiscard]] inline constexpr auto data() const noexcept {
+        [[nodiscard]] inline constexpr auto data() const noexcept
+        {
             return m_ref->m_value.data();
         }
 
-        [[nodiscard]] inline constexpr auto c_str() const noexcept {
+        [[nodiscard]] inline constexpr auto c_str() const noexcept
+        {
             return m_ref->m_value.c_str();
         }
 
-        [[nodiscard]] inline constexpr auto size() const noexcept {
+        [[nodiscard]] inline constexpr auto size() const noexcept
+        {
             return m_ref->m_value.size();
         }
 
-        [[nodiscard]] inline constexpr auto empty() const noexcept {
+        [[nodiscard]] inline constexpr auto empty() const noexcept
+        {
             return m_ref->m_value.empty();
         }
 
-    private:
+        void clear() noexcept;
 
-        [[nodiscard]] inline constexpr auto ref() const noexcept {
+        [[nodiscard]] inline constexpr bool less_equal_p(
+            const fixed_string& a_rhs) const noexcept
+        {
+            return m_ref <= a_rhs.m_ref;
+        }
+
+        [[nodiscard]] inline constexpr bool less_p(
+            const fixed_string& a_rhs) const noexcept
+        {
+            return m_ref < a_rhs.m_ref;
+        }
+
+    private:
+        [[nodiscard]] inline constexpr auto ref() const noexcept
+        {
             return m_ref;
         }
 
@@ -315,41 +358,73 @@ namespace stl
             return _stricmp(a_lhs.c_str(), a_rhs.c_str()) < 0;
         }
 
+        [[nodiscard]] friend inline bool operator>(
+            const fixed_string& a_lhs,
+            const fixed_string& a_rhs) noexcept
+        {
+            return _stricmp(a_lhs.c_str(), a_rhs.c_str()) > 0;
+        }
+
+        [[nodiscard]] friend inline bool operator>=(
+            const fixed_string& a_lhs,
+            const fixed_string& a_rhs) noexcept
+        {
+            return _stricmp(a_lhs.c_str(), a_rhs.c_str()) >= 0;
+        }
+
+        [[nodiscard]] friend inline bool operator<=(
+            const fixed_string& a_lhs,
+            const fixed_string& a_rhs) noexcept
+        {
+            return _stricmp(a_lhs.c_str(), a_rhs.c_str()) <= 0;
+        }
+
         void set(const std::string& a_value);
         void set(std::string&& a_value);
         void set(const char* a_value);
 
 #if !defined(SKMP_STRING_CACHE_PERSIST)
+
         template <bool _Lock>
-        inline void copy_assign(const string_cache::icase_key* a_ref) noexcept
+        __forceinline void try_release() noexcept
         {
-            auto old = m_ref;
-
-            m_ref = a_ref;
-            acquire(a_ref);
-
-            string_cache::data_pool::try_release<_Lock>(old);
-        }
-
-        static inline void acquire(const string_cache::icase_key* a_ref) noexcept
-        {
-            if (a_ref && a_ref != string_cache::data_pool::get_empty()) {
-                a_ref->inc_refcount();
+            if (m_ref != string_cache::data_pool::get_empty())
+            {
+                string_cache::data_pool::try_release<_Lock>(m_ref);
             }
         }
+
+        __forceinline void try_acquire() noexcept
+        {
+            if (m_ref != string_cache::data_pool::get_empty())
+            {
+                m_ref->inc_refcount();
+            }
+        }
+
+        template <bool _Lock>
+        __forceinline void assign_ref(const string_cache::icase_key* a_ref) noexcept
+        {
+            if (a_ref != m_ref)
+            {
+                try_release<_Lock>();
+                m_ref = a_ref;
+                try_acquire();
+            }
+        }
+
 #endif
 
-        const string_cache::icase_key* m_ref{ nullptr };
+        const string_cache::icase_key* m_ref;
 
     private:
-
-        template<class Archive>
+        template <class Archive>
         void save(Archive& ar, const unsigned int version) const
         {
             ar& m_ref->m_value;
         }
 
-        template<class Archive>
+        template <class Archive>
         void load(Archive& ar, const unsigned int version)
         {
             std::string load;
@@ -358,18 +433,29 @@ namespace stl
             set(std::move(load));
         }
 
-        BOOST_SERIALIZATION_SPLIT_MEMBER()
+        BOOST_SERIALIZATION_SPLIT_MEMBER();
     };
 
     static_assert(sizeof(fixed_string) == 0x8);
+
+    struct fixed_string_less_equal_p
+    {
+        [[nodiscard]] constexpr bool operator()(
+            const stl::fixed_string& a_lhs,
+            const stl::fixed_string& a_rhs) const noexcept
+        {
+            return a_lhs.less_equal_p(a_rhs);
+        }
+    };
 }
 
 namespace std
 {
-    template<>
+    template <>
     struct hash<stl::fixed_string>
     {
-        [[nodiscard]] inline auto operator()(stl::fixed_string const& a_arg) const noexcept {
+        [[nodiscard]] inline auto operator()(stl::fixed_string const& a_arg) const noexcept
+        {
             return a_arg.hash();
         }
     };

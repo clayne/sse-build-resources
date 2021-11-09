@@ -13,7 +13,7 @@
 class VersionDb
 {
 public:
-    VersionDb() { Clear(); }
+    VersionDb() { clear(); }
     ~VersionDb() = default;
 
 private:
@@ -140,7 +140,7 @@ public:
         build = _ver[3];
     }
 
-    void Clear()
+    void clear()
     {
         _data.clear();
         for (int i = 0; i < 4; i++) _ver[i] = 0;
@@ -159,7 +159,7 @@ public:
 
     bool Load(int major, int minor, int revision, int build)
     {
-        Clear();
+        clear();
 
         _data.reserve(800000);
 
@@ -229,7 +229,7 @@ public:
             case 7: d1 = read<unsigned int>(file); q1 = d1; break;
             default:
             {
-                Clear();
+                clear();
                 return false;
             }
             }

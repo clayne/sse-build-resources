@@ -18,5 +18,5 @@ IAL::IAL() :
 
 void IAL::Release()
 {
-    m_Instance.m_database.Clear();
+    m_Instance.m_database.clear();
 }

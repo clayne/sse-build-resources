@@ -92,12 +92,12 @@ namespace Game
 {
     bool FormID::IsTemporary() const
     {
-        return ((m_item & 0xFF000000) >> 24) == 0xFF;
+        return (m_item & 0xFF000000U) == 0xFF000000U;
     }
 
     bool FormID::GetPluginIndex(std::uint32_t& a_out) const
     {
-        std::uint32_t modID = (m_item & 0xFF000000) >> 24;
+        std::uint32_t modID = (m_item & 0xFF000000U) >> 24;
 
         if (modID == 0xFF)
             return false;
@@ -109,7 +109,7 @@ namespace Game
 
     bool FormID::GetPluginPartialIndex(std::uint32_t& a_out) const
     {
-        std::uint32_t modID = (m_item & 0xFF000000) >> 24;
+        std::uint32_t modID = (m_item & 0xFF000000U) >> 24;
 
         if (modID == 0xFF)
             return false;
@@ -128,11 +128,11 @@ namespace Game
         if (!form)
             return false;
 
-        auto ptr = RTTI<TESObjectREFR>::Cast(form);
+        NiPointer<TESObjectREFR> ptr(RTTI<TESObjectREFR>::Cast(form));
         if (!ptr)
             return false;
 
-        a_out = ptr;
+        a_out = std::move(ptr);
 
         return true;
     }

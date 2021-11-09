@@ -70,6 +70,29 @@ protected:
     producer_type m_producer;
 };
 
+template <class T = float, class = std::enable_if_t<std::is_fundamental_v<T>, void>>
+class RandomNumberGenerator3
+{
+public:
+
+    using producer_type =
+        std::conditional_t<std::is_floating_point_v<T>, std::uniform_real_distribution<T>,
+        std::conditional_t<std::is_integral_v<T>, std::uniform_int_distribution<T>, void>>;
+
+    explicit RandomNumberGenerator3(T a_min, T a_max) :
+        m_producer(a_min, a_max)
+    {
+    }
+
+    virtual T Get(const RandomNumberGeneratorBase& a_base)
+    {
+        return m_producer(a_base.m_generator);
+    }
+
+protected:
+    producer_type m_producer;
+};
+
 #include "Threads.h"
 
 template <class T = float>

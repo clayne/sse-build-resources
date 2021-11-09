@@ -181,25 +181,25 @@ namespace Game
     template <class T, class form_type>
     form_type* FormID::Lookup() const
     {
-        auto form = Lookup();
-
-        if (form) {
+        if (auto form = Lookup()) {
             return RTTI<form_type>::Cast(form);
         }
-
-        return nullptr;
+        else
+        {
+            return nullptr;
+        }
     }
     
     template <class T, class form_type>
     form_type* FormID::As() const
     {
-        auto form = Lookup();
-
-        if (form) {
+        if (auto form = Lookup()) {
             return form->As<form_type>();
         }
-
-        return nullptr;
+        else
+        {
+            return nullptr;
+        }
     }
 
 }

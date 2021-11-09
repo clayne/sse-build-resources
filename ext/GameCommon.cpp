@@ -42,14 +42,64 @@ namespace Game
 
         if (!race)
         {
-            if (auto actorBase = a_actor->baseForm; actorBase) {
-                if (auto npc = actorBase->As<TESNPC>(); npc) {
+            if (auto actorBase = a_actor->baseForm) {
+                if (auto npc = actorBase->As<TESNPC>()) {
                     race = npc->race.race;
                 }
             }
         }
 
         return race;
+    }
+
+    float GetNPCWeight(TESNPC* a_npc)
+    {
+        if (auto templ = a_npc->GetRootTemplate()) {
+            return templ->weight;
+        }
+
+        return a_npc->weight;
+    }
+
+    float GetActorWeight(Actor* a_actor)
+    {
+        return a_actor->GetWeight();
+    }
+
+    void AIProcessVisitActors2(
+        const std::function<void(Actor*, const Game::ActorHandle&)>& a_func, 
+        bool a_includePlayer)
+    {
+        if (a_includePlayer) {
+            if (auto player = *g_thePlayer)
+                a_func(player, player->GetHandle());
+        }
+
+        auto pl = Game::ProcessLists::GetSingleton();
+        if (pl == nullptr)
+            return;
+
+        for (auto handle : pl->highActorHandles)
+        {
+            NiPointer<Actor> actor;
+
+            if (!handle.Lookup(actor))
+                continue;
+
+            a_func(actor, handle);
+        }
+    }
+
+    namespace Debug
+    {
+        typedef void(*notification_t)(const char*, const char*, bool);
+
+        static auto s_notificationImpl = IAL::Addr<notification_t>(52050);
+
+        void Notification(const char* a_message, bool a_cancelIfQueued, const char* a_sound)
+        {
+            s_notificationImpl(a_message, a_sound, a_cancelIfQueued);
+        }
     }
 
 

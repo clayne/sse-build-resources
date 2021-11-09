@@ -91,8 +91,8 @@ public:
         m_interval(a_interval),
         m_tAccum(0),
         m_tIntervalBegin(IPerfCounter::Query()),
-        m_tCounter(0),
-        m_tLast(0)
+        m_tCounter(0), m_tLast(0)
+        , m_tStart(0)
     {
     }
 

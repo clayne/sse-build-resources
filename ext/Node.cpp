@@ -10,7 +10,8 @@ namespace Util
             const BSFixedString& a_name)
         {
             auto object = a_root->GetObjectByName(a_name);
-            if (!object) {
+            if (!object)
+            {
                 return nullptr;
             }
 
@@ -23,11 +24,13 @@ namespace Util
         {
             for (auto object : a_node->m_children)
             {
-                if (!object) {
+                if (!object)
+                {
                     continue;
                 }
 
-                if (object->m_name == a_name.data) {
+                if (object->m_name == a_name)
+                {
                     return object;
                 }
             }
@@ -41,13 +44,15 @@ namespace Util
         {
             for (auto object : a_node->m_children)
             {
-                if (!object) {
+                if (!object)
+                {
                     continue;
                 }
 
-                if (object->m_name == a_name.data)
+                if (object->m_name == a_name)
                 {
-                    if (auto node = object->GetAsNiNode(); node) {
+                    if (auto node = object->GetAsNiNode())
+                    {
                         return node;
                     }
                 }
@@ -63,13 +68,15 @@ namespace Util
             auto root3p = a_ref->GetNiRootNode(false);
             auto root1p = a_no1p ? nullptr : a_ref->GetNiRootNode(true);
 
-            m_nodes[0] = root3p;
+            m_nodes[0].reset(std::move(root3p));
 
-            if (root3p == root1p) {
-                m_nodes[1] = nullptr;
+            if (root3p == root1p)
+            {
+                m_nodes[1].reset();
             }
-            else {
-                m_nodes[1] = root1p;
+            else
+            {
+                m_nodes[1].reset(root1p);
             }
         }
 
@@ -77,13 +84,15 @@ namespace Util
         {
             for (auto& root : m_nodes)
             {
-                if (!root) {
+                if (!root)
+                {
                     continue;
                 }
 
                 auto n = FindNode(root, a_npcroot);
-                if (n) {
-                    root = n;
+                if (n)
+                {
+                    root.reset(n);
                 }
             }
         }
@@ -93,5 +102,7 @@ namespace Util
         {
             return a_node == m_nodes[0] || a_node == m_nodes[1];
         }
+
+
     }
 }

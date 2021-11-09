@@ -52,23 +52,27 @@ public:
     [[nodiscard]] bool QueryInterfaces(const SKSEInterface* a_skse);
 
     template <class T, class interface_type = stl::strip_type<T>>
-    [[nodiscard]] SKMP_FORCEINLINE interface_type* GetInterface() const {
+    [[nodiscard]] SKMP_FORCEINLINE constexpr interface_type* GetInterface() const
+    {
         return reinterpret_cast<interface_type*>(m_interfaces[interface_type::INTERFACE_TYPE]);
     }
 
-    [[nodiscard]] SKMP_FORCEINLINE BranchTrampoline& GetTrampoline(TrampolineID a_id) {
-        return m_trampolines[Enum::Underlying(a_id)];
+    [[nodiscard]] SKMP_FORCEINLINE constexpr BranchTrampoline& GetTrampoline(TrampolineID a_id)
+    {
+        return m_trampolines[stl::underlying(a_id)];
     }
 
-    [[nodiscard]] SKMP_FORCEINLINE std::size_t GetTrampolineSize(TrampolineID a_id) const {
-        return m_trampolines[Enum::Underlying(a_id)].Size();
+    [[nodiscard]] SKMP_FORCEINLINE std::size_t GetTrampolineSize(TrampolineID a_id) const
+    {
+        return m_trampolines[stl::underlying(a_id)].Size();
     }
 
-    [[nodiscard]] SKMP_FORCEINLINE std::size_t GetTrampolineRemain(TrampolineID a_id) const {
-        return m_trampolines[Enum::Underlying(a_id)].Remain();
+    [[nodiscard]] SKMP_FORCEINLINE std::size_t GetTrampolineRemain(TrampolineID a_id) const
+    {
+        return m_trampolines[stl::underlying(a_id)].Remain();
     }
 
-    [[nodiscard]] SKMP_FORCEINLINE auto GetTrampolineUsage(TrampolineID a_id) const
+    [[nodiscard]] SKMP_FORCEINLINE auto GetTrampolineUsage(TrampolineID a_id) const noexcept
     {
         auto total = GetTrampolineSize(a_id);
         auto rem = GetTrampolineRemain(a_id);
@@ -76,15 +80,18 @@ public:
         return TrampolineUsageInfo{ total - rem, total };
     }
 
-    [[nodiscard]] SKMP_FORCEINLINE PluginHandle GetPluginHandle() const {
+    [[nodiscard]] SKMP_FORCEINLINE constexpr PluginHandle GetPluginHandle() const noexcept
+    {
         return m_pluginHandle;
     }
 
-    [[nodiscard]] SKMP_FORCEINLINE HMODULE ModuleHandle() const {
+    [[nodiscard]] SKMP_FORCEINLINE constexpr HMODULE ModuleHandle() const noexcept
+    {
         return m_moduleHandle;
     }
 
-    SKMP_FORCEINLINE void SetModuleHandle(HMODULE a_handle) {
+    SKMP_FORCEINLINE void SetModuleHandle(HMODULE a_handle)
+    {
         m_moduleHandle = a_handle;
     }
 
@@ -104,15 +111,13 @@ private:
     template <TrampolineID _Trampoline>
     bool InitializeTrampoline(std::size_t a_size);
 
-
     static std::size_t GetAlignedTrampolineSize(size_t maxSize);
 
-    HMODULE m_moduleHandle = nullptr;
-    PluginHandle m_pluginHandle = kPluginHandle_Invalid;
+    HMODULE m_moduleHandle{ nullptr };
+    PluginHandle m_pluginHandle{ kPluginHandle_Invalid };
 
-    void* m_interfaces[SKSEInterfaceType::kInterface_Max];
+    void* m_interfaces[SKSEInterfaceType::kInterface_Max]{ nullptr };
     BranchTrampoline m_trampolines[2];
-
 };
 
 template <SKSEInterfaceFlags _InterfaceFlags, std::size_t _TrampolineBranch, std::size_t _TrampolineLocal>
@@ -128,7 +133,8 @@ bool ISKSEBase<_InterfaceFlags, _TrampolineBranch, _TrampolineLocal>::QueryInter
     auto iface = reinterpret_cast<interface_type*>(a_skse->QueryInterface(interface_type::INTERFACE_TYPE));
     if (iface == nullptr)
     {
-        if (interface_type::INTERFACE_TYPE == SKSETrampolineInterface::INTERFACE_TYPE) {
+        if (interface_type::INTERFACE_TYPE == SKSETrampolineInterface::INTERFACE_TYPE)
+        {
             gLog.Warning("Trampoline interface not found");
             return true;
         }
@@ -152,7 +158,8 @@ template <SKSEInterfaceFlags _InterfaceFlags, std::size_t _TrampolineBranch, std
 std::size_t ISKSEBase<_InterfaceFlags, _TrampolineBranch, _TrampolineLocal>::GetAlignedTrampolineSize(size_t maxSize)
 {
     auto alignTo = GetAllocGranularity();
-    if (alignTo == 0) {
+    if (alignTo == 0)
+    {
         return maxSize;
     }
 
@@ -170,20 +177,20 @@ bool ISKSEBase<_InterfaceFlags, _TrampolineBranch, _TrampolineLocal>::Initialize
 
     if (iface)
     {
-        void* base(nullptr);
+        void* form(nullptr);
 
         if constexpr (_Trampoline == TrampolineID::kBranch)
         {
-            base = iface->AllocateFromBranchPool(m_pluginHandle, a_size);
+            form = iface->AllocateFromBranchPool(m_pluginHandle, a_size);
         }
         else if constexpr (_Trampoline == TrampolineID::kLocal)
         {
-            base = iface->AllocateFromLocalPool(m_pluginHandle, a_size);
+            form = iface->AllocateFromLocalPool(m_pluginHandle, a_size);
         }
 
-        if (base != nullptr)
+        if (form != nullptr)
         {
-            trampoline.SetBase(a_size, base);
+            trampoline.SetBase(a_size, form);
             return true;
         }
     }
@@ -198,7 +205,7 @@ bool ISKSEBase<_InterfaceFlags, _TrampolineBranch, _TrampolineLocal>::Query(cons
     if (logPath && !gLog.IsOpen())
     {
         gLog.OpenRelative(CSIDL_MYDOCUMENTS, logPath);
-        gLog.SetLogLevel(IDebugLog::LogLevel::Debug);
+        gLog.SetLogLevel(LogLevel::Debug);
 
         OnLogOpen();
     }
@@ -232,55 +239,63 @@ bool ISKSEBase<_InterfaceFlags, _TrampolineBranch, _TrampolineLocal>::Query(cons
 template <SKSEInterfaceFlags _InterfaceFlags, std::size_t _TrampolineBranch, std::size_t _TrampolineLocal>
 bool ISKSEBase<_InterfaceFlags, _TrampolineBranch, _TrampolineLocal>::QueryInterfaces(const SKSEInterface* a_skse)
 {
-    for (auto& e : m_interfaces) {
+    for (auto& e : m_interfaces)
+    {
         e = nullptr;
     }
 
     if constexpr ((_InterfaceFlags & SKSEInterfaceFlags::kMessaging) == SKSEInterfaceFlags::kMessaging)
     {
-        if (!QueryInterface<SKSEMessagingInterface>(a_skse)) {
+        if (!QueryInterface<SKSEMessagingInterface>(a_skse))
+        {
             return false;
         }
     }
 
     if constexpr ((_InterfaceFlags & SKSEInterfaceFlags::kTask) == SKSEInterfaceFlags::kTask)
     {
-        if (!QueryInterface<SKSETaskInterface>(a_skse)) {
+        if (!QueryInterface<SKSETaskInterface>(a_skse))
+        {
             return false;
         }
     }
 
     if constexpr ((_InterfaceFlags & SKSEInterfaceFlags::kPapyrus) == SKSEInterfaceFlags::kPapyrus)
     {
-        if (!QueryInterface<SKSEPapyrusInterface>(a_skse)) {
+        if (!QueryInterface<SKSEPapyrusInterface>(a_skse))
+        {
             return false;
         }
     }
 
     if constexpr ((_InterfaceFlags & SKSEInterfaceFlags::kSerialization) == SKSEInterfaceFlags::kSerialization)
     {
-        if (!QueryInterface<SKSESerializationInterface>(a_skse)) {
+        if (!QueryInterface<SKSESerializationInterface>(a_skse))
+        {
             return false;
         }
     }
 
     if constexpr ((_InterfaceFlags & SKSEInterfaceFlags::kObjectInterface) == SKSEInterfaceFlags::kObjectInterface)
     {
-        if (!QueryInterface<SKSEObjectInterface>(a_skse)) {
+        if (!QueryInterface<SKSEObjectInterface>(a_skse))
+        {
             return false;
         }
     }
 
     if constexpr ((_InterfaceFlags & SKSEInterfaceFlags::kScaleform) == SKSEInterfaceFlags::kScaleform)
     {
-        if (!QueryInterface<SKSEScaleformInterface>(a_skse)) {
+        if (!QueryInterface<SKSEScaleformInterface>(a_skse))
+        {
             return false;
         }
     }
 
     if constexpr ((_InterfaceFlags & SKSEInterfaceFlags::kTrampoline) == SKSEInterfaceFlags::kTrampoline)
     {
-        if (!QueryInterface<SKSETrampolineInterface>(a_skse)) {
+        if (!QueryInterface<SKSETrampolineInterface>(a_skse))
+        {
             return false;
         }
     }

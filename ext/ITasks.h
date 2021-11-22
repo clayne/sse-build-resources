@@ -43,7 +43,9 @@ class TaskDelegateStatic
     : public TaskDelegate
 {
 public:
-    virtual void Dispose() override {};
+    virtual void Dispose() override
+    {
+    };
 };
 
 class TaskDelegateFixed
@@ -72,7 +74,7 @@ class TaskQueueBase
 
 public:
 
-    template <class T, typename... Args, typename = is_pointer<element_type>, typename = is_base_type<T>>
+    template <class T, class... Args, class = is_pointer<element_type>, class = is_base_type<T>>
     void AddTask(Args&&... a_args)
     {
         using alloc_type = typename strip_type<T>;
@@ -81,25 +83,30 @@ public:
         m_queue.emplace(new alloc_type(std::forward<Args>(a_args)...));
     }
 
-    template <typename... Args, typename = is_not_pointer<element_type>>
+    template <class... Args, class = is_not_pointer<element_type>>
     void AddTask(Args&&... a_args)
     {
         IScopedLock _(m_lock);
-        m_queue.emplace(element_type{ std::forward<Args>(a_args)... });
+        m_queue.emplace(std::forward<Args>(a_args)...);
     }
 
-    template <typename = is_pointer<element_type>, typename = is_base_type<TaskFunctor>>
+    template <class = is_pointer<element_type>, class = is_base_type<TaskFunctor>>
     void AddTask(TaskFunctor::func_t a_func)
     {
         IScopedLock _(m_lock);
         m_queue.emplace(new TaskFunctor(std::move(a_func)));
     }
 
-    template <typename = is_pointer<element_type>>
+    template <class = is_pointer<element_type>>
     void AddTask(element_type a_item)
     {
         IScopedLock _(m_lock);
         m_queue.emplace(a_item);
+    }
+
+    SKMP_FORCEINLINE auto Size() const noexcept
+    {
+        return m_queue.size();
     }
 
 protected:
@@ -123,9 +130,41 @@ public:
     void ProcessTasks();
     void ProcessTasks(long long a_budget);
     void ClearTasks();
-
-    auto Size() const noexcept
-    {
-        return m_queue.size();
-    }
 };
+
+template <class T>
+class TaskQueueStatic :
+    public TaskQueueBase<T>
+{
+public:
+
+    void ProcessTasks();
+    void ClearTasks();
+};
+
+template<class T>
+void TaskQueueStatic<T>::ProcessTasks()
+{
+    for (;;)
+    {
+        m_lock.lock();
+        if (m_queue.empty())
+        {
+            m_lock.unlock();
+            break;
+        }
+
+        auto task = m_queue.front();
+        m_queue.pop();
+
+        m_lock.unlock();
+
+        task.Run();
+    }
+}
+
+template<class T>
+void TaskQueueStatic<T>::ClearTasks()
+{
+    m_queue.swap(decltype(m_queue)());
+}

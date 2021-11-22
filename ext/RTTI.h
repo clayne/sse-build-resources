@@ -22,6 +22,7 @@ private:
     static RDCImpl_T RDCImpl;
 
     static unsigned long long aids[NUM_RTTI];
+	static std::uint32_t ae_offsets[NUM_RTTI];
     static void *addrs[NUM_RTTI];
 
     static IRTTI m_Instance;
@@ -2785,7 +2786,7 @@ namespace RTTI_IID
     inline static constexpr std::uint32_t hkgpMesh__CollideShapeTriangle = 2712;
     inline static constexpr std::uint32_t hkgpMesh__NearestFeaturePolicy = 2713;
     inline static constexpr std::uint32_t hkGskShape = 2714;
-    inline static constexpr std::uint32_t TTI_hkgpMeshInternals__SimpleCollector = 2715;
+    inline static constexpr std::uint32_t RTTI_hkgpMeshInternals__SimpleCollector = 2715;
     inline static constexpr std::uint32_t hkgpMeshInternals__TriangleOverlap = 2716;
     inline static constexpr std::uint32_t hkgpMeshInternals__RayCaster = 2717;
     inline static constexpr std::uint32_t IConvexOverlapImpl = 2718;

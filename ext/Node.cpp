@@ -68,7 +68,7 @@ namespace Util
             auto root3p = a_ref->GetNiRootNode(false);
             auto root1p = a_no1p ? nullptr : a_ref->GetNiRootNode(true);
 
-            m_nodes[0].reset(std::move(root3p));
+            m_nodes[0].reset(root3p);
 
             if (root3p == root1p)
             {
@@ -89,8 +89,7 @@ namespace Util
                     continue;
                 }
 
-                auto n = FindNode(root, a_npcroot);
-                if (n)
+                if (auto n = FindNode(root, a_npcroot))
                 {
                     root.reset(n);
                 }

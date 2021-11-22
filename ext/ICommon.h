@@ -53,7 +53,7 @@ namespace except
             return *this;
         }
 
-        inline const char* what() const noexcept
+        inline constexpr const char* what() const noexcept
         {
             return m_desc.c_str();
         }

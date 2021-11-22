@@ -84,7 +84,7 @@ private:
     std::vector<TaskDelegateFixed*> m_tasks_fixed;
     long long m_budget{ 0 };
 
-    inline static auto m_hookTargetAddr = IAL::Addr(35565, 0x759);
+    inline static auto m_hookTargetAddr = IAL::Addr(35565, 36564, 0x759, 0xC37);
 
     static ITaskPool m_Instance;
 };

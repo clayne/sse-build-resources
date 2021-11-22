@@ -93,9 +93,9 @@ namespace Game
 
     private:
 
-        DEFINE_MEMBER_FN_LONG(ProcessLists, _GuardsPursuing, std::uint32_t, 40314, Actor* a_actor, int p2, char p3);
+        DEFINE_MEMBER_FN_LONG(ProcessLists, _GuardsPursuing, std::uint32_t, 40314, 41324, Actor* a_actor, int p2, char p3);
 
-        inline static auto ResetEffectShaders_addr = IAL::Address<decltype(&ResetEffectShaders)&>(40378);
+        inline static auto ResetEffectShaders_addr = IAL::Address<decltype(&ResetEffectShaders)&>(40378, 41392);
     };
 
     static_assert(offsetof(ProcessLists, highActorHandles) == 0x30);
@@ -138,7 +138,7 @@ namespace Game
     public:
         static Unk00* GetSingleton();
 
-        DEFINE_MEMBER_FN_LONG(Unk00, SetGlobalTimeMultiplier, void, 66988, float a_scale, bool a_unk);
+        DEFINE_MEMBER_FN_LONG(Unk00, SetGlobalTimeMultiplier, void, 66988, 68245, float a_scale, bool a_unk);
 
     };
 

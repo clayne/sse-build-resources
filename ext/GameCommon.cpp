@@ -94,7 +94,7 @@ namespace Game
     {
         typedef void(*notification_t)(const char*, const char*, bool);
 
-        static auto s_notificationImpl = IAL::Addr<notification_t>(52050);
+        static auto s_notificationImpl = IAL::Addr<notification_t>(52050, 52933);
 
         void Notification(const char* a_message, bool a_cancelIfQueued, const char* a_sound)
         {
@@ -103,7 +103,7 @@ namespace Game
     }
 
 
-    static auto s_processLists = IAL::Addr<ProcessLists**>(514167);
+    static auto s_processLists = IAL::Addr<ProcessLists**>(514167, 400315);
 
     ProcessLists* ProcessLists::GetSingleton()
     {
@@ -115,14 +115,14 @@ namespace Game
         return _GuardsPursuing(a_actor, 0x15, 0) != 0;
     }
 
-    static auto s_BSMain = IAL::Addr<BSMain**>(516943);
+    static auto s_BSMain = IAL::Addr<BSMain**>(516943, 403449);
 
     BSMain* BSMain::GetSingleton()
     {
         return *s_BSMain;
     }
 
-    static Unk00* s_Unk00 = IAL::Addr<Unk00*>(523657);
+    static Unk00* s_Unk00 = IAL::Addr<Unk00*>(523657, 410196);
 
     Unk00* Unk00::GetSingleton()
     {

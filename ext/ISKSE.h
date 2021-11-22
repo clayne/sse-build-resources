@@ -48,6 +48,7 @@ public:
     ISKSEBase& operator=(ISKSEBase&&) = delete;
 
     [[nodiscard]] bool Query(const SKSEInterface* a_skse, PluginInfo* a_info);
+	bool OpenLog();
     [[nodiscard]] bool CreateTrampolines(const SKSEInterface* a_skse);
     [[nodiscard]] bool QueryInterfaces(const SKSEInterface* a_skse);
 
@@ -93,6 +94,11 @@ public:
     SKMP_FORCEINLINE void SetModuleHandle(HMODULE a_handle)
     {
         m_moduleHandle = a_handle;
+    }
+    
+    SKMP_FORCEINLINE void SetPluginHandle(PluginHandle a_handle)
+    {
+		m_pluginHandle = a_handle;
     }
 
 protected:
@@ -201,14 +207,7 @@ bool ISKSEBase<_InterfaceFlags, _TrampolineBranch, _TrampolineLocal>::Initialize
 template <SKSEInterfaceFlags _InterfaceFlags, std::size_t _TrampolineBranch, std::size_t _TrampolineLocal>
 bool ISKSEBase<_InterfaceFlags, _TrampolineBranch, _TrampolineLocal>::Query(const SKSEInterface* a_skse, PluginInfo* a_info)
 {
-    auto logPath = GetLogPath();
-    if (logPath && !gLog.IsOpen())
-    {
-        gLog.OpenRelative(CSIDL_MYDOCUMENTS, logPath);
-        gLog.SetLogLevel(LogLevel::Debug);
-
-        OnLogOpen();
-    }
+	OpenLog();
 
     a_info->infoVersion = PluginInfo::kInfoVersion;
     a_info->name = GetPluginName();
@@ -234,6 +233,25 @@ bool ISKSEBase<_InterfaceFlags, _TrampolineBranch, _TrampolineLocal>::Query(cons
     m_pluginHandle = a_skse->GetPluginHandle();
 
     return true;
+}
+
+template <SKSEInterfaceFlags _InterfaceFlags, std::size_t _TrampolineBranch, std::size_t _TrampolineLocal>
+bool ISKSEBase<_InterfaceFlags, _TrampolineBranch, _TrampolineLocal>::OpenLog()
+{
+	auto logPath = GetLogPath();
+	if (logPath && !gLog.IsOpen())
+	{
+		gLog.OpenRelative(CSIDL_MYDOCUMENTS, logPath);
+		gLog.SetLogLevel(LogLevel::Debug);
+
+		OnLogOpen();
+
+        return gLog.IsOpen();
+	}
+    else
+    {
+		return false;
+    }
 }
 
 template <SKSEInterfaceFlags _InterfaceFlags, std::size_t _TrampolineBranch, std::size_t _TrampolineLocal>

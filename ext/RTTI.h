@@ -22,7 +22,7 @@ private:
     static RDCImpl_T RDCImpl;
 
     static unsigned long long aids[NUM_RTTI];
-	static std::uint32_t ae_offsets[NUM_RTTI];
+	static unsigned long long aids_ae[NUM_RTTI];
     static void *addrs[NUM_RTTI];
 
     static IRTTI m_Instance;

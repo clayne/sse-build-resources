@@ -107,7 +107,7 @@ public:
 		unsigned long long a_id_se,
 		unsigned long long a_id_ae)
 	{
-		auto id = m_Instance.IsAE ? a_id_ae : a_id_se;
+		auto id = m_Instance.m_isAE ? a_id_ae : a_id_se;
 
 		unsigned long long r;
 		if (!m_Instance.m_database.FindOffsetById(id, r))

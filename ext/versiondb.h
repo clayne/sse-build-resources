@@ -156,7 +156,7 @@ public:
 		return Load(2, major, minor, revision, build);
 	}
 
-	bool Load(bool a_format, int major, int minor, int revision, int build)
+	bool Load(int a_format, int major, int minor, int revision, int build)
 	{
 		clear();
 

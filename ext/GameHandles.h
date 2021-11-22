@@ -107,7 +107,7 @@ namespace Game
 
     private:
 
-        static inline auto m_invalidHandle = IAL::AddressAE<std::uint32_t*>(514164, 0x01F592BC);
+        static inline auto m_invalidHandle = IAL::Address<std::uint32_t*>(514164, 400312);
     };
 
     using ObjectRefHandle = BSPointerHandle<TESObjectREFR>;
@@ -133,8 +133,8 @@ namespace Game
 
     public:
 
-        static inline const auto Lookup = IAL::AddressAE<funcLookupByHandle_t>(12204, 0x139160);
-		static inline const auto GetHandle = IAL::AddressAE<funcGetHandle_t>(15967, 0x1FA210);
+        static inline const auto Lookup = IAL::Address<funcLookupByHandle_t>(12204, 12332);
+		static inline const auto GetHandle = IAL::Address<funcGetHandle_t>(15967, 16212);
 
     };
 

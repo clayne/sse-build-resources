@@ -13,4 +13,10 @@ namespace WinApi
     {
         ::MessageBoxA(NULL, a_message, a_caption, MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
     }
+
+	void MessageBoxErrorLog(const char* a_caption, const char* a_message)
+	{
+		::MessageBoxA(NULL, a_message, a_caption, MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
+		gLog.Error("%s", a_message);
+	}
 }

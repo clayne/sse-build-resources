@@ -116,16 +116,16 @@ void ITaskPool::Install(
 
 bool ITaskPool::ValidateMemory()
 {
-    constexpr std::uint8_t mem2[]{ 0xE9 };
-
     if (IAL::IsAE())
 	{
+		constexpr std::uint8_t mem2[]{ 0xFF, 0x25 };
 		constexpr std::uint8_t mem1[]{ 0x4C, 0x8D, 0x9C, 0x24, 0x30, 0x01, 0x00, 0x00 };
 		return Patching::validate_mem(m_hookTargetAddr, mem1) ||
 		       Patching::validate_mem(m_hookTargetAddr, mem2);
 	}
     else
-    {
+	{
+		constexpr std::uint8_t mem2[]{ 0xE9 };
 		constexpr std::uint8_t mem1[]{ 0x48, 0x8B, 0x5C, 0x24, 0x40, 0x48, 0x83, 0xC4, 0x30 };
 		return Patching::validate_mem(m_hookTargetAddr, mem1) ||
 		       Patching::validate_mem(m_hookTargetAddr, mem2);

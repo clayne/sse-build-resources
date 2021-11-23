@@ -87,22 +87,6 @@ public:
 		}
 	}
 
-	/*static bool Offset(
-		unsigned long long id,
-		std::uintptr_t& result)
-	{
-		unsigned long long r;
-		if (!m_Instance.m_database.FindOffsetById(id, r))
-		{
-			m_Instance.m_hasBadQuery = true;
-			return false;
-		}
-
-		result = static_cast<std::uintptr_t>(r);
-
-		return true;
-	}*/
-
 	static std::uintptr_t Offset(
 		unsigned long long a_id_se,
 		unsigned long long a_id_ae)

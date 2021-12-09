@@ -242,3 +242,4 @@ protected:
 #include "IHook.h"
 #include "ILogging.h"
 #include "GameHandles.h"
+#include "stl_stdio.h"

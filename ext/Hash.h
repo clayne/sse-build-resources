@@ -57,7 +57,6 @@ namespace hash
 
     struct icase_comp
     {
-
         template <class T, class U, is_pair_int_char_t<T, U> = 0>
         bool operator()(std::pair<T, std::basic_string<U>> const& a_lhs, std::pair<T, std::basic_string<U>> const& a_rhs) const
         {
@@ -339,10 +338,8 @@ namespace hash
         };
 
         template <class T>
-        std::size_t _compute_hash_fnv1a(T const& a_in)
+        std::size_t _compute_hash_fnv1a(const T& a_in)
         {
-            static_assert(sizeof(T) > 0ui64);
-
             auto p = reinterpret_cast<const std::uint8_t*>(std::addressof(a_in));
             return _append_hash_bytes_fnv1a(fnv_offset_basis, p, sizeof(T));
         }

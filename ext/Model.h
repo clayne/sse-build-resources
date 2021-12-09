@@ -7,32 +7,31 @@
 
 namespace Util
 {
-    namespace Model
-    {
-        bool GetRootModelPath(
-            TESObjectREFR* a_refr,
-            bool a_firstPerson,
-            bool a_isFemale,
-            const char*& a_out);
+	namespace Model
+	{
+		bool MakePath(
+			const char* a_prefix,
+			const char* a_path,
+			char (&a_buffer)[MAX_PATH],
+			const char*& a_out);
 
-        class ModelLoader
-        {
-        public:
+		class ModelLoader
+		{
+		public:
+			ModelLoader() = default;
 
-            ModelLoader() = default;
+			bool Load(const char* a_path);
+			bool LoadObject(
+				const char* a_model,
+				NiPointer<NiNode>& a_out);
 
-            bool Load(const char* a_path);
-            bool LoadObject(
-                const char* a_model,
-                NiPointer<NiNode>& a_out);
+			inline constexpr const auto& GetStream() const noexcept
+			{
+				return m_stream;
+			}
 
-            SKMP_FORCEINLINE auto &GetStream() const {
-                return m_stream;
-            }
-
-        private:
-
-            Stream::NiStreamWrapper m_stream;
-        };
-    }
+		private:
+			Stream::NiStreamWrapper m_stream;
+		};
+	}
 }

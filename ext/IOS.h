@@ -6,8 +6,8 @@ std::size_t GetAllocGranularity();
 
 namespace WinApi
 {
-    void MessageBoxError(const char* a_caption, const char* a_message);
-    void MessageBoxErrorLog(const char* a_caption, const char* a_message);
+	void MessageBoxError(const char* a_caption, const char* a_message);
+	void MessageBoxErrorLog(const char* a_caption, const char* a_message);
 
 	template <class... Args>
 	void MessageBoxErrorFmt(const char* a_caption, const char* a_fmt, Args... a_args)
@@ -21,7 +21,7 @@ namespace WinApi
 	template <class... Args>
 	void MessageBoxErrorFmtLog(const char* a_caption, const char* a_fmt, Args... a_args)
 	{
-		MessageBoxErrorFmt(a_fmt, a_caption, std::forward<Args>(a_args)...);
+		MessageBoxErrorFmt(a_caption, a_fmt, std::forward<Args>(a_args)...);
 		gLog.Error(a_fmt, std::forward<Args>(a_args)...);
 	}
 }

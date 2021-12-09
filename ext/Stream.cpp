@@ -13,7 +13,7 @@ namespace Util
 
         NiStreamWrapper::~NiStreamWrapper() noexcept
         {
-            if (m_data.get()) {
+            if (m_data) {
                 this->operator->()->dtor();
             }
         }

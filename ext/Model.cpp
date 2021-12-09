@@ -6,91 +6,92 @@
 
 namespace Util
 {
-    namespace Model
-    {
-        static bool MakePath(
-            const char* a_prefix,
-            const char* a_path,
-            char (&a_buffer)[MAX_PATH],
-            const char *&a_out)
-        {
-            if (!a_path) {
-                return false;
-            }
+	namespace Model
+	{
+		bool MakePath(
+			const char* a_prefix,
+			const char* a_path,
+			char (&a_buffer)[MAX_PATH],
+			const char*& a_out)
+		{
+			if (!a_path)
+			{
+				return false;
+			}
 
-            auto prefixLen = std::strlen(a_prefix);
-            auto pathLen = std::strlen(a_path);
+			auto prefixLen = std::strlen(a_prefix);
+			auto pathLen = std::strlen(a_path);
 
-            if (_strnicmp(a_prefix, a_path, std::min(prefixLen, pathLen)) == 0) {
-                a_out = a_path;
-            }
-            else {
-                _snprintf_s(a_buffer, _TRUNCATE, "%s\\%s", a_prefix, a_path);
-                a_out = a_buffer;
-            }
+			if (_strnicmp(a_prefix, a_path, std::min(prefixLen, pathLen)) == 0)
+			{
+				a_out = a_path;
+			}
+			else
+			{
+				_snprintf_s(a_buffer, _TRUNCATE, "%s\\%s", a_prefix, a_path);
+				a_out = a_buffer;
+			}
 
-            return true;
-        }
+			return true;
+		}
 
-        bool ModelLoader::Load(
-            const char* a_path)
-        {
-            using namespace Stream;
+		bool ModelLoader::Load(
+			const char* a_path)
+		{
+			using namespace Stream;
 
-            char path_buffer[MAX_PATH];
-            const char* path;
+			BSResourceNiBinaryStream binaryStream(a_path);
+			if (!binaryStream.IsValid())
+			{
+				return false;
+			}
 
-            if (!MakePath("meshes", a_path, path_buffer, path)) {
-                return false;
-            }
+			if (!m_stream->LoadStream(std::addressof(binaryStream))) {
+				return false;
+			}
 
-            BSResourceNiBinaryStream binaryStream(path);
-            if (!binaryStream.IsValid()) {
-                return false;
-            }
+			return m_stream->m_rootObjects.m_data != nullptr;
+		}
 
-            Stream::NiStreamWrapper stream;
+		bool ModelLoader::LoadObject(
+			const char* a_model,
+			NiPointer<NiNode>& a_out)
+		{
+			if (!Load(a_model))
+			{
+				return false;
+			}
 
-            stream->LoadStream(std::addressof(binaryStream));
+			auto& stream = GetStream();
 
-            if (!stream->m_rootObjects.m_data) {
-                return false;
-            }
-            
-            m_stream = std::move(stream);
+			/*std::uint64_t tot = 0;
 
-            return true;
-        }
+			for (auto& e : stream->m_objectSizes)
+			{
+				tot += e;
+			}
 
-        bool ModelLoader::LoadObject(
-            const char* a_model,
-            NiPointer<NiNode>& a_out)
-        {
-            if (!Load(a_model)) {
-                return false;
-            }
+			_DMESSAGE("%s: %llu", a_model, tot); */
 
-            auto& stream = GetStream();
+			for (auto e : stream->m_rootObjects)
+			{
+				if (!e)
+				{
+					continue;
+				}
 
-            for (auto e : stream->m_rootObjects)
-            {
-                if (!e) {
-                    continue;
-                }
+				if (auto object = ni_cast(e, NiNode))
+				{
+					(*g_shaderResourceManager)->ConvertLegacy(object, false);
 
-                auto object = ni_cast(e, NiNode);
-                if (object)
-                {
-                    (*g_shaderResourceManager)->ConvertLegacy(object, false);
+					a_out.reset(object);
 
-                    a_out.reset(object);
+					return true;
+				}
+			}
 
-                    return true;
-                }
-            }
+			return false;
+		}
 
-            return false;
-        }
-
-    }
+	}
 }

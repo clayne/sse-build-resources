@@ -4,13 +4,13 @@
 
 namespace stl
 {
-	template <typename T>
+	template <class T>
 	constexpr typename std::underlying_type<T>::type underlying(T a_value) noexcept
 	{
 		return static_cast<typename std::underlying_type<T>::type>(a_value);
 	}
 
-	template <typename T>
+	template <class T>
 	constexpr typename std::underlying_type<T>::type* underlying(T* a_ptr) noexcept
 	{
 		return reinterpret_cast<typename std::underlying_type<T>::type*>(a_ptr);
@@ -19,9 +19,13 @@ namespace stl
 	template <class T>
 	using is_scoped = std::integral_constant<bool, !std::is_convertible_v<T, int> && std::is_enum_v<T>>;
 
-	template <class T, class = std::enable_if_t<std::is_enum_v<T>, void>>
+	template <
+		class T,
+		class = std::enable_if_t<std::is_enum_v<T>, void>>
 	struct flag
 	{
+		flag() = delete;
+
 		inline flag(T const a_rhs) noexcept :
 			value(a_rhs)
 		{
@@ -52,12 +56,12 @@ namespace stl
 		{
 			value ^= a_rhs;
 		}
-		
+
 		inline void lshift(std::uint32_t a_offset) noexcept
 		{
 			value <<= a_offset;
 		}
-		
+
 		inline void rshift(std::uint32_t a_offset) noexcept
 		{
 			value >>= a_offset;
@@ -101,22 +105,22 @@ namespace stl
 	{                                                                            \
 		return static_cast<x>(~stl::underlying(a_lhs));                          \
 	}                                                                            \
-	inline constexpr x operator<<(x a_lhs, std::uint32_t a_offset) noexcept       \
+	inline constexpr x operator<<(x a_lhs, std::uint32_t a_offset) noexcept      \
 	{                                                                            \
-		return static_cast<x>(stl::underlying(a_lhs) << a_offset);                \
+		return static_cast<x>(stl::underlying(a_lhs) << a_offset);               \
 	}                                                                            \
-	inline constexpr x operator>>(x a_lhs, std::uint32_t a_offset) noexcept       \
+	inline constexpr x operator>>(x a_lhs, std::uint32_t a_offset) noexcept      \
 	{                                                                            \
-		return static_cast<x>(stl::underlying(a_lhs) >> a_offset);                \
+		return static_cast<x>(stl::underlying(a_lhs) >> a_offset);               \
 	}                                                                            \
-	inline constexpr x operator>>=(x& a_lhs, std::uint32_t a_offset) noexcept     \
+	inline constexpr x& operator>>=(x& a_lhs, std::uint32_t a_offset) noexcept   \
 	{                                                                            \
-		a_lhs = static_cast<x>(stl::underlying(a_lhs) >> a_offset);        \
+		a_lhs = static_cast<x>(stl::underlying(a_lhs) >> a_offset);              \
 		return a_lhs;                                                            \
 	}                                                                            \
-	inline constexpr x operator<<=(x& a_lhs, std::uint32_t a_offset) noexcept     \
+	inline constexpr x& operator<<=(x& a_lhs, std::uint32_t a_offset) noexcept   \
 	{                                                                            \
-		a_lhs = static_cast<x>(stl::underlying(a_lhs) << a_offset);        \
+		a_lhs = static_cast<x>(stl::underlying(a_lhs) << a_offset);              \
 		return a_lhs;                                                            \
 	}                                                                            \
 	inline constexpr x& operator|=(x& a_lhs, x a_rhs) noexcept                   \

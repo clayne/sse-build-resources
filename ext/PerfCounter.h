@@ -108,7 +108,7 @@ public:
 	}
 
 private:
-	long long m_tStart;
+	long long m_tStart{ 0 };
 };
 
 class PerfTimerInt

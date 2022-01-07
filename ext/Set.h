@@ -49,16 +49,21 @@ namespace stl
 
 		set() = default;
 
-		set(std::initializer_list<value_type> a_init) :
-			data(a_init)
+		set(std::initializer_list<value_type> a_init)
 		{
-			sort_data();
+			for (auto& e : a_init)
+			{
+				emplace_impl(e);
+			}
 		}
 
 		set& operator=(std::initializer_list<value_type> a_init)
 		{
-			data = a_init;
-			sort_data();
+			data.clear();
+			for (auto& e : a_init)
+			{
+				emplace_impl(e);
+			}
 			return *this;
 		}
 
@@ -139,7 +144,7 @@ namespace stl
 			return emplace_impl(std::move(a_value));
 		}
 
-		void insert(std::initializer_list<value_type> a_init)
+		constexpr void insert(std::initializer_list<value_type> a_init)
 		{
 			for (auto& e : a_init)
 			{
@@ -175,7 +180,7 @@ namespace stl
 
 	private:
 		template <class... Args>
-		constexpr std::pair<const_iterator, bool> emplace_impl(Args&&... a_args)
+		std::pair<const_iterator, bool> emplace_impl(Args&&... a_args)
 		{
 			using in_place_key_extractor = typename in_place_key_extract_set<key_type, std::remove_cvref_t<Args>...>;
 
@@ -223,10 +228,28 @@ namespace stl
 
 #if !defined(_SKMP_DISABLE_BOOST_SERIALIZATION)
 		template <class Archive>
-		void serialize(Archive& ar, const unsigned int)
+		void save(Archive& ar, const unsigned int) const
 		{
 			ar& data;
 		}
+
+		template <class Archive>
+		void load(Archive& ar, const unsigned int)
+		{
+			data_type tmp;
+			ar& tmp;
+
+			data.clear();
+
+			for (auto& e : tmp)
+			{
+				emplace_impl(std::move(e));
+			}
+
+			data.shrink_to_fit();
+		}
+
+		BOOST_SERIALIZATION_SPLIT_MEMBER();
 #endif
 
 		data_type data;

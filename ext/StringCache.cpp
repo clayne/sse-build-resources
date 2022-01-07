@@ -1,4 +1,4 @@
-#if defined(SKMP_STRING_CACHE_INITIAL_SIZE)
+#if defined(SKMP_ENABLE_STRING_CACHE)
 
 #	pragma warning(disable: 4073)
 #	pragma init_seg(lib)
@@ -12,12 +12,12 @@ namespace string_cache
 
 	data_pool::data_pool()
 	{
-		m_data.reserve(SKMP_STRING_CACHE_INITIAL_SIZE);
-
 		auto empty = std::string();
-		auto hash = value_type::compute_hash(empty);
 
-		auto& e = *m_data.emplace(hash, std::move(empty)).first;
+		auto& e = *m_data.emplace(
+							 value_type::compute_hash(empty),
+							 std::move(empty))
+		               .first;
 
 		m_icase_empty = std::addressof(e);
 	}
@@ -38,20 +38,12 @@ namespace string_cache
 		return *m_Instance.m_data.emplace(a_hash, std::move(a_string)).first;
 	}
 
-#	if !defined(SKMP_STRING_CACHE_PERSIST)
 	void data_pool::release(
 		const value_type* a_ref) noexcept
 	{
-		try
+		if (!get_data().erase(*a_ref))
 		{
-			if (!get_data().erase(*a_ref))
-			{
-				throw std::runtime_error("FIXME: orphaned value");
-			}
-		}
-		catch (const std::exception& e)
-		{
-			HALT(e.what());
+			HALT("FIXME: orphaned value");
 		}
 	}
 
@@ -78,7 +70,6 @@ namespace string_cache
 			release(a_ref);
 		}
 	}
-#	endif
 
 	auto data_pool::get_stats() noexcept
 		-> stats_t
@@ -106,119 +97,29 @@ namespace string_cache
 			result.key_data_usage += sizeof(stl::strip_type<decltype(entry)>);
 			result.string_usage += entry.m_value.capacity() + sizeof(decltype(entry.m_value));
 
-#	if !defined(SKMP_STRING_CACHE_PERSIST)
-
 			auto c = entry.use_count();
 
 			result.total_fixed_count += c;
 			result.total_fixed_size += c * sizeof(stl::fixed_string);
 
 			result.estimated_uncached_usage += (entry.m_value.capacity() + sizeof(decltype(entry.m_value))) * c;
-#	endif
 		}
 
-		result.total = result.map_usage + result.key_data_usage + result.string_usage
-#	if !defined(SKMP_STRING_CACHE_PERSIST)
-		               + result.total_fixed_size
-#	endif
-			;
+		result.total = result.map_usage +
+		               result.key_data_usage +
+		               result.string_usage +
+		               result.total_fixed_size;
 
 		result.ratio = static_cast<long double>(result.total) / static_cast<long double>(result.estimated_uncached_usage);
 
 		return result;
 	}
 
-	std::size_t icase_key::compute_hash(const std::string& a_value) noexcept
-	{
-		using namespace ::hash::fnv1;
-
-		std::size_t hash = fnv_offset_basis;
-
-		for (auto e : a_value)
-		{
-			hash ^= static_cast<std::size_t>(std::toupper(e));
-			hash *= fnv_prime;
-		}
-
-		return hash;
-	}
 }
 
 namespace stl
 {
 	using namespace string_cache;
-
-	fixed_string::fixed_string(const std::string& a_value) :
-		m_ref(data_pool::get_empty())
-	{
-		set(a_value);
-	}
-
-	fixed_string::fixed_string(std::string&& a_value) :
-		m_ref(data_pool::get_empty())
-	{
-		set(std::move(a_value));
-	}
-
-	fixed_string::fixed_string(const char* a_value) :
-		m_ref(data_pool::get_empty())
-	{
-		set(a_value);
-	}
-
-	fixed_string& fixed_string::operator=(const std::string& a_value)
-	{
-		set(a_value);
-		return *this;
-	}
-
-	fixed_string& fixed_string::operator=(std::string&& a_value)
-	{
-		set(std::move(a_value));
-		return *this;
-	}
-
-	fixed_string& fixed_string::operator=(const char* a_value)
-	{
-		set(a_value);
-		return *this;
-	}
-
-	void fixed_string::clear() noexcept
-	{
-		try_release<true>();
-		m_ref = data_pool::get_empty();
-	}
-
-	void fixed_string::set(const std::string& a_value)
-	{
-		auto hash = icase_key::compute_hash(a_value);
-
-		IScopedLock lock(data_pool::get_lock());
-
-		auto& value = data_pool::insert(hash, a_value);
-
-#	if !defined(SKMP_STRING_CACHE_PERSIST)
-		assign_ref<false>(std::addressof(value));
-#	else
-		m_ref = std::addressof(value);
-#	endif
-	}
-
-	void fixed_string::set(std::string&& a_value)
-	{
-		auto hash = icase_key::compute_hash(a_value);
-
-		IScopedLock lock(data_pool::get_lock());
-
-		auto& value = data_pool::insert(hash, std::move(a_value));
-
-#	if !defined(SKMP_STRING_CACHE_PERSIST)
-		assign_ref<false>(std::addressof(value));
-#	else
-		m_ref = std::addressof(value);
-#	endif
-	}
 
 	void fixed_string::set(const char* a_value)
 	{
@@ -228,7 +129,7 @@ namespace stl
 		}
 		else
 		{
-			set(std::string(a_value));
+			set_impl(std::string(a_value));
 		}
 	}
 }

@@ -6,6 +6,9 @@
 #include <skse64/FormTraits.h>
 #include <skse64/GameReferences.h>
 
+#pragma warning(disable: 4073)
+#pragma init_seg(lib)
+
 ITaskPool ITaskPool::m_Instance;
 
 void ITaskPool::Install(
@@ -49,7 +52,10 @@ void ITaskPool::Install(
 				}
 
 				L(callLabel);
-				dq(std::uintptr_t(a_budget ? MainLoopUpdate_Hook_Budget : MainLoopUpdate_Hook));
+				dq(std::uintptr_t(
+					a_budget ?
+                        MainLoopUpdate_Hook_Budget :
+                        MainLoopUpdate_Hook));
 			}
 		};
 
@@ -59,7 +65,12 @@ void ITaskPool::Install(
 			jmpAddr = addr;
 		}
 
-		Assembly code(a_localTrampoline, jmpAddr, chain, m_Instance.m_budget > 0);
+		Assembly code(
+			a_localTrampoline,
+			jmpAddr,
+			chain,
+			m_Instance.m_budget > 0);
+
 		a_branchTrampoline.Write6Branch(addr, code.get());
 	}
 	else
@@ -96,7 +107,10 @@ void ITaskPool::Install(
 				}
 
 				L(callLabel);
-				dq(std::uintptr_t(a_budget ? MainLoopUpdate_Hook_Budget : MainLoopUpdate_Hook));
+				dq(std::uintptr_t(
+					a_budget ?
+                        MainLoopUpdate_Hook_Budget :
+                        MainLoopUpdate_Hook));
 			}
 		};
 
@@ -106,7 +120,12 @@ void ITaskPool::Install(
 			jmpAddr = addr;
 		}
 
-		Assembly code(a_localTrampoline, jmpAddr, chain, m_Instance.m_budget > 0);
+		Assembly code(
+			a_localTrampoline,
+			jmpAddr,
+			chain,
+			m_Instance.m_budget > 0);
+
 		a_branchTrampoline.Write5Branch(addr, code.get());
 	}
 }
@@ -115,24 +134,37 @@ bool ITaskPool::ValidateMemory()
 {
 	if (IAL::IsAE())
 	{
-		constexpr std::uint8_t mem2[]{ 0xFF, 0x25 };
-		constexpr std::uint8_t mem1[]{ 0x4C, 0x8D, 0x9C, 0x24, 0x30, 0x01, 0x00, 0x00 };
-		return Patching::validate_mem(m_hookTargetAddr, mem1) ||
-		       Patching::validate_mem(m_hookTargetAddr, mem2);
+		return Patching::validate_mem(
+				   m_hookTargetAddr,
+				   { 0x4C,
+		             0x8D,
+		             0x9C,
+		             0x24,
+		             0x30,
+		             0x01,
+		             0x00,
+		             0x00 }) ||
+		       Patching::validate_mem(
+				   m_hookTargetAddr,
+				   { 0xFF,
+		             0x25 });
 	}
 	else
 	{
-		constexpr std::uint8_t mem2[]{ 0xE9 };
-		constexpr std::uint8_t mem1[]{ 0x48, 0x8B, 0x5C, 0x24, 0x40, 0x48, 0x83, 0xC4, 0x30 };
-		return Patching::validate_mem(m_hookTargetAddr, mem1) ||
-		       Patching::validate_mem(m_hookTargetAddr, mem2);
+		return Patching::validate_mem(
+				   m_hookTargetAddr,
+				   { 0x48,
+		             0x8B,
+		             0x5C,
+		             0x24,
+		             0x40 }) ||
+		       Patching::validate_mem(m_hookTargetAddr, { 0xE9 });
 	}
 }
 
 void ITaskPool::MainLoopUpdate_Hook()
 {
 	m_Instance.m_queue.ProcessTasks();
-	//m_Instance.m_queueSecondary.ProcessTasks();
 
 	for (auto const& cmd : m_Instance.m_tasks_fixed)
 	{
@@ -143,7 +175,6 @@ void ITaskPool::MainLoopUpdate_Hook()
 void ITaskPool::MainLoopUpdate_Hook_Budget()
 {
 	m_Instance.m_queue.ProcessTasks(m_Instance.m_budget);
-	//m_Instance.m_queueSecondary.ProcessTasks(m_Instance.m_budget);
 
 	for (auto const& cmd : m_Instance.m_tasks_fixed)
 	{
@@ -151,10 +182,11 @@ void ITaskPool::MainLoopUpdate_Hook_Budget()
 	}
 }
 
-inline constexpr static bool IsREFRValid(TESObjectREFR* a_refr) noexcept
+inline static constexpr bool IsREFRValid(TESObjectREFR* a_refr) noexcept
 {
 	if (a_refr == nullptr ||
 	    a_refr->formID == 0 ||
+	    a_refr->IsDeleted() ||
 	    a_refr->loadedState == nullptr)
 	{
 		return false;
@@ -183,56 +215,29 @@ void ITaskPool::QueueActorTask(
 		return;
 	}
 
-	AddTask([handle, func = std::move(a_func)]() {
-		NiPointer<Actor> actor;
-		if (!handle.Lookup(actor))
-		{
-			return;
-		}
-
-		if (!IsREFRValid(actor))
-		{
-			return;
-		}
-
-		func(actor, handle);
-	});
+	m_Instance.m_queue.AddTask<ActorTaskDispatcher>(handle, std::move(a_func));
 }
 
-/*void ITaskPool::QueueActorTaskSecondary(
-    TESObjectREFR* a_actor,
-    func_t a_func)
+ITaskPool::ActorTaskDispatcher::ActorTaskDispatcher(
+	Game::ActorHandle a_handle,
+	func_t&& a_func) :
+	m_handle(a_handle),
+	m_func(std::move(a_func))
 {
-    if (!IsREFRValid(a_actor))
-    {
-        return;
-    }
+}
 
-    auto actor = a_actor->As<Actor>();
-    if (!actor)
-    {
-        return;
-    }
+void ITaskPool::ActorTaskDispatcher::Run()
+{
+	NiPointer<Actor> actor;
+	if (!m_handle.Lookup(actor))
+	{
+		return;
+	}
 
-    auto handle = actor->GetHandle();
-    if (!handle || !handle.IsValid())
-    {
-        return;
-    }
+	if (!IsREFRValid(actor))
+	{
+		return;
+	}
 
-    m_Instance.m_queueSecondary.AddTask([handle, func = std::move(a_func)]()
-    {
-        NiPointer<Actor> actor;
-        if (!handle.Lookup(actor))
-        {
-            return;
-        }
-
-        if (!IsREFRValid(actor))
-        {
-            return;
-        }
-
-        func(actor, handle);
-    });
-}*/
+	m_func(actor, m_handle);
+}

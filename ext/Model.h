@@ -20,7 +20,6 @@ namespace Util
 		public:
 			ModelLoader() = default;
 
-			bool Load(const char* a_path);
 			bool LoadObject(
 				const char* a_model,
 				NiPointer<NiNode>& a_out);
@@ -31,6 +30,16 @@ namespace Util
 			}
 
 		private:
+			inline constexpr auto& GetStream() noexcept
+			{
+				return m_stream;
+			}
+
+
+			bool ConstructObject(
+				const Stream::NiStreamWrapper& a_stream,
+				NiPointer<NiNode>& a_out);
+
 			Stream::NiStreamWrapper m_stream;
 		};
 	}

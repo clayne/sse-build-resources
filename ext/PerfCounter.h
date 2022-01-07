@@ -178,7 +178,7 @@ public:
 		return m_tInterval;
 	}
 
-	inline constexpr auto GetTime() const noexcept
+	inline constexpr auto NodeProcessorGetTime() const noexcept
 	{
 		return m_tLast;
 	}

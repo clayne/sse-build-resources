@@ -39,13 +39,12 @@ IAL::IAL()
 
 	int parts[4]{ 0 };
 
-	std::uint64_t ver;
-	if (!get_ver(parts, ver))
+	if (!get_ver(parts, m_ver))
 	{
 		return;
 	}
 
-	m_isAE = ver > 0x0001000500610000;
+	m_isAE = m_ver > 0x0001000500610000;
 
 	m_tLoadStart = pc.Query();
 

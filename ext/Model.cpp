@@ -1,7 +1,7 @@
-
 #include "Model.h"
 
 #include <skse64/GameStreams.h>
+#include <skse64/NiRTTI.h>
 #include <skse64/NiRenderer.h>
 
 namespace Util
@@ -28,52 +28,36 @@ namespace Util
 			}
 			else
 			{
-				_snprintf_s(a_buffer, _TRUNCATE, "%s\\%s", a_prefix, a_path);
+				stl::snprintf(a_buffer, "%s\\%s", a_prefix, a_path);
 				a_out = a_buffer;
 			}
 
 			return true;
 		}
 
-		bool ModelLoader::Load(
-			const char* a_path)
+		bool ModelLoader::LoadObject(
+			const char* a_path,
+			NiPointer<NiNode>& a_out)
 		{
-			using namespace Stream;
-
 			BSResourceNiBinaryStream binaryStream(a_path);
 			if (!binaryStream.IsValid())
 			{
 				return false;
 			}
 
-			if (!m_stream->LoadStream(std::addressof(binaryStream))) {
-				return false;
-			}
-
-			return m_stream->m_rootObjects.m_data != nullptr;
-		}
-
-		bool ModelLoader::LoadObject(
-			const char* a_model,
-			NiPointer<NiNode>& a_out)
-		{
-			if (!Load(a_model))
-			{
-				return false;
-			}
-
 			auto& stream = GetStream();
 
-			/*std::uint64_t tot = 0;
-
-			for (auto& e : stream->m_objectSizes)
+			if (!stream->LoadStream(std::addressof(binaryStream)))
 			{
-				tot += e;
+				return false;
 			}
 
-			_DMESSAGE("%s: %llu", a_model, tot); */
+			if (!stream->m_rootObjects.m_data)
+			{
+				return false;
+			}
 
-			for (auto e : stream->m_rootObjects)
+			for (auto& e : stream->m_rootObjects)
 			{
 				if (!e)
 				{
@@ -82,15 +66,51 @@ namespace Util
 
 				if (auto object = ni_cast(e, NiNode))
 				{
-					(*g_shaderResourceManager)->ConvertLegacy(object, false);
+					BSShaderResourceManager::GetSingleton()->ConvertLegacy(object, false);
 
 					a_out.reset(object);
 
 					return true;
 				}
+				else
+				{
+					return ConstructObject(stream, a_out);
+				}
 			}
 
 			return false;
+		}
+
+		bool ModelLoader::ConstructObject(
+			const Stream::NiStreamWrapper& a_stream,
+			NiPointer<NiNode>& a_out)
+		{
+			a_out.reset();
+
+			for (auto& e : a_stream->m_rootObjects)
+			{
+				if (!e)
+				{
+					continue;
+				}
+
+				if (auto object = ni_cast(e, NiAVObject))
+				{
+					if (!a_out)
+					{
+						a_out = NiNode::Create(1);
+						a_out->m_flags = NiAVObject::kFlag_SelectiveUpdate |
+						                 NiAVObject::kFlag_SelectiveUpdateTransforms |
+						                 NiAVObject::kFlag_kSelectiveUpdateController;
+					}
+
+					BSShaderResourceManager::GetSingleton()->ConvertLegacy(object, false);
+
+					a_out->AttachChild(object, true);
+				}
+			}
+
+			return a_out != nullptr;
 		}
 
 	}

@@ -7,12 +7,32 @@
 
 namespace Game
 {
-	class BSMain;
+	class Main;
 }
 
 class ITaskPool
 {
 	using func_t = std::function<void(Actor*, Game::ActorHandle)>;
+
+	class ActorTaskDispatcher :
+		public TaskDelegate
+	{
+	public:
+		ActorTaskDispatcher(
+			Game::ActorHandle a_handle,
+			func_t&& a_func);
+
+		virtual void Run();
+
+		virtual void Dispose()
+		{
+			delete this;
+		}
+
+	private:
+		Game::ActorHandle m_handle;
+		func_t m_func;
+	};
 
 public:
 	ITaskPool() = default;
@@ -48,7 +68,7 @@ public:
 		m_Instance.m_tasks_fixed.emplace_back(cmd);
 	}
 
-	inline static void SetBudget(long long a_budget)
+	inline static void SetBudget(long long a_budget) noexcept
 	{
 		m_Instance.m_budget = a_budget;
 	}
@@ -59,13 +79,13 @@ private:
 
 	TaskQueue m_queue;
 
-	typedef void (*mainLoopUpdate_t)(Game::BSMain*);
+	typedef void (*mainLoopUpdate_t)(Game::Main*);
 	mainLoopUpdate_t mainLoopUpdate_o;
 
 	std::vector<TaskDelegateFixed*> m_tasks_fixed;
 	long long m_budget{ 0 };
 
-	inline static auto m_hookTargetAddr = IAL::Addr(35565, 36564, 0x759, 0xC37);
+	inline static const auto m_hookTargetAddr = IAL::Addr(35565, 36564, 0x759, 0xC37);
 
 	static ITaskPool m_Instance;
 };

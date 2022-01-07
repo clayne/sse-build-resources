@@ -14,7 +14,7 @@ namespace VTable
         return reinterpret_cast<T>(GetVT(p)[offset]);
     }*/
 
-    template <typename T>
+    template <class T>
     bool Detour(
         void* cl,
         std::ptrdiff_t offset,
@@ -37,7 +37,7 @@ namespace VTable
         return true;
     }
 
-    template <typename T>
+    template <class T>
     bool Detour2(
         std::uintptr_t cl,
         std::ptrdiff_t offset,

@@ -104,18 +104,17 @@ namespace Game
 	struct PositionPlayerEvent;
 	struct BSGamerProfileEvent;
 
-	// https://github.com/Ryan-rsm-McKenzie/CommonLibSSE/blob/master/include/RE/BSMain/Main.h
-	class BSMain :
+	class Main :
 		BSTEventSink<PositionPlayerEvent>,  // 00
 		BSTEventSink<BSGamerProfileEvent>   // 08
 	{
 	public:
-		virtual ~BSMain();
+		virtual ~Main();
 
-		virtual EventResult ReceiveEvent(PositionPlayerEvent* evn, EventDispatcher<PositionPlayerEvent>* dispatcher) override;
-		virtual EventResult ReceiveEvent(BSGamerProfileEvent* evn, EventDispatcher<BSGamerProfileEvent>* dispatcher) override;
+		virtual EventResult ReceiveEvent(const PositionPlayerEvent* evn, BSTEventSource<PositionPlayerEvent>* dispatcher) override;
+		virtual EventResult ReceiveEvent(const BSGamerProfileEvent* evn, BSTEventSource<BSGamerProfileEvent>* dispatcher) override;
 
-		static BSMain* GetSingleton();
+		static Main* GetSingleton();
 
 		bool quitGame;         // 010
 		bool resetGame;        // 011
@@ -125,10 +124,11 @@ namespace Game
 		bool reloadContent;    // 015
 		bool freezeTime;       // 016
 		bool freezeNextFrame;  // 017
+							   // ...
 	};
 
-	static_assert(offsetof(BSMain, quitGame) == 0x10);
-	static_assert(sizeof(BSMain) == 0x18);
+	static_assert(offsetof(Main, quitGame) == 0x10);
+	static_assert(sizeof(Main) == 0x18);
 
 	class Unk00
 	{
@@ -144,7 +144,7 @@ namespace Game
 		class IItemChangeVisitor
 		{
 		public:
-			inline static constexpr auto RTTI = RTTI_IID::InventoryChanges__IItemChangeVisitor;
+			inline static constexpr auto RTTI_ID = RTTI_IID::InventoryChanges__IItemChangeVisitor;
 
 			virtual ~IItemChangeVisitor();  // 00
 

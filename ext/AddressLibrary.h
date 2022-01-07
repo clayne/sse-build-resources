@@ -10,29 +10,29 @@ class IAL
 public:
 	static void Release();
 
-	static constexpr bool IsLoaded()
+	inline static constexpr bool IsLoaded() noexcept
 	{
 		return m_Instance.m_isLoaded;
 	}
 
-	inline static constexpr float GetLoadTime()
+	inline static constexpr float GetLoadTime() noexcept
 	{
 		return IPerfCounter::delta(
 			m_Instance.m_tLoadStart,
 			m_Instance.m_tLoadEnd);
 	}
 
-	inline static constexpr long long GetLoadStart()
+	inline static constexpr long long GetLoadStart() noexcept
 	{
 		return m_Instance.m_tLoadStart;
 	}
 
-	inline static constexpr long long GetLoadEnd()
+	inline static constexpr long long GetLoadEnd() noexcept
 	{
 		return m_Instance.m_tLoadEnd;
 	}
 
-	inline static constexpr bool HasBadQuery()
+	inline static constexpr bool HasBadQuery() noexcept
 	{
 		return m_Instance.m_hasBadQuery;
 	}
@@ -42,12 +42,165 @@ public:
 		return m_Instance.m_database.GetOffsetMap().size();
 	}
 
+	inline static constexpr auto ver() noexcept
+	{
+		return m_Instance.m_ver;
+	}
+
 	template <class T = std::uintptr_t>
-	SKMP_NOINLINE static T Addr(
+	inline static constexpr T Addr(
 		unsigned long long a_id_se,
 		unsigned long long a_id_ae,
-		std::ptrdiff_t a_offset_se = 0,
-		std::ptrdiff_t a_offset_ae = 0)
+		std::ptrdiff_t a_offset_se,
+		std::ptrdiff_t a_offset_ae)
+	{
+		auto res = AddrImpl(
+			a_id_se,
+			a_id_ae,
+			a_offset_se,
+			a_offset_ae);
+
+		if constexpr (std::is_same_v<T, std::uintptr_t>)
+		{
+			return res;
+		}
+		else
+		{
+			return reinterpret_cast<T>(res);
+		}
+	}
+
+	template <class T = std::uintptr_t>
+	inline static constexpr T Addr(
+		unsigned long long a_id_se,
+		unsigned long long a_id_ae)
+	{
+		auto res = AddrImpl(
+			a_id_se,
+			a_id_ae);
+
+		if constexpr (std::is_same_v<T, std::uintptr_t>)
+		{
+			return res;
+		}
+		else
+		{
+			return reinterpret_cast<T>(res);
+		}
+	}
+
+	/*static std::uintptr_t Offset(
+		unsigned long long a_id_se,
+		unsigned long long a_id_ae)
+	{
+		auto id = m_Instance.m_isAE ?
+                      a_id_ae :
+                      a_id_se;
+
+		unsigned long long r;
+		if (!m_Instance.m_database.FindOffsetById(id, r))
+		{
+			m_Instance.m_hasBadQuery = true;
+			return std::uintptr_t(0);
+		}
+		return static_cast<std::uintptr_t>(r);
+	}*/
+
+	template <class T>
+	class Address
+	{
+	public:
+		Address() = delete;
+
+		Address(
+			unsigned long long a_id_se,
+			unsigned long long a_id_ae,
+			std::ptrdiff_t a_offset_se,
+			std::ptrdiff_t a_offset_ae) :
+			m_offset(IAL::AddrImpl(
+				a_id_se,
+				a_id_ae,
+				a_offset_se,
+				a_offset_ae))
+		{
+		}
+
+		Address(
+			unsigned long long a_id_se,
+			unsigned long long a_id_ae) :
+			m_offset(IAL::AddrImpl(
+				a_id_se,
+				a_id_ae))
+		{
+		}
+
+		inline constexpr operator T() const noexcept
+		{
+			if constexpr (std::is_same_v<T, std::uintptr_t>)
+			{
+				return m_offset;
+			}
+			else
+			{
+				return reinterpret_cast<T>(
+					static_cast<std::uintptr_t>(m_offset));
+			}
+		}
+
+		template <class Tp = std::uintptr_t>
+		inline constexpr Tp As() const noexcept
+		{
+			if constexpr (std::is_same_v<T, Tp>)
+			{
+				return m_offset;
+			}
+			else
+			{
+				return reinterpret_cast<Tp>(
+					static_cast<std::uintptr_t>(m_offset));
+			}
+		}
+
+	private:
+		std::uintptr_t m_offset;
+	};
+
+	static_assert(sizeof(Address<void*>) == 0x8);
+
+	static inline constexpr bool IsAE() noexcept
+	{
+		return m_Instance.m_isAE;
+	}
+
+private:
+	SKMP_NOINLINE static std::uintptr_t AddrImpl(
+		unsigned long long a_id_se,
+		unsigned long long a_id_ae)
+	{
+		auto id = m_Instance.m_isAE ?
+                      a_id_ae :
+                      a_id_se;
+
+		if (id == 0)
+		{
+			return 0;
+		}
+
+		auto addr = m_Instance.m_database.FindAddressById(id);
+		if (!addr)
+		{
+			m_Instance.m_hasBadQuery = true;
+			return 0;
+		}
+
+		return reinterpret_cast<std::uintptr_t>(addr);
+	}
+
+	SKMP_NOINLINE static std::uintptr_t AddrImpl(
+		unsigned long long a_id_se,
+		unsigned long long a_id_ae,
+		std::ptrdiff_t a_offset_se,
+		std::ptrdiff_t a_offset_ae)
 	{
 		unsigned long long id;
 		std::ptrdiff_t offset;
@@ -65,84 +218,19 @@ public:
 
 		if (id == 0)
 		{
-			return T(0);
+			return 0;
 		}
 
 		auto addr = m_Instance.m_database.FindAddressById(id);
 		if (!addr)
 		{
 			m_Instance.m_hasBadQuery = true;
-			return T(0);
+			return 0;
 		}
 
-		auto res = reinterpret_cast<std::uintptr_t>(addr) + offset;
-
-		if constexpr (std::is_same_v<T, std::uintptr_t>)
-		{
-			return res;
-		}
-		else
-		{
-			return reinterpret_cast<T>(res);
-		}
+		return reinterpret_cast<std::uintptr_t>(addr) + offset;
 	}
 
-	static std::uintptr_t Offset(
-		unsigned long long a_id_se,
-		unsigned long long a_id_ae)
-	{
-		auto id = m_Instance.m_isAE ? a_id_ae : a_id_se;
-
-		unsigned long long r;
-		if (!m_Instance.m_database.FindOffsetById(id, r))
-		{
-			m_Instance.m_hasBadQuery = true;
-			return std::uintptr_t(0);
-		}
-		return static_cast<std::uintptr_t>(r);
-	}
-
-	template <class T>
-	class Address
-	{
-	public:
-		Address() = delete;
-
-		Address(
-			unsigned long long a_id_se,
-			unsigned long long a_id_ae,
-			std::ptrdiff_t a_offset_se = 0,
-			std::ptrdiff_t a_offset_ae = 0) :
-			m_offset(IAL::Addr<BlockConversionType*>(
-				a_id_se,
-				a_id_ae,
-				a_offset_se,
-				a_offset_ae))
-		{
-		}
-
-		inline constexpr operator T() const noexcept
-		{
-			return reinterpret_cast<T>(const_cast<BlockConversionType*>(m_offset));
-		}
-
-		inline constexpr std::uintptr_t GetUIntPtr() const noexcept
-		{
-			return reinterpret_cast<std::uintptr_t>(m_offset);
-		}
-
-	private:
-		struct BlockConversionType
-		{};
-		BlockConversionType* m_offset;
-	};
-
-	static inline constexpr bool IsAE() noexcept
-	{
-		return m_Instance.m_isAE;
-	}
-
-private:
 	bool IAL::get_ver(int (&a_parts)[4], std::uint64_t& a_out);
 
 	IAL();
@@ -154,6 +242,8 @@ private:
 	long long m_tLoadEnd{ 0 };
 
 	bool m_isAE{ false };
+
+	std::uint64_t m_ver{ 0 };
 
 	VersionDb m_database;
 

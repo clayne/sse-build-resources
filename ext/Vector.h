@@ -10,7 +10,6 @@ namespace stl
 	class vectormap
 	{
 	public:
-
 		using iterator = typename map_type::iterator;
 		using const_iterator = typename map_type::const_iterator;
 
@@ -47,7 +46,7 @@ namespace stl
 
 		vectormap(const vectormap& a_rhs)
 		{
-			for (auto& e : a_rhs.m_vector)
+			for (auto& e : a_rhs.getvec())
 			{
 				emplace(*e);
 			}
@@ -55,7 +54,7 @@ namespace stl
 
 		vectormap(vectormap&& a_rhs)
 		{
-			for (auto& e : a_rhs.m_vector)
+			for (auto& e : a_rhs.getvec())
 			{
 				emplace(e->first, std::move(e->second));
 			}
@@ -65,7 +64,7 @@ namespace stl
 		{
 			clear();
 
-			for (auto& e : a_rhs.m_vector)
+			for (auto& e : a_rhs.getvec())
 			{
 				emplace(*e);
 			}
@@ -75,9 +74,9 @@ namespace stl
 
 		vectormap& operator=(vectormap&& a_rhs)
 		{
-			m_vector.clear();
+			clear();
 
-			for (auto& e : a_rhs.m_vector)
+			for (auto& e : a_rhs.getvec())
 			{
 				emplace(e->first, std::move(e->second));
 			}
@@ -86,21 +85,13 @@ namespace stl
 		}
 
 		template <class... Args>
-		std::pair<iterator, bool> try_emplace(K&& a_key, Args&&... a_args)
+		std::pair<iterator, bool> try_emplace(Args&&... a_args)
 		{
-			const auto r = m_map.try_emplace(std::move(a_key), std::forward<Args>(a_args)...);
+			const auto r = m_map.try_emplace(std::forward<Args>(a_args)...);
 			if (r.second)
+			{
 				_insert_vec(std::addressof(*r.first));
-
-			return r;
-		}
-
-		template <class... Args>
-		std::pair<iterator, bool> try_emplace(const K& a_key, Args&&... a_args)
-		{
-			const auto r = m_map.try_emplace(a_key, std::forward<Args>(a_args)...);
-			if (r.second)
-				_insert_vec(std::addressof(*r.first));
+			}
 
 			return r;
 		}
@@ -110,117 +101,121 @@ namespace stl
 		{
 			const auto r = m_map.emplace(std::forward<Args>(a_args)...);
 			if (r.second)
+			{
 				_insert_vec(std::addressof(*r.first));
+			}
 
 			return r;
 		}
 
-		iterator erase(iterator a_it)
+		auto erase(iterator a_it)
 		{
 			_erase_vec(std::addressof(*a_it));
 			return m_map.erase(a_it);
 		}
 
-		const_iterator erase(const_iterator a_it)
+		auto erase(const_iterator a_it)
 		{
 			_erase_vec(std::addressof(*a_it));
 			return m_map.erase(a_it);
 		}
 
-		size_type erase(const K& a_key)
+		auto erase(const K& a_key)
 		{
 			auto it = m_map.find(a_key);
 			if (it == m_map.end())
+			{
 				return size_type(0);
+			}
 
 			_erase_vec(std::addressof(*it));
 
 			return m_map.erase(it);
 		}
 
-		[[nodiscard]] SKMP_FORCEINLINE iterator find(const K& a_key)
+		[[nodiscard]] inline auto find(const K& a_key)
 		{
 			return m_map.find(a_key);
 		}
 
-		[[nodiscard]] SKMP_FORCEINLINE const_iterator find(const K& a_key) const
+		[[nodiscard]] inline auto find(const K& a_key) const
 		{
 			return m_map.find(a_key);
 		}
 
-		[[nodiscard]] SKMP_FORCEINLINE iterator end() noexcept
+		[[nodiscard]] inline auto end() noexcept
 		{
 			return m_map.end();
 		}
 
-		[[nodiscard]] SKMP_FORCEINLINE iterator begin() noexcept
+		[[nodiscard]] inline auto begin() noexcept
 		{
 			return m_map.begin();
 		}
 
-		[[nodiscard]] SKMP_FORCEINLINE const_iterator end() const noexcept
+		[[nodiscard]] inline auto end() const noexcept
 		{
 			return m_map.end();
 		}
 
-		[[nodiscard]] SKMP_FORCEINLINE const_iterator begin() const noexcept
+		[[nodiscard]] inline auto begin() const noexcept
 		{
 			return m_map.begin();
 		}
 
-		[[nodiscard]] SKMP_FORCEINLINE const_iterator cend() const noexcept
+		[[nodiscard]] inline auto cend() const noexcept
 		{
 			return m_map.cend();
 		}
 
-		[[nodiscard]] SKMP_FORCEINLINE const_iterator cbegin() const noexcept
+		[[nodiscard]] inline auto cbegin() const noexcept
 		{
 			return m_map.cbegin();
 		}
 
-		[[nodiscard]] SKMP_FORCEINLINE void clear()
+		void clear()
 		{
 			m_vector.clear();
 			m_map.clear();
 		}
 
-		[[nodiscard]] SKMP_FORCEINLINE void release()
+		void release()
 		{
 			m_vector.swap(decltype(m_vector)());
 			m_map.swap(decltype(m_map)());
 		}
 
-		[[nodiscard]] SKMP_FORCEINLINE map_type::size_type size() const noexcept
+		[[nodiscard]] inline map_type::size_type size() const noexcept
 		{
 			return m_map.size();
 		}
 
-		[[nodiscard]] SKMP_FORCEINLINE bool empty() const noexcept
+		[[nodiscard]] inline bool empty() const noexcept
 		{
 			return m_map.empty();
 		}
 
-		[[nodiscard]] SKMP_FORCEINLINE bool contains(const K& a_key) const
+		[[nodiscard]] inline bool contains(const K& a_key) const
 		{
 			return m_map.contains(a_key);
 		}
 
-		[[nodiscard]] SKMP_FORCEINLINE constexpr auto getdata() noexcept
+		[[nodiscard]] inline constexpr auto getdata() noexcept
 		{
 			return m_vector.data();
 		}
 
-		[[nodiscard]] SKMP_FORCEINLINE constexpr const auto getdata() const noexcept
+		[[nodiscard]] inline constexpr const auto getdata() const noexcept
 		{
 			return m_vector.data();
 		}
 
-		[[nodiscard]] SKMP_FORCEINLINE constexpr const auto& getvec() const noexcept
+		[[nodiscard]] inline constexpr const auto& getvec() const noexcept
 		{
 			return m_vector;
 		}
 
-		[[nodiscard]] SKMP_FORCEINLINE constexpr const auto& getmap() const noexcept
+		[[nodiscard]] inline constexpr const auto& getmap() const noexcept
 		{
 			return m_map;
 		}
@@ -232,15 +227,15 @@ namespace stl
 		}
 
 	private:
-		SKMP_FORCEINLINE void _insert_vec(value_pointer_type a_val)
+		inline void _insert_vec(value_pointer_type a_val)
 		{
 			m_vector.emplace_back(a_val);
 		}
 
-		SKMP_FORCEINLINE void _erase_vec(value_pointer_type a_val)
+		inline void _erase_vec(value_pointer_type a_val)
 		{
 			auto it = std::find(m_vector.begin(), m_vector.end(), a_val);
-			//ASSERT(it != m_vector.end());
+			ASSERT(it != m_vector.end());
 			m_vector.erase(it);
 		}
 

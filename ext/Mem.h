@@ -141,7 +141,7 @@ namespace mem
         SKMP_FORCEINLINE void deallocate(T* const p, const std::size_t n) const
         {
 #if defined(SKMP_MEMDBG)
-            g_allocatedSize -= n * sizeof(T);
+            g_allocatedSize -= n * sizeof(Td);
 #endif
 
             _mm_free(p);

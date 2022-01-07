@@ -4,25 +4,37 @@
 
 namespace JITASM
 {
-    class JITASM
-        : public Xbyak::CodeGenerator
-    {
-    public:
-        JITASM(BranchTrampoline& a_trampoline, std::size_t maxSize = Xbyak::DEFAULT_MAX_CODE_SIZE);
+	class JITASM : public Xbyak::CodeGenerator
+	{
+	public:
+		JITASM(
+			BranchTrampoline& a_trampoline,
+			std::size_t a_maxSize = Xbyak::DEFAULT_MAX_CODE_SIZE);
 
-        void done();
-        std::uintptr_t get();
+		void done();
 
-        template <class T>
-        T get()
-        {
-            done();
-            return reinterpret_cast<T>(getCode());
-        }
+		template <
+			class T = std::uintptr_t,
+			class Tr = std::conditional_t<
+				std::is_pointer_v<T>,
+				const std::remove_pointer_t<T>*,
+				T>>
+		Tr get()
+		{
+			done();
 
-    private:
+			if constexpr (std::is_same_v<std::remove_const_t<Tr>, std::uint8_t*>)
+			{
+				return getCode();
+			}
+			else
+			{
+				return reinterpret_cast<Tr>(getCode());
+			}
+		}
 
-        bool _endedAlloc;
-        BranchTrampoline& _m_trampoline;
-    };
+	private:
+		bool _endedAlloc{ false };
+		BranchTrampoline& _m_trampoline;
+	};
 }

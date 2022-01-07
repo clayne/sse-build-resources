@@ -1,16 +1,14 @@
 #include "RTTI.h"
 
-IRTTI::RDCImpl_T IRTTI::RDCImpl = IAL::Addr<RDCImpl_T>(102238, 109689);
-
 IRTTI::IRTTI()
 {
-	for (uint32_t i = 0; i < NUM_RTTI; i++)
+	for (std::uint32_t i = 0; i < NUM_RTTI; i++)
 	{
 		addrs[i] = IAL::Addr<void*>(aids[i], aids_ae[i]);
 	}
 }
 
-unsigned long long IRTTI::aids[NUM_RTTI] = {
+std::uint32_t IRTTI::aids[NUM_RTTI] = {
 	513847,  // BaseFormComponent
 	684588,  // IFormFactory
 	513850,  // AlchemyItem
@@ -3288,10 +3286,11 @@ unsigned long long IRTTI::aids[NUM_RTTI] = {
 	692139,  // BSDiscBootSystemUtility
 	692140,  // type_info
 	692141,  // BSSocket
-	692142   // BSSocketServer
+	692142,  // BSSocketServer
+	690392   // DeepCopyStream
 };
 
-unsigned long long IRTTI::aids_ae[NUM_RTTI] = {
+std::uint32_t IRTTI::aids_ae[NUM_RTTI] = {
 	392215,  // BaseFormComponent
 	392214,  // IFormFactory
 	392218,  // AlchemyItem
@@ -6569,7 +6568,8 @@ unsigned long long IRTTI::aids_ae[NUM_RTTI] = {
 	400184,  // BSDiscBootSystemUtility
 	400185,  // type_info
 	400186,  // BSSocket
-	400187   // BSSocketServer
+	400187,  // BSSocketServer
+	398247   // DeepCopyStream
 };
 
 void* IRTTI::addrs[NUM_RTTI]{ 0 };

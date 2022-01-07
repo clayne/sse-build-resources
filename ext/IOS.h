@@ -2,6 +2,8 @@
 
 #include "ILogging.h"
 
+#include <filesystem>
+
 std::size_t GetAllocGranularity();
 
 namespace WinApi
@@ -24,4 +26,6 @@ namespace WinApi
 		MessageBoxErrorFmt(a_caption, a_fmt, std::forward<Args>(a_args)...);
 		gLog.Error(a_fmt, std::forward<Args>(a_args)...);
 	}
+
+	bool get_windows_path(std::filesystem::path &a_out);
 }

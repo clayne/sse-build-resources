@@ -149,9 +149,9 @@ namespace Game
 		return _GuardsPursuing(a_actor, 0x15, 0) != 0;
 	}
 
-	static auto s_BSMain = IAL::Addr<BSMain**>(516943, 403449);
+	static auto s_BSMain = IAL::Addr<Main**>(516943, 403449);
 
-	BSMain* BSMain::GetSingleton()
+	Main* Main::GetSingleton()
 	{
 		return *s_BSMain;
 	}

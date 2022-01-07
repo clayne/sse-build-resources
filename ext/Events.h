@@ -12,8 +12,6 @@ namespace Events
         using event_type = stl::strip_type<T>;
 
     public:
-        virtual ~EventSink() noexcept = default;
-
         virtual void Receive(const event_type& a_evn) = 0;
     };
 

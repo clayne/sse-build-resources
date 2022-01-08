@@ -72,6 +72,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ext\AddressLibrary.h" />
+    <ClInclude Include="ext\boost_macros.h" />
     <ClInclude Include="ext\BSTSmartPointer.h" />
     <ClInclude Include="ext\Checksum.h" />
     <ClInclude Include="ext\Events.h" />
@@ -107,6 +108,7 @@
     <ClInclude Include="ext\SKSEMessaging.h" />
     <ClInclude Include="ext\STL.h" />
     <ClInclude Include="ext\STLCommon.h" />
+    <ClInclude Include="ext\stl_optional.h" />
     <ClInclude Include="ext\stl_stdio.h" />
     <ClInclude Include="ext\Stream.h" />
     <ClInclude Include="ext\StrHelpers.h" />

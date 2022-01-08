@@ -66,4 +66,11 @@ namespace stl
 		}
 	}
 
+	template <class T>
+	constexpr void destroy_in_place(T& a_obj) noexcept
+	{
+		static_assert(!std::is_array_v<T>);
+		a_obj.~T();
+	}
+
 }

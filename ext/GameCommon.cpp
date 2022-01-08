@@ -107,29 +107,33 @@ namespace Game
 		if (a_includePlayer)
 		{
 			if (auto player = *g_thePlayer)
+			{
 				a_func(player, player->GetHandle());
+			}
 		}
 
 		auto pl = Game::ProcessLists::GetSingleton();
 		if (pl == nullptr)
+		{
 			return;
+		}
 
 		for (auto handle : pl->highActorHandles)
 		{
 			NiPointer<Actor> actor;
 
-			if (!handle.Lookup(actor))
-				continue;
-
-			a_func(actor, handle);
+			if (handle.Lookup(actor))
+			{
+				a_func(actor, handle);
+			}
 		}
 	}
 
 	namespace Debug
 	{
-		typedef void (*notification_t)(const char*, const char*, bool);
+		using notification_t = void (*)(const char*, const char*, bool);
 
-		static auto s_notificationImpl = IAL::Addr<notification_t>(52050, 52933);
+		static const auto s_notificationImpl = IAL::Addr<notification_t>(52050, 52933);
 
 		void Notification(const char* a_message, bool a_cancelIfQueued, const char* a_sound)
 		{

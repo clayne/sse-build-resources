@@ -321,6 +321,12 @@
     <ClInclude Include="ext\stl_stdio.h">
       <Filter>ext</Filter>
     </ClInclude>
+    <ClInclude Include="ext\stl_optional.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\boost_macros.h">
+      <Filter>ext</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ext\AddressLibrary.cpp">

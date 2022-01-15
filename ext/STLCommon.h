@@ -73,4 +73,12 @@ namespace stl
 		a_obj.~T();
 	}
 
+	template <class T, class... Args>
+	constexpr void emplace(T& a_obj, Args&&... a_args) noexcept(
+		std::is_nothrow_constructible_v<T, Args...>)
+	{
+		destroy_in_place(a_obj);
+		construct_in_place(a_obj, std::forward<Args>(a_args)...);
+	}
+
 }

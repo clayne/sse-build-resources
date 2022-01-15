@@ -186,8 +186,8 @@ inline static constexpr bool IsREFRValid(TESObjectREFR* a_refr) noexcept
 {
 	if (a_refr == nullptr ||
 	    a_refr->formID == 0 ||
-	    a_refr->IsDeleted() ||
-	    a_refr->loadedState == nullptr)
+	    a_refr->loadedState == nullptr ||
+	    a_refr->IsDeleted())
 	{
 		return false;
 	}

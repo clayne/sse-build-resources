@@ -47,27 +47,27 @@ namespace stl
 			return (value & a_rhs) != static_cast<T>(0);
 		}
 
-		inline void set(T const a_rhs) noexcept
+		inline constexpr void set(T const a_rhs) noexcept
 		{
 			value |= a_rhs;
 		}
 
-		inline void toggle(T const a_rhs) noexcept
+		inline constexpr void toggle(T const a_rhs) noexcept
 		{
 			value ^= a_rhs;
 		}
 
-		inline void lshift(std::uint32_t a_offset) noexcept
+		inline constexpr void lshift(std::uint32_t a_offset) noexcept
 		{
 			value <<= a_offset;
 		}
 
-		inline void rshift(std::uint32_t a_offset) noexcept
+		inline constexpr void rshift(std::uint32_t a_offset) noexcept
 		{
 			value >>= a_offset;
 		}
 
-		inline void clear(T const a_rhs) noexcept
+		inline constexpr void clear(T const a_rhs) noexcept
 		{
 			value &= ~a_rhs;
 		}

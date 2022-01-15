@@ -15,6 +15,17 @@ namespace Game
 	float GetActorWeight(Actor* a_actor);
 	TESObjectARMO* GetActorSkin(Actor* a_actor);
 
+	SKMP_FORCEINLINE constexpr TESNPC* GetActorBase(Actor* a_actor) noexcept
+	{
+		if (auto base = a_actor->baseForm) {
+			return base->As<TESNPC>();
+		}
+		else
+		{
+			return nullptr;
+		}
+	}
+
 	void AIProcessVisitActors2(const std::function<void(Actor*, const Game::ActorHandle&)>& a_func, bool a_includePlayer = false);
 
 	SKMP_FORCEINLINE bool InPausedMenu()

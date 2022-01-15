@@ -15,7 +15,6 @@ namespace stl
 #endif
 
 	public:
-
 #if !defined(_SKMP_DISABLE_BOOST_SERIALIZATION)
 		enum Serialization : unsigned int
 		{
@@ -27,11 +26,8 @@ namespace stl
 
 		optional() = default;
 
-		explicit optional(const optional& a_rhs) :
-			m_set(a_rhs.m_set),
-			m_item(a_rhs.m_item)
-		{
-		}
+		optional(const optional&) = default;
+		optional(optional&&) = default;
 
 		optional(const T& a_rhs) :
 			m_set(true),
@@ -39,16 +35,27 @@ namespace stl
 		{
 		}
 
-		explicit optional(optional&& a_rhs) :
-			m_set(a_rhs.m_set),
-			m_item(std::move(a_rhs.m_item))
-		{
-		}
-
 		optional(T&& a_rhs) :
 			m_set(true),
 			m_item(std::move(a_rhs))
 		{
+		}
+
+		optional& operator=(const optional&) = default;
+		optional& operator=(optional&&) = default;
+
+		optional& operator=(const T& a_rhs)
+		{
+			m_item = a_rhs;
+			m_set = true;
+			return *this;
+		}
+
+		optional& operator=(T&& a_rhs)
+		{
+			m_item = std::move(a_rhs);
+			m_set = true;
+			return *this;
 		}
 
 		template <class... Args>
@@ -71,34 +78,6 @@ namespace stl
 			{
 				return m_item;
 			}
-		}
-
-		optional& operator=(const optional& a_rhs)
-		{
-			m_item = a_rhs.m_item;
-			m_set = a_rhs.m_set;
-			return *this;
-		}
-
-		optional& operator=(const T& a_rhs)
-		{
-			m_item = a_rhs;
-			m_set = true;
-			return *this;
-		}
-
-		optional& operator=(optional&& a_rhs)
-		{
-			m_item = std::move(a_rhs.m_item);
-			m_set = a_rhs.m_set;
-			return *this;
-		}
-
-		optional& operator=(T&& a_rhs)
-		{
-			m_item = std::move(a_rhs);
-			m_set = true;
-			return *this;
 		}
 
 		inline constexpr bool operator==(const T& a_rhs) const noexcept

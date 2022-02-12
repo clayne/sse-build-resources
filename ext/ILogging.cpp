@@ -1,5 +1,6 @@
 #include "ILogging.h"
 
+
 const ILog::logLevelMap_t ILog::m_logLevelMap = {
 	{ "Debug", LogLevel::Debug },
 	{ "Message", LogLevel::Message },
@@ -36,7 +37,8 @@ const char* ILog::GetLogLevelString(LogLevel a_level)
 }
 
 BackLog::Entry::Entry(const LoggerMessageEvent& a_event) :
-	m_level(a_event.level)
+	m_level(a_event.level),
+	m_ts(a_event.m_ts)
 {
 	if (a_event.prefix)
 	{

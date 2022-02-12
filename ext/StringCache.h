@@ -379,9 +379,9 @@ namespace stl
 
 		[[nodiscard]] inline constexpr auto empty() const noexcept
 		{
-			return m_ref->value().empty();
+			return m_ref == string_cache::data_pool::get_empty();
 		}
-
+		
 		[[nodiscard]] inline constexpr bool less_equal_p(
 			const fixed_string& a_rhs) const noexcept
 		{

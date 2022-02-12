@@ -3,6 +3,8 @@
 #include "STL.h"
 #include "Threads.h"
 
+#include <chrono>
+
 class ILog
 {
 public:
@@ -100,6 +102,7 @@ private:
 
 class BackLog
 {
+public:
 	class Entry
 	{
 	public:
@@ -115,26 +118,33 @@ class BackLog
 		Entry& operator=(const Entry&) = delete;
 		Entry& operator=(Entry&&) = delete;
 
-		inline constexpr const char* data() const noexcept
+		[[nodiscard]] inline constexpr const char* data() const noexcept
 		{
 			return m_data.data();
 		}
 
-		inline constexpr operator const auto &() const noexcept
+		[[nodiscard]] inline constexpr operator const auto &() const noexcept
 		{
 			return m_data;
 		}
 
-		inline constexpr auto level() const noexcept
+		[[nodiscard]] inline constexpr auto level() const noexcept
 		{
 			return m_level;
+		}
+
+		[[nodiscard]] inline constexpr const auto& ts() const noexcept
+		{
+			return m_ts;
 		}
 
 	private:
 		std::string m_data;
 		LogLevel m_level;
+		std::chrono::local_time<std::chrono::system_clock::duration> m_ts;
 	};
 
+private:
 	using storage_type = std::list<Entry>;
 	using iterator = typename storage_type::iterator;
 	using const_iterator = typename storage_type::const_iterator;
@@ -167,12 +177,12 @@ public:
 		m_lock.unlock();
 	}
 
-	[[nodiscard]] inline auto& GetLock() const noexcept
+	[[nodiscard]] inline constexpr auto& GetLock() const noexcept
 	{
 		return m_lock;
 	}
 
-	[[nodiscard]] inline auto GetLimit() const noexcept
+	[[nodiscard]] inline constexpr auto GetLimit() const noexcept
 	{
 		return m_limit;
 	}

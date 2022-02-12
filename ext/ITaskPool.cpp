@@ -164,22 +164,32 @@ bool ITaskPool::ValidateMemory()
 
 void ITaskPool::MainLoopUpdate_Hook()
 {
+	m_Instance.m_runningThread.store(GetCurrentThreadId(), std::memory_order_relaxed);
+
+	m_Instance.m_prioQueue.ProcessTasks();
 	m_Instance.m_queue.ProcessTasks();
 
 	for (auto const& cmd : m_Instance.m_tasks_fixed)
 	{
 		cmd->Run();
 	}
+
+	m_Instance.m_runningThread.store(0, std::memory_order_relaxed);
 }
 
 void ITaskPool::MainLoopUpdate_Hook_Budget()
 {
+	m_Instance.m_runningThread.store(GetCurrentThreadId(), std::memory_order_relaxed);
+
+	m_Instance.m_prioQueue.ProcessTasks(m_Instance.m_budget);
 	m_Instance.m_queue.ProcessTasks(m_Instance.m_budget);
 
 	for (auto const& cmd : m_Instance.m_tasks_fixed)
 	{
 		cmd->Run();
 	}
+
+	m_Instance.m_runningThread.store(0, std::memory_order_relaxed);
 }
 
 inline static constexpr bool IsREFRValid(TESObjectREFR* a_refr) noexcept
@@ -187,7 +197,8 @@ inline static constexpr bool IsREFRValid(TESObjectREFR* a_refr) noexcept
 	if (a_refr == nullptr ||
 	    a_refr->formID == 0 ||
 	    a_refr->loadedState == nullptr ||
-	    a_refr->IsDeleted())
+	    a_refr->IsDeleted() ||
+		!a_refr->IsActor())
 	{
 		return false;
 	}
@@ -216,6 +227,18 @@ void ITaskPool::QueueActorTask(
 	}
 
 	m_Instance.m_queue.AddTask<ActorTaskDispatcher>(handle, std::move(a_func));
+}
+
+void ITaskPool::QueueActorTask(
+	Game::ActorHandle a_handle,
+	func_t a_func)
+{
+	if (!a_handle || !a_handle.IsValid())
+	{
+		return;
+	}
+
+	m_Instance.m_queue.AddTask<ActorTaskDispatcher>(a_handle, std::move(a_func));
 }
 
 ITaskPool::ActorTaskDispatcher::ActorTaskDispatcher(

@@ -327,6 +327,12 @@
     <ClInclude Include="ext\boost_macros.h">
       <Filter>ext</Filter>
     </ClInclude>
+    <ClInclude Include="ext\BSGraphics.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="skse64\skse64\skse64\NiMemManager.h">
+      <Filter>skse64</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ext\AddressLibrary.cpp">
@@ -568,6 +574,9 @@
     </ClCompile>
     <ClCompile Include="ext\Checksum.cpp">
       <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="skse64\skse64\skse64\NiMemManager.cpp">
+      <Filter>skse64</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <skse64/GameAPI.h>
+
 namespace RE
 {
     struct BSIntrusiveRefCounted
@@ -19,6 +21,8 @@ namespace RE
             stl::atomic_ref myRefCount{ _refCount };
             return --myRefCount;
         }
+
+		TES_HEAP_REDEFINE_NEW();
 
     protected:
         // members

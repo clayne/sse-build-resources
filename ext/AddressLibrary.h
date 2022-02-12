@@ -39,7 +39,7 @@ public:
 
 	inline static std::size_t Size()
 	{
-		return m_Instance.m_database.GetOffsetMap().size();
+		return m_Instance.m_database->GetOffsetMap().size();
 	}
 
 	inline static constexpr auto ver() noexcept
@@ -186,7 +186,7 @@ private:
 			return 0;
 		}
 
-		auto addr = m_Instance.m_database.FindAddressById(id);
+		auto addr = m_Instance.m_database->FindAddressById(id);
 		if (!addr)
 		{
 			m_Instance.m_hasBadQuery = true;
@@ -221,7 +221,7 @@ private:
 			return 0;
 		}
 
-		auto addr = m_Instance.m_database.FindAddressById(id);
+		auto addr = m_Instance.m_database->FindAddressById(id);
 		if (!addr)
 		{
 			m_Instance.m_hasBadQuery = true;
@@ -245,7 +245,7 @@ private:
 
 	std::uint64_t m_ver{ 0 };
 
-	VersionDb m_database;
+	std::unique_ptr<VersionDb> m_database;
 
 	static IAL m_Instance;
 };

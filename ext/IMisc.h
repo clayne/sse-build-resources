@@ -21,60 +21,91 @@ namespace stl
 
 	template <
 		class T,
-		class = std::enable_if_t<std::is_enum_v<T>, void>>
+		class value_type = std::remove_cvref_t<T>,
+		class = std::enable_if_t<
+			std::is_enum_v<value_type>,
+			void>>
 	struct flag
 	{
 		flag() = delete;
 
-		inline flag(T const a_rhs) noexcept :
+		inline flag(const T& a_rhs) noexcept :
 			value(a_rhs)
 		{
 		}
 
-		inline flag& operator=(T const a_rhs) noexcept
+		inline flag& operator=(value_type const a_rhs) noexcept
 		{
 			value = a_rhs;
 			return *this;
 		}
 
-		inline constexpr bool test(T const a_rhs) const noexcept
+		template <
+			class Ta,
+			class = std::enable_if_t<
+				std::is_same_v<
+					Ta,
+					std::underlying_type_t<value_type>>>>
+		inline flag(Ta const a_rhs) noexcept :
+			value(static_cast<value_type>(a_rhs))
+		{
+		}
+
+		template <
+			class Ta,
+			class = std::enable_if_t<
+				std::is_same_v<
+					Ta,
+					std::underlying_type_t<value_type>>>>
+		inline flag& operator=(Ta const a_rhs) noexcept
+		{
+			value = static_cast<value_type>(a_rhs);
+			return *this;
+		}
+
+		[[nodiscard]] inline constexpr bool test(value_type const a_rhs) const noexcept
 		{
 			return (value & a_rhs) == a_rhs;
 		}
 
-		inline constexpr bool test_any(T const a_rhs) const noexcept
+		[[nodiscard]] inline constexpr bool test_any(value_type const a_rhs) const noexcept
 		{
-			return (value & a_rhs) != static_cast<T>(0);
+			return (value & a_rhs) != static_cast<value_type>(0);
 		}
 
-		inline constexpr void set(T const a_rhs) noexcept
+		inline constexpr void set(value_type const a_rhs) noexcept
 		{
 			value |= a_rhs;
 		}
 
-		inline constexpr void toggle(T const a_rhs) noexcept
+		inline constexpr void toggle(value_type const a_rhs) noexcept
 		{
 			value ^= a_rhs;
 		}
 
-		inline constexpr void lshift(std::uint32_t a_offset) noexcept
+		inline constexpr void lshift(std::uint32_t const a_offset) noexcept
 		{
 			value <<= a_offset;
 		}
 
-		inline constexpr void rshift(std::uint32_t a_offset) noexcept
+		inline constexpr void rshift(std::uint32_t const a_offset) noexcept
 		{
 			value >>= a_offset;
 		}
 
-		inline constexpr void clear(T const a_rhs) noexcept
+		inline constexpr void clear(value_type const a_rhs) noexcept
 		{
 			value &= ~a_rhs;
 		}
 
-		inline constexpr operator T() const noexcept
+		[[nodiscard]] inline constexpr operator T() const noexcept
 		{
 			return value;
+		}
+
+		[[nodiscard]] inline constexpr auto underlying() const noexcept
+		{
+			return static_cast<std::underlying_type_t<value_type>>(value);
 		}
 
 		T value;

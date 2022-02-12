@@ -60,7 +60,9 @@ struct pluginInfo_t
 
 	[[nodiscard]] inline Game::FormID GetFormID(Game::FormID a_formIDLower) const noexcept
 	{
-		return !isLight ? modIndex << 24 | (a_formIDLower & 0xFFFFFF) : 0xFE000000 | (lightIndex << 12) | (a_formIDLower & 0xFFF);
+		return !isLight ?
+                   modIndex << 24 | (a_formIDLower & 0xFFFFFF) :
+                   0xFE000000 | (lightIndex << 12) | (a_formIDLower & 0xFFF);
 	}
 
 	[[nodiscard]] inline Game::FormID GetFormIDLower(Game::FormID a_formID) const noexcept
@@ -69,7 +71,7 @@ struct pluginInfo_t
 	}
 
 	template <class T>
-	[[nodiscard]] inline T* LookupForm(Game::FormID a_formIDLower) const noexcept
+	[[nodiscard]] inline constexpr T* LookupForm(Game::FormID a_formIDLower) const noexcept
 	{
 		return GetFormID(a_formIDLower).Lookup<T>();
 	}
@@ -84,22 +86,22 @@ public:
 
 	bool Populate();
 
-	[[nodiscard]] inline bool IsPopulated() const
+	[[nodiscard]] inline constexpr bool IsPopulated() const noexcept
 	{
 		return m_populated;
 	}
 
-	[[nodiscard]] inline const auto& GetIndexMap() const
+	[[nodiscard]] inline constexpr const auto& GetIndexMap() const noexcept
 	{
 		return m_pluginIndexMap;
 	}
 
-	[[nodiscard]] inline const auto& GetLookupRef() const
+	[[nodiscard]] inline constexpr const auto& GetLookupRef() const noexcept
 	{
 		return m_pluginNameMap;
 	}
 
-	[[nodiscard]] inline bool Empty() const
+	[[nodiscard]] inline bool Empty() const noexcept
 	{
 		return m_pluginNameMap.empty();
 	}
@@ -116,7 +118,7 @@ public:
 	template <class T, class form_type = stl::strip_type<T>>
 	[[nodiscard]] form_type* LookupForm(const formPair_t& a_form) const;
 
-	[[nodiscard]] inline auto Size() const
+	[[nodiscard]] inline auto Size() const noexcept
 	{
 		return m_pluginIndexMap.size();
 	}
@@ -133,9 +135,10 @@ form_type* IPluginInfo::LookupForm(
 	const pluginInfoString_t& a_modName,
 	Game::FormID a_formid) const
 {
-	auto mi = Lookup(a_modName);
-	if (mi)
+	if (auto mi = Lookup(a_modName))
+	{
 		return mi->GetFormID(a_formid).Lookup<form_type>();
+	}
 
 	return nullptr;
 }
@@ -143,8 +146,7 @@ form_type* IPluginInfo::LookupForm(
 template <class T, class form_type>
 form_type* IPluginInfo::LookupForm(const formPair_t& a_form) const
 {
-	auto mi = Lookup(a_form.first);
-	if (mi)
+	if (auto mi = Lookup(a_form.first))
 	{
 		return mi->GetFormID(a_form.second).Lookup<form_type>();
 	}

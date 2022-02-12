@@ -130,7 +130,9 @@ namespace stl
 
 			_erase_vec(std::addressof(*it));
 
-			return m_map.erase(it);
+			m_map.erase(it);
+
+			return size_type(1);
 		}
 
 		[[nodiscard]] inline auto find(const K& a_key)
@@ -185,7 +187,7 @@ namespace stl
 			m_map.swap(decltype(m_map)());
 		}
 
-		[[nodiscard]] inline map_type::size_type size() const noexcept
+		[[nodiscard]] inline auto size() const noexcept
 		{
 			return m_map.size();
 		}

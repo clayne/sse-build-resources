@@ -46,7 +46,14 @@ private:
 
 	static bool ParseVersionFromString(const char* ptr, int& major, int& minor, int& revision, int& build)
 	{
-		return sscanf_s(ptr, "%d.%d.%d.%d", &major, &minor, &revision, &build) == 4 && ((major != 1 && major != 0) || minor != 0 || revision != 0 || build != 0);
+		return sscanf_s(
+				   ptr,
+				   "%d.%d.%d.%d",
+				   &major,
+				   &minor,
+				   &revision,
+				   &build) == 4 &&
+		       ((major != 1 && major != 0) || minor != 0 || revision != 0 || build != 0);
 	}
 
 public:
@@ -94,18 +101,17 @@ public:
 
 		if (verSize != NULL)
 		{
-			LPSTR verData = new char[verSize];
+			std::unique_ptr<CHAR[]> verData = std::make_unique<CHAR[]>(verSize);
 
-			if (GetFileVersionInfo(szVersionFile, verHandle, verSize, verData))
+			if (GetFileVersionInfo(szVersionFile, verHandle, verSize, verData.get()))
 			{
 				{
 					char* vstr = NULL;
 					UINT vlen = 0;
-					if (VerQueryValueA(verData, "\\StringFileInfo\\040904B0\\ProductVersion", (LPVOID*)&vstr, &vlen) && vlen && vstr && *vstr)
+					if (VerQueryValueA(verData.get(), "\\StringFileInfo\\040904B0\\ProductVersion", (LPVOID*)&vstr, &vlen) && vlen && vstr && *vstr)
 					{
 						if (ParseVersionFromString(vstr, major, minor, revision, build))
 						{
-							delete[] verData;
 							return true;
 						}
 					}
@@ -114,18 +120,15 @@ public:
 				{
 					char* vstr = NULL;
 					UINT vlen = 0;
-					if (VerQueryValueA(verData, "\\StringFileInfo\\040904B0\\FileVersion", (LPVOID*)&vstr, &vlen) && vlen && vstr && *vstr)
+					if (VerQueryValueA(verData.get(), "\\StringFileInfo\\040904B0\\FileVersion", (LPVOID*)&vstr, &vlen) && vlen && vstr && *vstr)
 					{
 						if (ParseVersionFromString(vstr, major, minor, revision, build))
 						{
-							delete[] verData;
 							return true;
 						}
 					}
 				}
 			}
-
-			delete[] verData;
 		}
 
 		return false;
@@ -142,7 +145,10 @@ public:
 	void clear()
 	{
 		_data.clear();
-		for (int i = 0; i < 4; i++) _ver[i] = 0;
+		for (auto& e : _ver)
+		{
+			e = 0;
+		}
 		_base = 0;
 	}
 
@@ -204,10 +210,7 @@ public:
 			file.seekg(tnLen, file.cur);
 		}
 
-		{
-			HMODULE handle = GetModuleHandleA(NULL);
-			_base = (unsigned long long)handle;
-		}
+		_base = (unsigned long long)GetModuleHandleA(NULL);
 
 		int ptrSize = read<int>(file);
 

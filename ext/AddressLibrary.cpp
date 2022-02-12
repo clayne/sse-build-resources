@@ -6,11 +6,13 @@
 
 IAL IAL::m_Instance;
 
-bool IAL::get_ver(int (&a_parts)[4], std::uint64_t& a_out)
+bool IAL::get_ver(
+	int (&a_parts)[4],
+	std::uint64_t& a_out)
 {
 	std::uint64_t result{ 0 };
 
-	if (!m_database.GetExecutableVersion(
+	if (!m_database->GetExecutableVersion(
 			a_parts[0],
 			a_parts[1],
 			a_parts[2],
@@ -33,7 +35,8 @@ bool IAL::get_ver(int (&a_parts)[4], std::uint64_t& a_out)
 	return true;
 }
 
-IAL::IAL()
+IAL::IAL() :
+	m_database(std::make_unique<VersionDb>())
 {
 	PerfCounter pc;
 
@@ -48,7 +51,7 @@ IAL::IAL()
 
 	m_tLoadStart = pc.Query();
 
-	m_isLoaded = m_database.Load(
+	m_isLoaded = m_database->Load(
 		m_isAE ? 2 : 1,
 		parts[0],
 		parts[1],
@@ -60,5 +63,6 @@ IAL::IAL()
 
 void IAL::Release()
 {
-	m_Instance.m_database.clear();
+	m_Instance.m_isLoaded = false;
+	m_Instance.m_database.reset();
 }
